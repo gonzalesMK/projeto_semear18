@@ -8,9 +8,6 @@
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/math/constants/constants.hpp>
 
-/** !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-/* O ELETROIMA DEVE SER MOVIDO COM O ROBÕ PARADO */
-/** !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 /** Esse código é responsável por controlar o Eletroima do robô no V-REP, 
  *  fazendo a conversão de uma Velocidade para a Posição.
