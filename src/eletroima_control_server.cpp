@@ -9,8 +9,7 @@
 #include <boost/math/constants/constants.hpp>
 
 
-/** Esse código é responsável por controlar o Eletroima do robô no V-REP, 
- *  fazendo a conversão de uma Velocidade para a Posição.
+/** Esse código é responsável por controlar o Eletroima do robô no V-REP
  * 
  * Mais especificamente, dentro do V-REP, há apenas a função para colocar a posição do
  * eletroima no mundo. Assim, para haver um movimento suave e linear, é preciso
@@ -19,7 +18,9 @@
  * Embora a mensagem de ROS para posição seja geometry_msgs/Pose, ela é meio complexa por causa
  * do quartenion. Assim, por simplicidade, a posição também é controlada usando geometry_msgs/Twist.
  * 
- * A goal é deslocamento do eletroima em relação AO ROBÔ
+ * A goal é o deslocamento do eletroima em relação AO ROBÔ
+ * 
+ * Para se comunicar com esse nó, ver exemplo no código: eletroima_control_demo
  * */
 
 typedef actionlib::SimpleActionServer<projeto_semear::move_eletroimaAction> Server;
