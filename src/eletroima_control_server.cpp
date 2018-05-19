@@ -8,9 +8,6 @@
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/math/constants/constants.hpp>
 
-/** !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-/* O ELETROIMA DEVE SER MOVIDO COM O ROBÕ PARADO */
-/** !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
 /** Esse código é responsável por controlar o Eletroima do robô no V-REP, 
  *  fazendo a conversão de uma Velocidade para a Posição.
@@ -156,7 +153,7 @@ int main(int argc, char **argv)
     ros::NodeHandle node;
 
     // Esse publisher irá se comunicar com o V-REP: irá controlar a posição do Eletroimã
-    eletro_twist = node.advertise<geometry_msgs::Twist>("/AMR/eletroima_pose", 1);
+    eletro_twist = node.advertise<geometry_msgs::Twist>("/AMR/setEletroimaPose", 1);
 
     Server server(node, "move_eletroima", boost::bind(&execute, _1, &server), false);
     server.start();
