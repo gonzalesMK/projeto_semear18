@@ -1,24 +1,24 @@
 #include <actionlib/client/simple_action_client.h>
-#include <projeto_semear/move_eletroimaAction.h>
+#include <projeto_semear/moveEletroimaAction.h>
 
 /** Esse programa faz uma ligação entre o tópico /cmd_vel publicado pelo teleop_twist_keyboard
  *  e o controle do eletroima. Assim, é possivel move-lo utilizando o teclado .
  * */
 
 
-typedef actionlib::SimpleActionClient<projeto_semear::move_eletroimaAction> Client;
+typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
 // Função de feedback do ActionLib
-void feedbackCb(const projeto_semear::move_eletroimaFeedbackConstPtr& feedback)
+void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr& feedback)
 {
   ROS_INFO_STREAM("Distance to Goal" <<  feedback->distance) ;
 }
 
 // Função executada quando a tarefa termina
 void doneCb(const actionlib::SimpleClientGoalState& state,
-            const projeto_semear::move_eletroimaResultConstPtr& result)
+            const projeto_semear::moveEletroimaResultConstPtr& result)
 {
-  ROS_INFO_STREAM("Finished in state" << state.toString().c_str());
+  ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
 }
 
 // Called once when the goal becomes active
@@ -30,9 +30,9 @@ void activeCb()
 
 void cmd_callback(const geometry_msgs::TwistConstPtr &msg){
 
-  Client client("move_eletroima", true); // true -> don't need ros::spin()
+  Client client("moveEletroima", true); // true -> don't need ros::spin()
   client.waitForServer();
-  projeto_semear::move_eletroimaGoal goal;
+  projeto_semear::moveEletroimaGoal goal;
 
   // Filling goal here  
   goal.deslocamento.linear.x  = msg->linear.x;

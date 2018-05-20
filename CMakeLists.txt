@@ -18,15 +18,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_action_files(
-  DIRECTORY 
-  action
-  FILES 
-  move_eletroima.action
+  DIRECTORY action FILES moveEletroima.action
 )
 
 generate_messages(
-   DEPENDENCIES
-   actionlib_msgs   geometry_msgs   std_msgs
+   DEPENDENCIES actionlib_msgs geometry_msgs std_msgs
 )
 
 catkin_package(

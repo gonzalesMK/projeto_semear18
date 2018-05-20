@@ -3,7 +3,7 @@
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_listener.h>
 #include <actionlib/server/simple_action_server.h>
-#include <projeto_semear/move_eletroimaAction.h>
+#include <projeto_semear/moveEletroimaAction.h>
 #include <math.h>
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -23,7 +23,7 @@
  * Para se comunicar com esse nó, ver exemplo no código: eletroima_control_demo
  * */
 
-typedef actionlib::SimpleActionServer<projeto_semear::move_eletroimaAction> Server;
+typedef actionlib::SimpleActionServer<projeto_semear::moveEletroimaAction> Server;
 
 // Constants
 const double FREQUENCIA = 10;           // Hertz
@@ -34,7 +34,7 @@ const double W =  boost::math::constants::pi<double>() / 4 / FREQUENCIA ;      /
 
 ros::Publisher eletro_twist;
 
-void execute(const projeto_semear::move_eletroimaGoalConstPtr &goal, Server *as)
+void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
 {
     // Recebe a posição atual do eletroima
     tf::TransformListener listener;
@@ -100,7 +100,7 @@ void execute(const projeto_semear::move_eletroimaGoalConstPtr &goal, Server *as)
     double sent_w = boost::math::sign(goal->deslocamento.angular.z);
 
     // Mensagem para enviar feedback
-    projeto_semear::move_eletroimaFeedback feedback;
+    projeto_semear::moveEletroimaFeedback feedback;
 
     // helper variables
     ros::Rate r(FREQUENCIA);
@@ -150,13 +150,13 @@ void execute(const projeto_semear::move_eletroimaGoalConstPtr &goal, Server *as)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "Move_Eletroima");
+    ros::init(argc, argv, "moveEletroima");
     ros::NodeHandle node;
 
     // Esse publisher irá se comunicar com o V-REP: irá controlar a posição do Eletroimã
     eletro_twist = node.advertise<geometry_msgs::Twist>("/AMR/setEletroimaPose", 1);
 
-    Server server(node, "move_eletroima", boost::bind(&execute, _1, &server), false);
+    Server server(node, "moveEletroima", boost::bind(&execute, _1, &server), false);
     server.start();
 
     ros::spin();
