@@ -26,24 +26,37 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES projeto_semear
+  INCLUDE_DIRS include
+  LIBRARIES motor_library
   CATKIN_DEPENDS actionlib_msgs #geometry_msgs std_msgs
 #  DEPENDS system_lib
 )
 
+
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
+
+# Declare a C++ library
+add_library(motor_library src/kine_control.cpp
+)
+# Link Library with respective dependencies
+target_link_libraries(motor_library ${catkin_LIBRARIES})
+
+
 add_executable(eletroima_control_server src/eletroima_control_server.cpp)
 target_link_libraries(eletroima_control_server
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
 )
 
 add_executable(eletroima_control_demo src/eletroima_control_demo.cpp)
 target_link_libraries(eletroima_control_demo
   ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
+)
+
+add_executable(kine_control_demo src/kine_control_demo.cpp)
+target_link_libraries(kine_control_demo
+  ${catkin_LIBRARIES}
+  motor_library
 )
