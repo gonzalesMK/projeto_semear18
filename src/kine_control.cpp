@@ -36,5 +36,4 @@ bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
 
-    ros::Duration(1).sleep();
 }
