@@ -15,20 +15,28 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   roscpp
+  message_generation
+)
+
+add_message_files(
+  FILES
+  Pose.msg
 )
 
 add_action_files(
-  DIRECTORY action FILES moveEletroima.action
+  FILES 
+  moveEletroima.action
 )
 
 generate_messages(
-   DEPENDENCIES actionlib_msgs geometry_msgs std_msgs
+  DEPENDENCIES
+  actionlib_msgs geometry_msgs std_msgs
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES motor_library
-  CATKIN_DEPENDS actionlib_msgs #geometry_msgs std_msgs
+  CATKIN_DEPENDS actionlib_msgs message_runtime #geometry_msgs std_msgs
 #  DEPENDS system_lib
 )
 
