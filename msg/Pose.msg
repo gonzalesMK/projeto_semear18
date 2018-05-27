@@ -4,10 +4,10 @@ uint8 SUL = 1
 uint8 LESTE = 2
 uint8 OESTE = 3
 # Equivalentes às acima
-uint8 TREM = 0
-uint8 INICIO = 1
-uint8 AZUL = 2
-uint8 VERDE = 3
+uint8 ORIENTATION_TREM = 0
+uint8 ORIENTATION_INICIO = 1
+uint8 ORIENTATION_AZUL = 2
+uint8 ORIENTATION_VERDE = 3
 # Constantes de localização
 uint8 QUADRANTE_CENTRAL=0
 uint8 QUADRANTE_ESQUERDO=1
