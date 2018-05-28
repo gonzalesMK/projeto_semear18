@@ -32,6 +32,7 @@ add_service_files(
 add_action_files(
   FILES 
   moveEletroima.action
+  navigation.action
 )
     
 generate_messages(
@@ -89,3 +90,16 @@ target_link_libraries(positioning_system_demo
   ${catkin_LIBRARIES}
 )
 add_dependencies(positioning_system_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(navigating_server src/navigating_server.cpp)
+target_link_libraries(navigating_server
+  ${catkin_LIBRARIES}
+)
+add_dependencies(navigating_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
+add_executable(navigating_demo src/navigating_demo.cpp)
+target_link_libraries(navigating_demo
+  ${catkin_LIBRARIES}
+)
+add_dependencies(navigating_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
