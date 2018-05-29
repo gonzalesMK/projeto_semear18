@@ -5,5 +5,5 @@ projeto_semear/Pose goal_pose
 bool succeed
 ---
 #feedback
-projeto_semear/Pose actual_pose
+uint8 code
 uint8[] path

@@ -27,6 +27,7 @@ add_message_files(
 add_service_files(
   FILES
   GetPose.srv
+  PathPlanning.srv
 )
 
 add_action_files(
@@ -78,18 +79,18 @@ target_link_libraries(kine_control_demo
   motor_library
 )
 
-add_executable(positioning_system src/positioning_system.cpp)
-target_link_libraries(positioning_system
+add_executable(gps src/gps.cpp)
+target_link_libraries(gps
   ${catkin_LIBRARIES}
 )
-add_dependencies(positioning_system ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(gps ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-add_executable(positioning_system_demo src/positioning_system_demo.cpp)
-target_link_libraries(positioning_system_demo
+add_executable(gps_demo src/gps_demo.cpp)
+target_link_libraries(gps_demo
   ${catkin_LIBRARIES}
 )
-add_dependencies(positioning_system_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(gps_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(navigating_server src/navigating_server.cpp)
 target_link_libraries(navigating_server
@@ -97,9 +98,14 @@ target_link_libraries(navigating_server
 )
 add_dependencies(navigating_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-
-add_executable(navigating_demo src/navigating_demo.cpp)
-target_link_libraries(navigating_demo
+add_executable(path_planning_demo src/path_planning_demo.cpp)
+target_link_libraries(path_planning_demo
   ${catkin_LIBRARIES}
 )
-add_dependencies(navigating_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(path_planning_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(path_planning_server src/path_planning_server.cpp)
+target_link_libraries(path_planning_server
+  ${catkin_LIBRARIES}
+)
+add_dependencies(path_planning_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
