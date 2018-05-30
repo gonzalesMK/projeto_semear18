@@ -123,3 +123,10 @@ target_link_libraries(convert_colorsensor
 )
 add_dependencies(convert_colorsensor ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(transicao_demo src/transicao_demo.cpp)
+target_link_libraries(transicao_demo
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(transicao_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
