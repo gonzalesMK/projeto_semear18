@@ -11,6 +11,12 @@
 using namespace cv;
 using namespace std;
 
+
+/** Esse código é responsável por converter os sensores divulgados por ROS para um valor em
+ * float para que seja mais facilmente utilizado.
+ * 
+ * Especificamente, os sensores enviam um pixel RGB, que é transformado em uma escala de cinza
+ * */
 ros::Publisher pubBR;
 ros::Publisher pubFR;
 ros::Publisher pubBL;
@@ -27,8 +33,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBL", 1000, callbackBR);
-    ros::Subscriber subBL = n.subscribe("/AMR/lineSensorBR", 1000, callbackBL);
+    ros::Subscriber subBL = n.subscribe("/AMR/lineSensorBL", 1000, callbackBR);
+    ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBR", 1000, callbackBL);
     ros::Subscriber subFR = n.subscribe("/AMR/lineSensorFR", 1000, callbackFR);
     ros::Subscriber subFL = n.subscribe("/AMR/lineSensorFL", 1000, callbackFL);
 

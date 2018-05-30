@@ -6,7 +6,20 @@
 #include <projeto_semear/GetPose.h>
 #include <iostream>
 
-/// Need a Global Variable to Keep Track of Position and Orientation
+/** Esse programa é um SERVIÇO responsável por manter a localização GLOBAL do robô.
+ * Para os detalhes das localizações permitidas, ver a imagem location.png.
+ * 
+ * Definição do Serviço GetPose:
+ *          bool set
+ *          projeto_semear/Pose pose
+ *              ---
+ *          projeto_semear/Pose pose
+ *
+ *   set == True   -> a pose é atualizada
+ *   set == False  -> o serviço retorna a pose atual
+ * 
+ * Nome do serviço: gps
+ * */
 
 projeto_semear::Pose g_pose;
 

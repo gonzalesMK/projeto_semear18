@@ -33,6 +33,7 @@ add_service_files(
   FILES
   GetPose.srv
   PathPlanning.srv
+  #AlignRobot.srv
 )
 
 add_action_files(

@@ -5,6 +5,15 @@
 #include <projeto_semear/navigationAction.h>
 #include <vector>
 
+
+/** Esse código é uma AÇÃO responsável por unir todo o código de navegação.
+ * Ou seja, obter uma trajetória sobre o serviço pathPlanning e conseguir
+ * movimentar o robô nessa trajetória.
+ * 
+ * Ainda não está implementado.
+ * 
+ * */
+
 typedef actionlib::SimpleActionServer<projeto_semear::navigationAction> Server;
 
 ros::ServiceClient gps_client;  // Cliente para o Serviço gps

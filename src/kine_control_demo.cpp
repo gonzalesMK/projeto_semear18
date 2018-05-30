@@ -4,11 +4,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "kine_control_demo");
 
-
     ros::NodeHandle nh;
 
     kineControl::motorControl motor;
-    
     
     // Parâmetro de entrada do motor
     geometry_msgs::Twist velocidade;

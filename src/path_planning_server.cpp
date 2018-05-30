@@ -6,6 +6,22 @@
 #include <queue>
 #include <forward_list>
 
+
+/** Esse programa é um SERVIÇO responsável por calcular um caminho dadas as posições iniciais e finais,
+ * por meio do algoritmo dijkstra.
+ * 
+ * Definição do serviço PathPlanning: 
+ *         projeto_semear/Pose initial_pose
+ *         projeto_semear/Pose goal_pose
+ *         ---
+ *         uint8[] path
+ * 
+ *  As entradas são a posição inicial e a final. Apenas a localização importa, não a orientação.
+ *  A saída é um vetor<uint8> começando com a posição Inicial -> Vertice2 -> ... -> posição final
+ * 
+ * Nome do serviço : pathPlanning
+ * */
+
 // for Map identification, see image
 /** Identification:
  * QUADRANTE_CENTRAL=0
