@@ -48,7 +48,6 @@ int main(int argc, char **argv)
       print_path(srv_msg.response.path);
     }
   }
-
   return 0;
 }
 

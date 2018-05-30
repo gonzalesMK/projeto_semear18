@@ -16,7 +16,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   roscpp
   message_generation
+  cv_bridge
+  image_transport
+  sensor_msgs
 )
+
+find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
@@ -51,6 +56,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 # Declare a C++ library
@@ -109,3 +115,11 @@ target_link_libraries(path_planning_server
   ${catkin_LIBRARIES}
 )
 add_dependencies(path_planning_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(convert_colorsensor src/convert_colorsensor.cpp)
+target_link_libraries(convert_colorsensor
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+add_dependencies(convert_colorsensor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
