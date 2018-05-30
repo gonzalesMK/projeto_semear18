@@ -49,11 +49,14 @@ add_executable(eletroima_control_server src/eletroima_control_server.cpp)
 target_link_libraries(eletroima_control_server
   ${catkin_LIBRARIES}
 )
+add_dependencies(eletroima_control_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(eletroima_control_demo src/eletroima_control_demo.cpp)
 target_link_libraries(eletroima_control_demo
   ${catkin_LIBRARIES}
 )
+add_dependencies(eletroima_control_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 
 add_executable(kine_control_demo src/kine_control_demo.cpp)
 target_link_libraries(kine_control_demo
