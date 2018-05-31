@@ -1,0 +1,9 @@
+#goal definition
+projeto_semear/Pose goal_pose
+---
+#result definition
+bool succeed
+---
+#feedback
+uint8 code
+uint8[] path

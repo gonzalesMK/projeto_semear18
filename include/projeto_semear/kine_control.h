@@ -36,6 +36,8 @@ namespace kineControl
 
 const double PI = 3.141592653589793238463;
 
+enum wheel {BR, BL, FR, FL};
+
 class motorControl
 {
 
@@ -47,6 +49,8 @@ class motorControl
 
     //! Set the velocity of the robot. 
     bool setVelocity(const geometry_msgs::Twist &vel);
+
+    bool concerning(const wheel w, double modulo_vel);
 
     ros::Publisher FR_Motor_;
     ros::Publisher FL_Motor_;
