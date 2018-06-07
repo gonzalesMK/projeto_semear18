@@ -1,0 +1,10 @@
+#Cor dos containers
+#Cor do container da esquerda:
+projeto_semear/Colors Cor_Esquerda  #sou eu que defino esse nome? pois acabei de definir
+#Cor do container da direita:
+projeto_semear/Colors Cor_Direita   #idem do de cima
+
+---
+#qual container escolhi:
+
+uint8[] container_escolhido # 0=esquerda, 1 = direita

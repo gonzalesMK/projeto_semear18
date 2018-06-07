@@ -25,6 +25,7 @@ find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
+  Colors.msg
   Pose.msg
 )
 
