@@ -131,3 +131,10 @@ target_link_libraries(transicao_demo
 )
 add_dependencies(transicao_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(linha_preta src/linha_preta.cpp)
+target_link_libraries(linha_preta
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(linha_preta ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
