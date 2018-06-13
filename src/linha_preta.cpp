@@ -27,7 +27,7 @@ int main(int argc, char **argv){
     ros::Subscriber lineSensorFL = nh.subscribe("/image_converter/lineSensorFL", 1, callbackFL);
     ros::Subscriber lineSensorFR = nh.subscribe("/image_converter/lineSensorFR", 1, callbackFR);
 
-    while (colorBR == -1 || colorFL == -1 || colorBL == -1 || colorFR == -1){
+    while (colorFL == -1 || colorFR == -1){
         //se entrar nesse while, significa que não está recebendo as mensagens do convert
         ROS_INFO("rosrun no convert, por favor");
         ros::spinOnce(); 
