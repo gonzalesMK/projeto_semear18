@@ -18,15 +18,15 @@
 #include "projeto_semear/Colors.h"
 
 
-bool escolha(projeto_semear18::EscolherContainer::Request &req,
+void escolha(projeto_semear18::EscolherContainer::Request &req,
          projeto_semear18::EscolherContainer::Response &res)
     {
-        if(req.Cor_Esquerda == 1){return 0}
-        else if(req.Cor_Esquerda == 2){return 1}
-        else if(req.Cor_Esquerda == 2 && req.Cor_Direita == 1){return 0}
-        else if(req.Cor_Esquerda == 2 && req.Cor_Direita == 0){return 0}
-        else if(req.Cor_Esquerda == 0 && req.Cor_Direita == 2){return 1}
-        else if(req.Cor_Esquerda == 0 && req.Cor_Direita == 0){return 2}
+        if(req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN){res.container_escolhido = 0}
+        else if(req.Cor_Direita.cor == req.Cor_Direita.BLUE){res.container_escolhido = 1}
+        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.GREEN){res.container_escolhido = 0}
+        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.RED){res.container_escolhido = 0}
+        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Direita.BLUE){res.container_escolhido = 1}
+        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Esquerda.RED){res.container_escolhido = 2}
         
     }
 
