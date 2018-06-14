@@ -22,16 +22,18 @@ int main(int argc, char **argv){
 
     ros::NodeHandle nh;
 
-    kineControl::robot motor;
+    kineControl::robot robot;
 
-    ros::Subscriber lineSensorFL = nh.subscribe("/image_converter/lineSensorFL", 1, callbackFL);
-    ros::Subscriber lineSensorFR = nh.subscribe("/image_converter/lineSensorFR", 1, callbackFR);
-
+    colorFL = robot.get_colorFL();
+    colorFR = robot.get_colorFR();
+    
     while (colorFL == -1 || colorFR == -1){
         //se entrar nesse while, significa que não está recebendo as mensagens do convert
         ROS_INFO("rosrun no convert, por favor");
         ros::spinOnce(); 
         ros::Duration(0.5).sleep();
+        colorFL = robot.get_colorFL();
+        colorFR = robot.get_colorFR();
     }
 
     ros::Duration time(0.05);
@@ -44,6 +46,9 @@ int main(int argc, char **argv){
         velocidade.linear.y = 0;
         velocidade.angular.z = 0;
    
+        colorFL = robot.get_colorFL();
+        colorFR = robot.get_colorFR();
+        
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
@@ -67,9 +72,8 @@ int main(int argc, char **argv){
             break;
         }
         
-        motor.setVelocity(velocidade);
+        robot.setVelocity(velocidade);
         time.sleep();
-        ros::spinOnce();
     }
     ros::Time end = ros::Time::now();
     float distance = (end.sec - begin.sec)*0.05;
@@ -79,15 +83,6 @@ int main(int argc, char **argv){
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
 
-    motor.setVelocity(velocidade);
+    robot.setVelocity(velocidade);
     return 0;
-}
-
-
-void callbackFL(const std_msgs::Float32ConstPtr &msg){
-    colorFL = msg->data;
-}
-
-void callbackFR(const std_msgs::Float32ConstPtr &msg){
-    colorFR = msg->data;
 }
