@@ -45,18 +45,28 @@ class motorControl
     ros::NodeHandle nh_;
 
   public:
+    float colorFL_;
+    float colorBL_;
+    float colorFR_;
+    float colorBR_;
+
+ros::Publisher FR_Motor_;
+    ros::Publisher FL_Motor_;
+    ros::Publisher BR_Motor_;
+    ros::Publisher BL_Motor_;
+
+    ros::Subscriber lineSensorFL_;
+    ros::Subscriber lineSensorFR_;
+
     motorControl();
 
     //! Set the velocity of the robot. 
     bool setVelocity(const geometry_msgs::Twist &vel);
 
     bool concerning(const wheel w, double modulo_vel);
+    
 
-    ros::Publisher FR_Motor_;
-    ros::Publisher FL_Motor_;
-    ros::Publisher BR_Motor_;
-    ros::Publisher BL_Motor_;
-
+    
 };
 
 } // namespace kineControl

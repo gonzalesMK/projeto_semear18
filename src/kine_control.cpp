@@ -1,4 +1,5 @@
 #include "projeto_semear/kine_control.h"
+#include <boost/bind.hpp>
 
 const double PI = 3.141592653589793238463;
 const double DIAMETRO = 0.099060; // Diametro da RODA
@@ -8,6 +9,10 @@ const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX
 
 /** Implementação do Objeto que abstrai o motor. **/
 
+void callback(float &color, const std_msgs::Float32ConstPtr &msg){
+    color = 1;//msg->data;  
+} 
+
 
 kineControl::motorControl::motorControl()
 {
@@ -15,6 +20,10 @@ kineControl::motorControl::motorControl()
     FL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFLSpeed", 1);
     BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBRSpeed", 1);
     BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBLSpeed", 1);
+
+    
+    lineSensorFL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFL", 1, boost::bind(callback, boost::ref(colorFL_), std::placeholders::_1));  
+    //lineSensorFR_ = nh_.subscribe("/image_converter/lineSensorFR", 1, boost::bind(callback, &colorFR_, std::placeholders::_1));  
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.1).sleep();
@@ -46,6 +55,8 @@ bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
     FL_Motor_.publish(Wfl);
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
+
+    
 }
 
 
