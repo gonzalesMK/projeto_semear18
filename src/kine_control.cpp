@@ -9,7 +9,7 @@ const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX
 
 /** Implementação do Objeto que abstrai o motor. **/
 
-void callback(const std_msgs::Float32ConstPtr &msg, float& color)
+void callback(const std_msgs::Float32ConstPtr &msg, float &color)
 {
     color = msg->data;
 }
@@ -21,10 +21,10 @@ kineControl::motorControl::motorControl()
     BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBRSpeed", 1);
     BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBLSpeed", 1);
 
-    lineSensorFL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFL", 1, boost::bind(callback, _1 ,boost::ref(colorFL_)));
-    lineSensorBL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBL", 1, boost::bind(callback, _1 ,boost::ref(colorBL_)));
-    lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1 ,boost::ref(colorFR_)));
-    lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1 ,boost::ref(colorBR_)));
+    lineSensorFL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFL", 1, boost::bind(callback, _1, boost::ref(colorFL_)));
+    lineSensorBL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBL", 1, boost::bind(callback, _1, boost::ref(colorBL_)));
+    lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1, boost::ref(colorFR_)));
+    lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.1).sleep();
@@ -95,4 +95,25 @@ bool kineControl::motorControl::concerning(const wheel w, double modulo_vel)
     FL_Motor_.publish(Wfl);
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
+}
+
+float kineControl::motorControl::get_colorFL()
+{
+    ros::spin();
+    return this->colorFL_;
+}
+float kineControl::motorControl::get_colorBL()
+{
+    ros::spin();
+    return this->colorBL_;
+}
+float kineControl::motorControl::get_colorFR()
+{
+    ros::spin();
+    return this->colorBR_;
+}
+float kineControl::motorControl::get_colorBR()
+{
+    ros::spin();
+    return this->colorBR_;
 }

@@ -67,6 +67,10 @@ class motorControl
 
     bool concerning(const wheel w, double modulo_vel);
     
+    float get_colorFL();
+    float get_colorBL();
+    float get_colorFR();
+    float get_colorBR();
 
     
 };
