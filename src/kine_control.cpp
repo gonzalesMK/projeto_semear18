@@ -7,14 +7,15 @@ const double LX = 0.06099;        // Comprimento do eixo X
 const double LY = 0.0991225;      // Comprimento do eixo Y
 const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
 
-/** Implementação do Objeto que abstrai o motor. **/
+/** Implementação do Objeto que abstrai o robô. **/
+
 
 void callback(const std_msgs::Float32ConstPtr &msg, float &color)
 {
     color = msg->data;
 }
 
-kineControl::motorControl::motorControl()
+kineControl::robot::robot()
 {
     FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFRSpeed", 1);
     FL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFLSpeed", 1);
@@ -30,7 +31,7 @@ kineControl::motorControl::motorControl()
     ros::Duration(0.1).sleep();
 }
 
-bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
+bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
 {
     // Ângulo XY do vetor velocidade
     double theta = atan2(vel.linear.y, vel.linear.x);
@@ -59,7 +60,7 @@ bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
 
 // Concerning is not properly working yet, need to improve the math
 // Concerning é quando o robô gira em torno de uma das suas rodas.
-bool kineControl::motorControl::concerning(const wheel w, double modulo_vel)
+bool kineControl::robot::concerning(const wheel w, double modulo_vel)
 {
     std_msgs::Float32 Wfl;
     std_msgs::Float32 Wfr;
@@ -97,23 +98,23 @@ bool kineControl::motorControl::concerning(const wheel w, double modulo_vel)
     BL_Motor_.publish(Wbl);
 }
 
-float kineControl::motorControl::get_colorFL()
+float kineControl::robot::get_colorFL()
 {
-    ros::spin();
+    ros::spinOnce();
     return this->colorFL_;
 }
-float kineControl::motorControl::get_colorBL()
+float kineControl::robot::get_colorBL()
 {
-    ros::spin();
+    ros::spinOnce();
     return this->colorBL_;
 }
-float kineControl::motorControl::get_colorFR()
+float kineControl::robot::get_colorFR()
 {
-    ros::spin();
-    return this->colorBR_;
+    ros::spinOnce();
+    return this->colorFR_;
 }
-float kineControl::motorControl::get_colorBR()
+float kineControl::robot::get_colorBR()
 {
-    ros::spin();
+    ros::spinOnce();
     return this->colorBR_;
 }

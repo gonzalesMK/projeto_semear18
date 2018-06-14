@@ -22,7 +22,7 @@ int main(int argc, char **argv){
 
     ros::NodeHandle nh;
 
-    kineControl::motorControl motor;
+    kineControl::robot motor;
 
     ros::Subscriber lineSensorFL = nh.subscribe("/image_converter/lineSensorFL", 1, callbackFL);
     ros::Subscriber lineSensorFR = nh.subscribe("/image_converter/lineSensorFR", 1, callbackFR);

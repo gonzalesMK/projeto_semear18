@@ -38,7 +38,7 @@ const double PI = 3.141592653589793238463;
 
 enum wheel {BR, BL, FR, FL};
 
-class motorControl
+class robot
 {
 
   protected:
@@ -60,7 +60,7 @@ class motorControl
     ros::Subscriber lineSensorBL_;
     ros::Subscriber lineSensorBR_;
 
-    motorControl();
+    robot();
 
     //! Set the velocity of the robot. 
     bool setVelocity(const geometry_msgs::Twist &vel);

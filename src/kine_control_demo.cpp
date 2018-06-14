@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 
     ros::NodeHandle nh;
 
-    kineControl::motorControl motor;
+    kineControl::robot motor;
 
     //** Como usar o motor para mudar a velocidade :
 
@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     velocidade.angular.z = 1;
 
     motor.setVelocity(velocidade);
+    ROS_INFO_STREAM(" COLOR IN BR: ");
 
     //** Como usar o motor para ler o sensor
     while (ros::ok())
