@@ -9,10 +9,10 @@ const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX
 
 /** Implementação do Objeto que abstrai o motor. **/
 
-void callback(float &color, const std_msgs::Float32ConstPtr &msg){
-    color = 1;//msg->data;  
-} 
-
+void callback(const std_msgs::Float32ConstPtr &msg, float& color)
+{
+    color = msg->data;
+}
 
 kineControl::motorControl::motorControl()
 {
@@ -21,14 +21,14 @@ kineControl::motorControl::motorControl()
     BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBRSpeed", 1);
     BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBLSpeed", 1);
 
-    
-    lineSensorFL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFL", 1, boost::bind(callback, boost::ref(colorFL_), std::placeholders::_1));  
-    //lineSensorFR_ = nh_.subscribe("/image_converter/lineSensorFR", 1, boost::bind(callback, &colorFR_, std::placeholders::_1));  
+    lineSensorFL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFL", 1, boost::bind(callback, _1 ,boost::ref(colorFL_)));
+    lineSensorBL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBL", 1, boost::bind(callback, _1 ,boost::ref(colorBL_)));
+    lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1 ,boost::ref(colorFR_)));
+    lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1 ,boost::ref(colorBR_)));
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.1).sleep();
 }
-
 
 bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
 {
@@ -45,20 +45,17 @@ bool kineControl::motorControl::setVelocity(const geometry_msgs::Twist &vel)
     std_msgs::Float32 Wbr;
 
     // Modelo omnidirecional da base
-    Wfl.data = ((w_module)*sin(PI / 4 + theta) - (vel.angular.z) * conversao_angular ) * PI; // !!!
-    Wfr.data = ((w_module)*cos(PI / 4 + theta) + (vel.angular.z) * conversao_angular ) * PI; // !!!
-    Wbl.data = ((w_module)*cos(PI / 4 + theta) - (vel.angular.z) * conversao_angular ) * PI; // !!!
-    Wbr.data = ((w_module)*sin(PI / 4 + theta) + (vel.angular.z) * conversao_angular ) * PI; // !!!
+    Wfl.data = ((w_module)*sin(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // !!!
+    Wfr.data = ((w_module)*cos(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // !!!
+    Wbl.data = ((w_module)*cos(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // !!!
+    Wbr.data = ((w_module)*sin(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // !!!
 
     // Publicação para o motor
     FR_Motor_.publish(Wfr);
     FL_Motor_.publish(Wfl);
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
-
-    
 }
-
 
 // Concerning is not properly working yet, need to improve the math
 // Concerning é quando o robô gira em torno de uma das suas rodas.

@@ -50,13 +50,15 @@ class motorControl
     float colorFR_;
     float colorBR_;
 
-ros::Publisher FR_Motor_;
+    ros::Publisher FR_Motor_;
     ros::Publisher FL_Motor_;
     ros::Publisher BR_Motor_;
     ros::Publisher BL_Motor_;
 
     ros::Subscriber lineSensorFL_;
     ros::Subscriber lineSensorFR_;
+    ros::Subscriber lineSensorBL_;
+    ros::Subscriber lineSensorBR_;
 
     motorControl();
 
