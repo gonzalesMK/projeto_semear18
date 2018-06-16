@@ -57,10 +57,10 @@ protected:
   ros::NodeHandle nh_;
 
 public:
-  float colorFL_;
-  float colorBL_;
-  float colorFR_;
-  float colorBR_;
+  float colorFL_=-1;
+  float colorBL_=-1;
+  float colorFR_=-1;
+  float colorBR_=-1;
 
   ros::Publisher FR_Motor_;
   ros::Publisher FL_Motor_;

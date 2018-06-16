@@ -29,6 +29,14 @@ kineControl::robot::robot()
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.5).sleep();
+    ros::spinOnce();
+
+    // Espera o motor ter os tópicos publicados
+    while (colorBR_ == -1 || colorFL_ == -1 || colorBL_ == -1 || colorFR_ == -1)
+    {
+        ROS_INFO("Waiting 4 Topics");
+        update(0.5);
+    }
 }
 
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
@@ -161,17 +169,6 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
         if (to == projeto_semear::Pose::QUADRANTE_CENTRAL) // caso seja repetido, não há o que enviar
             return;
         break;
-    }
-
-    // Espera o motor ter os tópicos publicados
-    while (colorBR == -1 || colorFL == -1 || colorBL == -1 || colorFR == -1)
-    {
-        ROS_INFO("Waiting 4 Topics");
-        robot.update(0.5);
-        colorBL = robot.colorBL_;
-        colorBR = robot.colorBR_;
-        colorFL = robot.colorFL_;
-        colorFR = robot.colorFR_;
     }
 
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta

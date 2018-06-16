@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
     // Initial Values
     g_pose.orientation = projeto_semear::Pose::ORIENTATION_TREM;
-    g_pose.location = projeto_semear::Pose::DOCA_CENTRAL;
+    g_pose.location = projeto_semear::Pose::QUADRANTE_CENTRAL;
 
     // Cria o serviço
     ros::ServiceServer service = node.advertiseService("gps", gps);
