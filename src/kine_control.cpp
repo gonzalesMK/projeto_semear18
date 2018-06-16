@@ -119,7 +119,7 @@ float kineControl::robot::get_colorBR()
     return this->colorBR_;
 }
 
-void kineControl::quadrante_central2(kineControl::robot &robot, std::uint8_t from, std::uint8_t to)
+void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to)
 {
     // Change names. Avoid have global variables
     double MAIOR_QUE_VERDE = kineControl::MAIOR_QUE_VERDE;
@@ -138,7 +138,7 @@ void kineControl::quadrante_central2(kineControl::robot &robot, std::uint8_t fro
     }
     if (to != projeto_semear::Pose::QUADRANTE_ESQUERDO && to != projeto_semear::Pose::QUADRANTE_CENTRAL && to != projeto_semear::Pose::QUADRANTE_DIREITO)
     {
-        ROS_ERROR_STREAM("O Quadrante alvo deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << to);
+        ROS_ERROR_STREAM("O Quadrante alvo deve conectado ao quadrante requisitado. : " << to);
     }
 
     int direita_ou_esquerda = 0;

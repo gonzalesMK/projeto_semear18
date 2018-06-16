@@ -82,14 +82,9 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         case (10):
             kineControl::mudar_quadrante(motor, (*it_pose), (*it_actual_goal));
             break;
-
         case (05):
             break;
-        
-            break;
         case (13):
-            break;
-        
             break;
         case (24):
             break;

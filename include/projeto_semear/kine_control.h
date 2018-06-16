@@ -80,19 +80,23 @@ public:
   // Quando o robô gira em torno de uma de suas rodas - Ainda não funciona
   bool concerning(const wheel w, double modulo_vel);
 
-  // Encapsula o ros::spinOnce para as variáveis do robô
+  // Encapsula o ros::spinOnce e ros::Duration
   void update(double periodo = 0)
   {
     ros::spinOnce();
     if(periodo != 0) ros::Duration(periodo).sleep();
   }
 
+  // Funções que chama o ros::spinOnce e devolve o valor da variável
   float get_colorFL();
   float get_colorBL();
   float get_colorFR();
   float get_colorBR();
 };
 
+// Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
+// Apenas util para os 3 quadrantes.  
+// MUDAS APENAS 1 QUADRANTE POR VEZ !! SE MANDAR DIREITA E ESQUERDA, VAI PARAR NO CENTRO.
 void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
 
 } // namespace kineControl
