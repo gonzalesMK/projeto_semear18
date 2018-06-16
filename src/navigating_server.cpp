@@ -78,16 +78,18 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         {
         case (01):
         case (02):
-            kineControl::quadrante_central2(motor, (*it_pose), (*it_actual_goal));
+        case (20):
+        case (10):
+            kineControl::mudar_quadrante(motor, (*it_pose), (*it_actual_goal));
             break;
 
         case (05):
             break;
-        case (10):
+        
             break;
         case (13):
             break;
-        case (20):
+        
             break;
         case (24):
             break;
