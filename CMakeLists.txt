@@ -138,3 +138,10 @@ target_link_libraries(linha_preta
 )
 add_dependencies(linha_preta ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(navigatin_server_demo src/navigatin_server_demo.cpp)
+target_link_libraries(navigatin_server_demo
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(navigatin_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
