@@ -3,6 +3,8 @@
 #include <projeto_semear/GetPose.h>
 #include <projeto_semear/PathPlanning.h>
 #include <projeto_semear/navigationAction.h>
+#include <projeto_semear/kine_control.h>
+
 #include <vector>
 
 
@@ -12,14 +14,25 @@
  * 
  * Ainda não está implementado.
  * 
- * */
+ * 
+
+Allowed Movements:
+ *                  QC0|QE1|QD2|DV3|DA4|DC5|Tr6|  
+ * Quadrante Cen 0 | - | 1 | 1 | 0 | 0 | 1 | 0 |
+ * Quadrante Esq 1 | 1 | - | 0 | 1 | 0 | 0 | 0 |
+ * Quadrante Dir 2 | 1 | 0 | - | 0 | 1 | 0 | 1 |
+ * Doca Verde    3 | 0 | 1 | 0 | - | 0 | 0 | 0 |
+ * Doca Azul     4 | 0 | 0 | 1 | 0 | - | 0 | 0 |
+ * Doca Central  5 | 1 | 0 | 0 | 0 | 0 | - | 0 |
+ * Trem          6 | 0 | 0 | 1 | 0 | 0 | 0 | - |
+*/
 
 typedef actionlib::SimpleActionServer<projeto_semear::navigationAction> Server;
 
 ros::ServiceClient gps_client;  // Cliente para o Serviço gps
 ros::ServiceClient path_client; // Cliente para o Serviço path_planning
 
-void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as)
+void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kineControl::robot& motor)
 {
 
     // Get Actual Pose of the Robot
@@ -64,9 +77,10 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as)
         switch (code)
         {
         case (01):
-            break;
         case (02):
+            kineControl::quadrante_central2(motor, (*it_pose), (*it_actual_goal));
             break;
+
         case (05):
             break;
         case (10):
@@ -104,8 +118,9 @@ int main(int argc, char **argv)
     gps_client = node.serviceClient<projeto_semear::GetPose>("gps");           // Requisita o serviço gps
     path_client = node.serviceClient<projeto_semear::GetPose>("pathPlanning"); // Requisita o serviço path_planning
 
+    kineControl::robot robot;
     // Cria o action server
-    Server server(node, "navigation", boost::bind(&execute, _1, &server), false);
+    Server server(node, "navigation", boost::bind(&execute, _1, &server, robot), false);
     server.start();
 
     ros::spin();

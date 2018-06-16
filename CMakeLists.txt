@@ -67,7 +67,6 @@ add_library(motor_library src/kine_control.cpp
 target_link_libraries(motor_library ${catkin_LIBRARIES})
 
 
-
 add_executable(eletroima_control_server src/eletroima_control_server.cpp)
 target_link_libraries(eletroima_control_server
   ${catkin_LIBRARIES}
@@ -102,6 +101,7 @@ add_dependencies(gps_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 add_executable(navigating_server src/navigating_server.cpp)
 target_link_libraries(navigating_server
   ${catkin_LIBRARIES}
+  motor_library
 )
 add_dependencies(navigating_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 

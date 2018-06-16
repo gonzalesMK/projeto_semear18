@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     motor.setVelocity(velocidade);
     ROS_INFO_STREAM(" COLOR IN BR: ");
 
-    //** Como usar o motor para ler o sensor
+    //** Como usar o motor para ler o sensor 
     while (ros::ok())
     {
         ROS_INFO_STREAM(" COLOR IN BR: " << motor.get_colorBL());

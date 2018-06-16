@@ -1,4 +1,5 @@
 #include "projeto_semear/kine_control.h"
+
 #include <boost/bind.hpp>
 
 const double PI = 3.141592653589793238463;
@@ -8,7 +9,6 @@ const double LY = 0.0991225;      // Comprimento do eixo Y
 const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
 
 /** Implementação do Objeto que abstrai o robô. **/
-
 
 void callback(const std_msgs::Float32ConstPtr &msg, float &color)
 {
@@ -28,7 +28,7 @@ kineControl::robot::robot()
     lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
 
     // Necessário um tempo para inicializar os nós
-    ros::Duration(0.1).sleep();
+    ros::Duration(0.5).sleep();
 }
 
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
@@ -117,4 +117,138 @@ float kineControl::robot::get_colorBR()
 {
     ros::spinOnce();
     return this->colorBR_;
+}
+
+void kineControl::quadrante_central2(kineControl::robot &robot, std::uint8_t from, std::uint8_t to)
+{
+    // Change names. Avoid have global variables
+    double MAIOR_QUE_VERDE = kineControl::MAIOR_QUE_VERDE;
+    double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
+    const double VEL_ANG = kineControl::VEL_ANG;
+
+    double colorBL = robot.get_colorBL();
+    double colorBR = robot.get_colorBR();
+    double colorFL = robot.get_colorFL();
+    double colorFR = robot.get_colorFR();
+
+    // Checa se o parametro quadrante_to_go está correto
+    if (from != projeto_semear::Pose::QUADRANTE_ESQUERDO && from != projeto_semear::Pose::QUADRANTE_CENTRAL && from != projeto_semear::Pose::QUADRANTE_DIREITO)
+    {
+        ROS_ERROR_STREAM("O Quadrante início deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << from);
+    }
+    if (to != projeto_semear::Pose::QUADRANTE_ESQUERDO && to != projeto_semear::Pose::QUADRANTE_CENTRAL && to != projeto_semear::Pose::QUADRANTE_DIREITO)
+    {
+        ROS_ERROR_STREAM("O Quadrante alvo deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << to);
+    }
+
+    int direita_ou_esquerda = 0;
+    switch (from)
+    {
+    case (projeto_semear::Pose::QUADRANTE_ESQUERDO):
+        direita_ou_esquerda = 1;
+        if (to == projeto_semear::Pose::QUADRANTE_ESQUERDO) // caso seja repetido, não há o que enviar
+            return;
+        break;
+
+    case (projeto_semear::Pose::QUADRANTE_DIREITO):
+        direita_ou_esquerda = -1;
+        if (to == projeto_semear::Pose::QUADRANTE_DIREITO) // caso seja repetido, não há o que enviar
+            return;
+        break;
+
+    case (projeto_semear::Pose::QUADRANTE_CENTRAL):
+        direita_ou_esquerda = to == projeto_semear::Pose::QUADRANTE_DIREITO ? 1 : -1;
+        if (to == projeto_semear::Pose::QUADRANTE_CENTRAL) // caso seja repetido, não há o que enviar
+            return;
+        break;
+    }
+
+    // Espera o motor ter os tópicos publicados
+    while (colorBR == -1 || colorFL == -1 || colorBL == -1 || colorFR == -1)
+    {
+        ROS_INFO("Waiting 4 Topics");
+        robot.update(0.5);
+        colorBL = robot.colorBL_;
+        colorBR = robot.colorBR_;
+        colorFL = robot.colorFL_;
+        colorFR = robot.colorFR_;
+    }
+
+    // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
+    ros::Duration time(0.05);
+    geometry_msgs::Twist velocidade;
+    int code = 0;
+
+    ROS_INFO("Alinhando com a linha preta e verde");
+    while ((colorBL > MAIOR_QUE_VERDE || colorBR > MAIOR_QUE_VERDE || colorFR > MAIOR_QUE_PRETO || colorFL > MAIOR_QUE_PRETO))
+    {
+
+        int code = 0;
+        velocidade.linear.x = 0;
+        velocidade.linear.y = 0;
+        velocidade.angular.z = 0;
+
+        // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
+        // Caso 1: Caso o sensor BackRight esteja marcando verde, mas o BackLeft não -> girar positivo
+        // Caso 2: Caso o sensor BackLeft esteja marcando verde, mas o BackRight não -> girar negativo
+        // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
+        // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
+        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
+
+        if (colorBL > MAIOR_QUE_VERDE && colorBR > MAIOR_QUE_VERDE && colorFL > MAIOR_QUE_VERDE && colorFR > MAIOR_QUE_VERDE)
+            code = 0;
+        else if (colorBL > MAIOR_QUE_VERDE && colorBR < MAIOR_QUE_VERDE)
+            code = 1;
+        else if (colorBL < MAIOR_QUE_VERDE && colorBR > MAIOR_QUE_VERDE)
+            code = 2;
+        else if (colorFL > MAIOR_QUE_PRETO && colorFR < MAIOR_QUE_PRETO)
+            code = 3;
+        else if (colorFL < MAIOR_QUE_PRETO && colorFR > MAIOR_QUE_PRETO)
+            code = 4;
+
+        //ROS_INFO_STREAM("Case: " << code);
+
+        switch (code)
+        {
+        case 0:
+            velocidade.linear.x = -0.05;
+        case 1:
+            velocidade.angular.z = -VEL_ANG;
+            break;
+        case 2:
+            velocidade.angular.z = VEL_ANG;
+            break;
+        case 3:
+            velocidade.angular.z = -VEL_ANG;
+            break;
+        case 4:
+            velocidade.angular.z = VEL_ANG;
+            break;
+        }
+
+        robot.setVelocity(velocidade);
+        ros::spinOnce();
+        colorBL = robot.colorBL_;
+        colorBR = robot.colorBR_;
+        colorFL = robot.colorFL_;
+        colorFR = robot.colorFR_;
+        time.sleep();
+    }
+
+    ROS_INFO_STREAM("Transição do quadrante: " << direita_ou_esquerda);
+    // Vá para direita até o sensor da direita atingir o fita preta
+    velocidade.linear.x = 0;
+    velocidade.linear.y = direita_ou_esquerda * 0.1;
+    velocidade.angular.z = 0;
+
+    robot.setVelocity(velocidade);
+
+    // Quinto, andar uma distância predefinida
+    ros::Duration(3).sleep();
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+
+    robot.setVelocity(velocidade);
 }
