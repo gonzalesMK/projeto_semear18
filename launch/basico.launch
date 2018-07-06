@@ -1,7 +1,6 @@
 <launch>
 	<master auto="start"/>
 
-
     <node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" output="screen"/>
 
     <node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
