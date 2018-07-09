@@ -31,7 +31,7 @@
 #include <std_msgs/Float32.h>
 #include <projeto_semear/Pose.h>
 #include <stdlib.h>
-//! A namespace containing the hokuyo device driver
+
 namespace kineControl
 {
 
@@ -99,6 +99,71 @@ public:
 // MUDAS APENAS 1 QUADRANTE POR VEZ !! SE MANDAR DIREITA E ESQUERDA, VAI PARAR NO CENTRO.
 void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
 void linha_preta(kineControl::robot &robot);
+
+void esquerda(kineControl::robot &robot);
+void direita(kineControl::robot &robot);
+void alinhar(kineControl::robot &robot);
+
 } // namespace kineControl
+
+// Overload of << for the Pose 
+std::ostream &operator<<(std::ostream &os, const projeto_semear::Pose &pose)
+{
+    os << "\t(" ;
+    switch (pose.location)
+    {
+    case 0:
+        os << "QUAD_CENTRAL";
+        break;
+    case 1:
+        os << "QUAD_ESQ";
+        break;
+    case 2:
+        os << "QUAD_DIR";
+        break;
+    case 3:
+        os << "DOCA_VERDE";
+        break;
+    case 4:
+        os << "DOCA_AZUL";
+        break;
+    case 5:
+        os << "DOCA_CENTRAL";
+        break;
+    case 6:
+        os << "TREM  ";
+        break;
+    case 255:
+        os << "ERROR";
+        break;
+    default:
+        os << "UKNOW";
+    }
+
+    os << ",\t ";
+    switch (pose.orientation)
+    {
+    case 0:
+        os << "ORIENTATION_TREM";
+        break;
+    case 1:
+        os << "ORIENTATION_INICIO";
+        break;
+    case 2:
+        os << "ORIENTATION_AZUL";
+        break;
+    case 3:
+        os << "ORIENTATION_VERDE";
+        break;
+    case 255:
+        os << "ERROR";
+        break;
+    default:
+        os << "UNKOW";
+    }
+
+    os << ")";
+    return os;
+}
 
 #endif

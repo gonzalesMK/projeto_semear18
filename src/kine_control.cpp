@@ -8,6 +8,10 @@ const double LX = 0.06099;        // Comprimento do eixo X
 const double LY = 0.0991225;      // Comprimento do eixo Y
 const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
 
+const double  MAIOR_QUE_VERDE = kineControl::MAIOR_QUE_VERDE;
+const double  MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
+const double  VEL_ANG = kineControl::VEL_ANG;
+
 /** Implementação do Objeto que abstrai o robô. **/
 
 void callback(const std_msgs::Float32ConstPtr &msg, float &color)
@@ -127,6 +131,105 @@ float kineControl::robot::get_colorBR()
     return this->colorBR_;
 }
 
+void kineControl::alinhar(kineControl::robot &robot)
+{
+    ROS_INFO("Alinhando com a linha preta e verde");
+    geometry_msgs::Twist velocidade;
+    int code = 0;
+    ros::spinOnce();
+    ros::Duration time(0.05);
+    // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
+    while ((robot.colorBL_ > MAIOR_QUE_VERDE || robot.colorBR_ > MAIOR_QUE_VERDE || robot.colorFR_ > MAIOR_QUE_PRETO || robot.colorFL_ > MAIOR_QUE_PRETO))
+    {
+        code = 0;
+        velocidade.linear.x = 0;
+        velocidade.linear.y = 0;
+        velocidade.angular.z = 0;
+
+        // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
+        // Caso 1: Caso o sensor BackRight esteja marcando verde, mas o BackLeft não -> girar positivo
+        // Caso 2: Caso o sensor BackLeft esteja marcando verde, mas o BackRight não -> girar negativo
+        // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
+        // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
+        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
+
+        if (robot.colorBL_ > MAIOR_QUE_VERDE && robot.colorBR_ > MAIOR_QUE_VERDE && robot.colorFL_ > MAIOR_QUE_VERDE && robot.colorFR_ > MAIOR_QUE_VERDE)
+            code = 0;
+        else if (robot.colorBL_ > MAIOR_QUE_VERDE && robot.colorBR_ < MAIOR_QUE_VERDE)
+            code = 1;
+        else if (robot.colorBL_ < MAIOR_QUE_VERDE && robot.colorBR_ > MAIOR_QUE_VERDE)
+            code = 2;
+        else if (robot.colorFL_ > MAIOR_QUE_PRETO && robot.colorFR_ < MAIOR_QUE_PRETO)
+            code = 3;
+        else if (robot.colorFL_ < MAIOR_QUE_PRETO && robot.colorFR_ > MAIOR_QUE_PRETO)
+            code = 4;
+
+        //ROS_INFO_STREAM("Case: " << code);
+
+        switch (code)
+        {
+        case 0:
+            velocidade.linear.x = -0.05;
+        case 1:
+            velocidade.angular.z = -VEL_ANG;
+            break;
+        case 2:
+            velocidade.angular.z = VEL_ANG;
+            break;
+        case 3:
+            velocidade.angular.z = -VEL_ANG;
+            break;
+        case 4:
+            velocidade.angular.z = VEL_ANG;
+            break;
+        }
+
+        robot.setVelocity(velocidade);
+        ros::spinOnce();
+        time.sleep();
+    }
+}
+
+void kineControl::esquerda(kineControl::robot &robot)
+{
+    kineControl::alinhar(robot);
+
+    ROS_INFO_STREAM("Transição do quadrante para ESQUERDA ");
+
+    // Andar uma distância predefinida
+    geometry_msgs::Twist velocidade;
+    velocidade.linear.x = 0;
+    velocidade.linear.y = - 0.1;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(5).sleep();
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
+
+void kineControl::direita(kineControl::robot &robot)
+{
+    kineControl::alinhar(robot);
+
+    ROS_INFO_STREAM("Transição do quadrante para ESQUERDA ");
+
+    // Andar uma distância predefinida
+    geometry_msgs::Twist velocidade;
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0.1;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(5).sleep();
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
+
 void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to)
 {
     // Change names. Avoid have global variables
@@ -139,14 +242,20 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
     double colorFL = robot.get_colorFL();
     double colorFR = robot.get_colorFR();
 
-    // Checa se o parametro quadrante_to_go está correto
+    projeto_semear::Pose pose_from, pose_to;
+    pose_from.location = from;
+    pose_from.orientation = 0;
+    pose_to.location = to;
+    pose_to.orientation = 0;
+
+    // Checa se o parametro quadrante to está correto
     if (from != projeto_semear::Pose::QUADRANTE_ESQUERDO && from != projeto_semear::Pose::QUADRANTE_CENTRAL && from != projeto_semear::Pose::QUADRANTE_DIREITO)
     {
-        ROS_ERROR_STREAM("O Quadrante início deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << from);
+        ROS_ERROR_STREAM("O Quadrante início deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << pose_from);
     }
     if (to != projeto_semear::Pose::QUADRANTE_ESQUERDO && to != projeto_semear::Pose::QUADRANTE_CENTRAL && to != projeto_semear::Pose::QUADRANTE_DIREITO)
     {
-        ROS_ERROR_STREAM("O Quadrante alvo deve conectado ao quadrante requisitado. : " << to);
+        ROS_ERROR_STREAM("O Quadrante alvo deve conectado ao quadrante requisitado. : " << pose_to);
     }
 
     int direita_ou_esquerda = 0;
