@@ -109,6 +109,7 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         case (42):
             break;
         case (50):
+            kineControl::linha_preta(robot);
             break;
         case (62):
             break;
