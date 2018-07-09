@@ -31,7 +31,7 @@ typedef actionlib::SimpleActionServer<projeto_semear::navigationAction> Server;
 ros::ServiceClient gps_client;  // Cliente para o Serviço gps
 ros::ServiceClient path_client; // Cliente para o Serviço path_planning
 
-void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kineControl::robot &motor)
+void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kineControl::robot &robot)
 {
     // Get Actual Pose of the Robot
     projeto_semear::GetPose pose_srv;
@@ -54,19 +54,20 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
     std::vector<std::uint8_t> path = path_srv.response.path;
 
     // Debug
-    ROS_INFO_STREAM("GOAL: " << (int) path_srv.request.goal_pose.location << " INITIAL: " << (int) path_srv.request.initial_pose.location);
-    
+    ROS_INFO_STREAM("GOAL: " << (int)path_srv.request.goal_pose.location << " INITIAL: " << (int)path_srv.request.initial_pose.location);
+
     // Envie um feedback preliminar com o caminho
     projeto_semear::navigationFeedback feedback;
     feedback.path = path;
     feedback.code = -1;
     as->publishFeedback(feedback);
-  
-    if(path.empty()){
+
+    if (path.empty())
+    {
         ROS_INFO("Empty path");
         return;
     }
-    for(auto it=path.begin(); it != --path.end(); it++)
+    for (auto it = path.begin(); it != --path.end(); it++)
     {
 
         /** O código para o switch é composto por 2 dígitos: XY
@@ -84,17 +85,16 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         switch (code)
         {
         case (01):
+            kineControl::esquerda(robot);
+            break;
         case (02):
+            kineControl::direita(robot);
+            break;
         case (20):
+            kineControl::esquerda(robot);
+            break;
         case (10):
-            kineControl::mudar_quadrante(motor, (*it_pose), (*it_actual_goal));
-
-            // Update GPS
-            pose_srv.request.set = true;
-            pose_srv.request.pose.location = (*it_actual_goal);
-            pose_srv.request.pose.orientation = pose_srv.request.pose.TREM;
-
-            gps_client.call(pose_srv);
+            kineControl::direita(robot);
             break;
         case (05):
             break;
@@ -113,7 +113,12 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         case (62):
             break;
         }
-        
+
+        // Update GPS
+        pose_srv.request.set = true;
+        pose_srv.request.pose.location = (*it_actual_goal);
+        pose_srv.request.pose.orientation = pose_srv.request.pose.TREM;
+        gps_client.call(pose_srv);
     }
 
     projeto_semear::navigationResult result;
@@ -129,10 +134,10 @@ int main(int argc, char **argv)
 
     gps_client = node.serviceClient<projeto_semear::GetPose>("gps"); // Requisita o serviço gps
     gps_client.waitForExistence();
-    
+
     path_client = node.serviceClient<projeto_semear::PathPlanning>("pathPlanning"); // Requisita o serviço path_planning
     path_client.waitForExistence();
-   
+
     kineControl::robot robot;
 
     // Cria o action server
