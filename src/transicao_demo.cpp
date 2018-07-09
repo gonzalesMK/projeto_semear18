@@ -10,6 +10,8 @@ int main(int argc, char **argv)
 
     //** Como usar o motor para mudar a velocidade :
     ROS_INFO("Teste");
+    kineControl::linha_preta(motor);
+    ROS_INFO("Teste");
     kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_CENTRAL, projeto_semear::Pose::QUADRANTE_CENTRAL);
     ROS_INFO("Teste");
     kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_CENTRAL, projeto_semear::Pose::QUADRANTE_DIREITO);
