@@ -23,10 +23,10 @@
 
 projeto_semear::Pose g_pose;
 
-// Overload of << for the Pose 
+// Overload of << for the Pose
 std::ostream &operator<<(std::ostream &os, const projeto_semear::Pose &pose)
 {
-    os << "\t(" ;
+    os << "\t(";
     switch (pose.location)
     {
     case 0:
@@ -88,8 +88,9 @@ bool gps(projeto_semear::GetPose::Request &req,
          projeto_semear::GetPose::Response &res)
 {
     req.set ? g_pose = req.pose : res.pose = g_pose;
-    
-    if( req.set ) ROS_INFO_STREAM("Set New Pose: " << g_pose );
+
+    if (req.set)
+        ROS_INFO_STREAM("Set New Pose: " << g_pose);
 
     return true;
 }
@@ -105,7 +106,15 @@ int main(int argc, char **argv)
 
     // Cria o serviço
     ros::ServiceServer service = node.advertiseService("gps", gps);
+    ros::Publisher gps_publisher = node.advertise<projeto_semear::Pose>("/AMR/pose", 1);
+    ros::Rate rate(10);
 
-    ros::spin();
+    while (ros::ok())
+    {
+        gps_publisher.publish(g_pose);
+        ros::spinOnce();
+        rate.sleep();
+    }
+
     return 0;
 }
