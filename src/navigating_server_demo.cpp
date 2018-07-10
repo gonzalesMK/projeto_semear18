@@ -23,6 +23,10 @@ int main(int argc, char **argv)
   goal.goal_pose.orientation = goal.goal_pose.LESTE;
 
   client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+  client.waitForResult();
+  goal.goal_pose.location = goal.goal_pose.DOCA_AZUL;
+  goal.goal_pose.orientation = goal.goal_pose.LESTE;
+  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 
   client.waitForResult(ros::Duration());
   return 0;

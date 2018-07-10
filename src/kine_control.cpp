@@ -472,7 +472,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
-        ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
+        //ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
         if (robot.colorFL_ != PRETO && robot.colorFR_ != PRETO)
             code = 0;
         else if (robot.colorFL_ != PRETO && robot.colorFR_ == PRETO)
