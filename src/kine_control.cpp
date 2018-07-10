@@ -150,13 +150,13 @@ void kineControl::alinhar(kineControl::robot &robot)
         velocidade.linear.x = 0;
         velocidade.linear.y = 0;
         velocidade.angular.z = 0;
-        ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
+        //ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
         // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
         // Caso 1: Caso o sensor BackRight esteja marcando verde, mas o BackLeft não -> girar positivo
         // Caso 2: Caso o sensor BackLeft esteja marcando verde, mas o BackRight não -> girar negativo
         // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
         // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
-        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
+        //ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
 
         if (robot.colorFL_ == BRANCO && robot.colorFR_ == BRANCO)
             code = 0;
@@ -459,32 +459,25 @@ void kineControl::linha_preta(kineControl::robot &robot)
     double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
     const double VEL_ANG = kineControl::VEL_ANG;
 
-    double colorFL = robot.get_colorFL();
-    double colorFR = robot.get_colorFR();
-
     ros::Duration time(0.05);
     geometry_msgs::Twist velocidade;
     int code = 0;
-
     ros::Time begin = ros::Time::now();
-    while ((colorFR != PRETO || colorFL != PRETO))
+    ros::spinOnce();
+    while ((robot.colorFR_ != PRETO || robot.colorFL_ != PRETO) && ros::ok())
     {
         velocidade.linear.x = 0;
         velocidade.linear.y = 0;
         velocidade.angular.z = 0;
-
-        colorFL = robot.get_colorFL();
-        colorFR = robot.get_colorFR();
-
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
-        //ROS_INFO_STREAM("\nFL " << colorFL << " FR " << colorFR);
-        if (colorFL != PRETO && colorFR != PRETO)
+        ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
+        if (robot.colorFL_ != PRETO && robot.colorFR_ != PRETO)
             code = 0;
-        else if (colorFL != PRETO && colorFR == PRETO)
+        else if (robot.colorFL_ != PRETO && robot.colorFR_ == PRETO)
             code = 1;
-        else if (colorFL == PRETO && colorFR != PRETO)
+        else if (robot.colorFL_ == PRETO && robot.colorFR_ != PRETO)
             code = 2;
         // ROS_INFO_STREAM("Case: " << code);
         switch (code)
@@ -502,6 +495,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
 
         robot.setVelocity(velocidade);
         time.sleep();
+        ros::spinOnce();
     }
     ros::Time end = ros::Time::now();
     float distance = (end.sec - begin.sec) * 0.05;

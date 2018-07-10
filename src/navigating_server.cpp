@@ -99,19 +99,25 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         case (05):
             break;
         case (13):
+            kineControl::ir_doca(robot);
             break;
         case (24):
+            kineControl::ir_doca(robot);
             break;
         case (26):
+            ROS_ERROR("NAO IMPLEMENTADO");
             break;
         case (31):
+            kineControl::ir_quadrante(robot);
             break;
         case (42):
+            kineControl::ir_quadrante(robot);
             break;
         case (50):
             kineControl::linha_preta(robot);
             break;
         case (62):
+            ROS_ERROR("NAO IMPLEMENTADO");
             break;
         }
 
@@ -142,7 +148,7 @@ int main(int argc, char **argv)
     kineControl::robot robot;
 
     // Cria o action server
-    Server server(node, "navigation", boost::bind(&execute, _1, &server, robot), false);
+    Server server(node, "navigation", boost::bind(&execute, _1, &server, boost::ref(robot)), false);
     server.start();
 
     ros::spin();
