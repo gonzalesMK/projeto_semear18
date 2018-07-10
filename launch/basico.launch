@@ -1,11 +1,12 @@
 <launch>
 	<master auto="start"/>
+	<param name ="/use_sim_time" value="true"/>
 
-    <node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" output="screen"/>
+	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" output="screen"/>
 
-    <node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
+	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
 
-    <node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
+    	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
 
-    <node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
+    	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
 </launch>   
