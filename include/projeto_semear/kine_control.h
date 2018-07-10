@@ -98,6 +98,7 @@ public:
 // Apenas util para os 3 quadrantes.  
 // MUDAS APENAS 1 QUADRANTE POR VEZ !! SE MANDAR DIREITA E ESQUERDA, VAI PARAR NO CENTRO.
 void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
+void linha_preta(kineControl::robot &robot);
 
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
