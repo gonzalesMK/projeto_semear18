@@ -25,7 +25,9 @@ int main(int argc, char **argv)
     ROS_INFO("Teste");
     kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_ESQUERDO, projeto_semear::Pose::QUADRANTE_CENTRAL);
    */
-    kineControl::esquerda(motor);     
-    kineControl::direita(motor);     
+    kineControl::esquerda(motor);  
+    kineControl::ir_doca(motor);  
+    //kineControl::direita(motor);     
     return 0;
+
 }

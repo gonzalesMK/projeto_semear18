@@ -202,7 +202,7 @@ void kineControl::esquerda(kineControl::robot &robot)
     velocidade.linear.y = - 0.1;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
-    ros::Duration(5).sleep();
+    ros::Duration(3).sleep();
 
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
@@ -219,10 +219,9 @@ void kineControl::ir_doca(kineControl::robot &robot)
     geometry_msgs::Twist velocidade;
     
     // Girar 90 Graus
-    geometry_msgs::Twist velocidade;
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
-    velocidade.angular.z = PI/6;
+    velocidade.angular.z = PI/3;
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
 
