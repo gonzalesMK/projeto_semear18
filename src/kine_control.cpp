@@ -138,7 +138,7 @@ kineControl::color kineControl::robot::get_colorBR()
 
 void kineControl::alinhar(kineControl::robot &robot)
 {
-    ROS_INFO("Alinhando com a linha preta e verde");
+    ROS_INFO("Alinhando com a linha Preta (a linha preta esta atras)");
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Duration time(0.05);
@@ -165,7 +165,7 @@ void kineControl::alinhar(kineControl::robot &robot)
         else if (robot.colorFL_ == PRETO && robot.colorFR_ != PRETO)
             code = 2;
 
-        ROS_INFO_STREAM("\nCase: " << code);
+        //ROS_INFO_STREAM("\nCase: " << code);
 
         switch (code)
         {
@@ -248,7 +248,7 @@ void kineControl::esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transição do quadrante para ESQUERDA ");
+    ROS_INFO_STREAM("Transicaoo do quadrante para ESQUERDA ");
 
     // Andar uma distância predefinida
     geometry_msgs::Twist velocidade;
@@ -268,7 +268,7 @@ void kineControl::ir_doca(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transição do quadrante para docas ");
+    ROS_INFO_STREAM("Transicao do quadrante para docas ");
 
     geometry_msgs::Twist velocidade;
 
@@ -289,11 +289,26 @@ void kineControl::ir_doca(kineControl::robot &robot)
     kineControl::alinhar_doca(robot);
 }
 
+void kineControl::ir_quadrante(kineControl::robot &robot){
+    
+    ROS_INFO_STREAM("Transicao da Doca para Quadrante");
+    geometry_msgs::Twist velocidade;
+
+    // Girar 90 Graus
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = PI / 3;
+    
+    robot.setVelocity(velocidade);
+    ros::Duration(3).sleep();
+
+    kineControl::linha_preta(robot);
+}
 void kineControl::direita(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transição do quadrante para ESQUERDA ");
+    ROS_INFO_STREAM("Transição do quadrante para DIREITA ");
 
     // Andar uma distância predefinida
     geometry_msgs::Twist velocidade;
@@ -301,7 +316,7 @@ void kineControl::direita(kineControl::robot &robot)
     velocidade.linear.y = 0.1;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
-    ros::Duration(5).sleep();
+    ros::Duration(3).sleep();
 
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
@@ -440,6 +455,7 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
+    ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
     double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
     const double VEL_ANG = kineControl::VEL_ANG;
 
@@ -490,7 +506,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
     ros::Time end = ros::Time::now();
     float distance = (end.sec - begin.sec) * 0.05;
     //ros::Duration(3).sleep();
-    ROS_INFO_STREAM("distancia percorrida " << distance);
+    //ROS_INFO_STREAM("distancia percorrida " << distance);
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;

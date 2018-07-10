@@ -9,26 +9,11 @@ int main(int argc, char **argv)
     kineControl::robot motor;
 
     //** Como usar o motor para mudar a velocidade :
-    ROS_INFO("Teste");
+    ROS_INFO("Iniciando Teste");
     kineControl::linha_preta(motor);
- /*   ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_CENTRAL, projeto_semear::Pose::QUADRANTE_CENTRAL);
-    ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_CENTRAL, projeto_semear::Pose::QUADRANTE_DIREITO);
-    ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_DIREITO, projeto_semear::Pose::QUADRANTE_ESQUERDO);
-    ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_CENTRAL, projeto_semear::Pose::QUADRANTE_ESQUERDO);
-    ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_ESQUERDO, projeto_semear::Pose::QUADRANTE_ESQUERDO);
-    ROS_INFO("Teste");
-    kineControl::mudar_quadrante(motor, projeto_semear::Pose::QUADRANTE_ESQUERDO, projeto_semear::Pose::QUADRANTE_CENTRAL);
-  */
-  
     kineControl::esquerda(motor);  
     kineControl::ir_doca(motor);  
-    //kineControl::direita(motor);     
-    return 0;
-
-    kineControl::alinhar_doca(motor);
+    kineControl::ir_quadrante(motor);  
+    kineControl::direita(motor);     
+       
 }
