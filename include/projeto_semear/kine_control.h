@@ -102,6 +102,7 @@ void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t 
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
 void alinhar(kineControl::robot &robot);
+void ir_doca(kineControl::robot &robot);
 
 } // namespace kineControl
 

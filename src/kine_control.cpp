@@ -210,6 +210,37 @@ void kineControl::esquerda(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+void kineControl::ir_doca(kineControl::robot &robot)
+{
+    kineControl::alinhar(robot);
+
+    ROS_INFO_STREAM("Transição do quadrante para docas ");
+    
+    geometry_msgs::Twist velocidade;
+    
+    // Girar 90 Graus
+    geometry_msgs::Twist velocidade;
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = PI/6;
+    robot.setVelocity(velocidade);
+    ros::Duration(3).sleep();
+
+    // Andar para frente
+    velocidade.linear.x = 0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    // Incluir código para localizar linha azul e linha verde 
+    ros::Duration(3).sleep();
+
+    // Parar
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
+
 void kineControl::direita(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
