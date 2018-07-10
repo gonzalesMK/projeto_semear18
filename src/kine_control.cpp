@@ -243,6 +243,7 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 }
+
 void kineControl::esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
