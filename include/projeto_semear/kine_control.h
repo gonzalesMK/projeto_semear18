@@ -37,7 +37,6 @@ namespace kineControl
 
 const double MAIOR_QUE_PRETO = 60;  // Constante para marcar o valor do preto
 const double MAIOR_QUE_VERDE = 300; // Constate para marcar o valor do verde
-const double MENOR_QUE_VERDE = 100; //  ""  ""
 const double VEL_ANG = 0.1;         // Constante para marcar a velocidade angular
 
 const double PI = 3.141592653589793238463;
@@ -50,6 +49,12 @@ enum wheel
   FL
 };
 
+enum color{
+    PRETO,
+    AZUL_VERDE,
+    BRANCO
+};
+
 class robot
 {
 
@@ -57,10 +62,10 @@ protected:
   ros::NodeHandle nh_;
 
 public:
-  float colorFL_=-1;
-  float colorBL_=-1;
-  float colorFR_=-1;
-  float colorBR_=-1;
+  color colorFL_= BRANCO;
+  color colorBL_= BRANCO ;
+  color colorFR_= BRANCO ;
+  color colorBR_= BRANCO ;
 
   ros::Publisher FR_Motor_;
   ros::Publisher FL_Motor_;
@@ -88,10 +93,10 @@ public:
   }
 
   // Funções que chama o ros::spinOnce e devolve o valor da variável
-  float get_colorFL();
-  float get_colorBL();
-  float get_colorFR();
-  float get_colorBR();
+  color get_colorFL();
+  color get_colorBL();
+  color get_colorFR();
+  color get_colorBR();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
@@ -104,6 +109,7 @@ void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
 void alinhar(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
+void alinhar_doca(kineControl::robot &robot);
 
 } // namespace kineControl
 
