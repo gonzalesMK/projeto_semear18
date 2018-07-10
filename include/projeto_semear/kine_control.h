@@ -104,6 +104,7 @@ void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
 void alinhar(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
+void alinhar_doca(kineControl::robot &robot);
 
 } // namespace kineControl
 

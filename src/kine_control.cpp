@@ -170,6 +170,7 @@ void kineControl::alinhar(kineControl::robot &robot)
         {
         case 0:
             velocidade.linear.x = -0.05;
+            break
         case 1:
             velocidade.angular.z = -VEL_ANG;
             break;
@@ -188,8 +189,65 @@ void kineControl::alinhar(kineControl::robot &robot)
         ros::spinOnce();
         time.sleep();
     }
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
 }
 
+void kineControl::alinhar_doca(kineControl::robot &robot){
+    
+    ROS_INFO("Alinhando com a linha da doca");
+    
+    geometry_msgs::Twist velocidade;
+    
+    int code = 0;
+    ros::spinOnce();
+    ros::Duration time(0.05);
+    
+    // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
+    while ((robot.colorFR_ > MAIOR_QUE_VERDE || robot.colorFL_ > MAIOR_QUE_VERDE) && ros::ok())
+    {
+        code = 0;
+        velocidade.linear.x = 0;
+        velocidade.linear.y = 0;
+        velocidade.angular.z = 0;
+
+        // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
+        // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
+        // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
+        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
+
+        if (robot.colorFL_ < MAIOR_QUE_VERDE && robot.colorFR_ < MAIOR_QUE_VERDE)
+            code = 0;
+        else if (robot.colorFL_ > MAIOR_QUE_VERDE && robot.colorFR_ < MAIOR_QUE_VERDE)
+            code = 1;
+        else if (robot.colorFL_ < MAIOR_QUE_VERDE && robot.colorFR_ > MAIOR_QUE_VERDE)
+            code = 2;
+
+        ROS_INFO("CODE: %d", code);
+        switch (code)
+        {
+        case 0:
+            velocidade.linear.x = 0.05;
+            break;
+        case 1:
+            velocidade.angular.z = - VEL_ANG;
+            break;
+        case 2:
+            velocidade.angular.z = VEL_ANG;
+            break;
+        }
+
+        robot.setVelocity(velocidade);
+        ros::spinOnce();
+        time.sleep();
+    }
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
 void kineControl::esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
