@@ -6,6 +6,7 @@
 /** This program is Testing the algoritm Dijkstra implemented in path_planning_Server;
  * So, it will ask for all paths and print it in the screen
  * */
+
 const int N_PLACES = 7 ; // number of places in the map == number of lines in the Graph
 
 // Function to format the path to the screen
