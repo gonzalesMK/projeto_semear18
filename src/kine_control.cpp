@@ -248,7 +248,7 @@ void kineControl::esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transicaoo do quadrante para ESQUERDA ");
+    ROS_INFO_STREAM("Transicao do quadrante para ESQUERDA ");
 
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
