@@ -295,6 +295,8 @@ void kineControl::ir_doca(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 
+    // É possível alinhar com a linha verde, se necessário
+
     // Alinhar
     kineControl::alinhar_doca(robot);
 }
@@ -312,7 +314,9 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
 
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
-
+    
+    // É possível alinhar com a linha verde, se necessário
+    
     kineControl::linha_preta(robot);
 }
 void kineControl::direita(kineControl::robot &robot)
