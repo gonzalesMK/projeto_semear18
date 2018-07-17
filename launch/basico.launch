@@ -9,4 +9,6 @@
     	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
 
     	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
+
+		<node name="eletroima_">
 </launch>   
