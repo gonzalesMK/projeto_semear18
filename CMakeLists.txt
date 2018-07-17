@@ -153,6 +153,7 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+<<<<<<< f0f03972ca605d198e7bab65fbea3c85f33eca65
 add_executable(depositar_server src/depositar_server.cpp)
 target_link_libraries(depositar_server
   ${catkin_LIBRARIES}
@@ -166,3 +167,6 @@ target_link_libraries(depositar_client
   motor_library
 )
 add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+=======
+
+>>>>>>> atualização do CMakeLists
