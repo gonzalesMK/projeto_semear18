@@ -145,3 +145,11 @@ target_link_libraries(navigating_server_demo
 )
 add_dependencies(navigating_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(depositar_container src/depositar_container.cpp)
+target_link_libraries(depositar_container
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
