@@ -166,7 +166,6 @@ void kineControl::alinhar(kineControl::robot &robot)
             code = 2;
 
         //ROS_INFO_STREAM("\nCase: " << code);
-
         switch (code)
         {
         case 0:
