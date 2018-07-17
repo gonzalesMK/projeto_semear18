@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     // Meta para posicionar a garra em cima do container
     projeto_semear::moveEletroimaGoal goal;
     goal.deslocamento.linear.x = 0.01;
-    goal.deslocamento.linear.y = -0.1;
+    goal.deslocamento.linear.y = -0.2;
     goal.deslocamento.linear.z = 0;
     goal.deslocamento.angular.z = 0;
 
@@ -54,18 +54,12 @@ int main(int argc, char **argv)
 
     client.waitForResult(ros::Duration());
 
+    // Girar a guarra 90º 
     // Ligar o Eletroimã:
     ROS_INFO_STREAM("ligando o eletroima");
     msg.data = true;
     pub.publish(msg);
 
-    // Voltar com a garra
-    goal.deslocamento.linear.x = -0.01;
-    goal.deslocamento.linear.y = 0.1;
-    goal.deslocamento.linear.z = 0;
-    goal.deslocamento.angular.z = 0;
-
-    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 
     client.waitForResult(ros::Duration());
 

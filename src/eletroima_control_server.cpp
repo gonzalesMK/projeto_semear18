@@ -108,7 +108,6 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
     ros::NodeHandle nh;
     while (!succeed && nh.ok())
     {
-
         // Preenche a mensagem a ser publicada
         if (dist_w > W)
         {
@@ -139,7 +138,7 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
         as->publishFeedback(feedback);
 
         // Check if Final Pose is reached.
-        if (dist_w < W && dist_x < VEL_X && dist_y < VEL_Y && dist_z < VEL_Z)
+        if (feedback.distance < 0.02)
             succeed = true;
         else
             r.sleep();
