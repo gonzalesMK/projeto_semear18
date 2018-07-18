@@ -152,4 +152,9 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-
+add_executable(pegar_container src/pegar_container.cpp)
+target_link_libraries(pegar_container
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
