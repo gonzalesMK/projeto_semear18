@@ -29,7 +29,9 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
-
+  ros::Duration(0.5).sleep();
+  ros::spinOnce();
+  
   std_msgs::Bool msg;
   ROS_INFO_STREAM("ligando o eletroima");
   msg.data = true;
@@ -40,6 +42,9 @@ int main(int argc, char** argv)
 
   projeto_semear::moveEletroimaGoal goal;
   goal.deslocamento.angular.z = 10/4;
+  goal.deslocamento.linear.x = 0;
+  goal.deslocamento.linear.y = 0;
+  goal.deslocamento.linear.z = 0;
   client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
   client.waitForResult(ros::Duration());
 
