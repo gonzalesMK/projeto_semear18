@@ -1,12 +1,16 @@
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
+<<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 #include <projeto_semear/kine_control.h>
 
 /* Código para depositar o container na doca correta.
   Para execução do código, considera-se que o robô já está alinhado à doca certa e que 
   o container já está na posição correta na garra para ser depositado.
 */
+=======
+
+>>>>>>> Primeiro commit
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
 // Função de feedback do ActionLib
@@ -33,12 +37,17 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "Eletroima_client");
   ros::NodeHandle nh;
 
+<<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
   kineControl::robot motor;
 
   ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
   ros::Duration(0.5).sleep();
   ros::spinOnce();
   
+=======
+  ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
+
+>>>>>>> Primeiro commit
   std_msgs::Bool msg;
   ROS_INFO_STREAM("ligando o eletroima");
   msg.data = true;
@@ -46,6 +55,7 @@ int main(int argc, char** argv)
 
   Client client("moveEletroima", true); 
   client.waitForServer();
+<<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
   int code = 0; //variável que guarda quantos containers têm em uma pilha
 
   projeto_semear::moveEletroimaGoal goal;
@@ -77,12 +87,35 @@ int main(int argc, char** argv)
   goal.deslocamento.linear.z = 0;
   client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
   client.waitForResult(ros::Duration());
+=======
+
+  projeto_semear::moveEletroimaGoal goal;
+  goal.deslocamento.angular.z = 10/4;
+  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+  client.waitForResult(ros::Duration());
+
+  /*goal.deslocamento.linear.z = -0.137;
+  goal.deslocamento.angular.z = 0;
+  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+  client.waitForResult(ros::Duration());
+
+  goal.deslocamento.angular.z = 1;
+  goal.deslocamento.linear.z = 0;
+  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+  client.waitForResult(ros::Duration());*/
+>>>>>>> Primeiro commit
 
   ROS_INFO_STREAM("desligando o eletroima");
   msg.data = false;
   pub.publish(msg);
 
+<<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
   client.waitForResult(ros::Duration());
   
+=======
+
+  client.waitForResult(ros::Duration());
+
+>>>>>>> Primeiro commit
   return 0;
 }

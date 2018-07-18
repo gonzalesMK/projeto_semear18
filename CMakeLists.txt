@@ -153,6 +153,7 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+<<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 <<<<<<< f0f03972ca605d198e7bab65fbea3c85f33eca65
 add_executable(depositar_server src/depositar_server.cpp)
 target_link_libraries(depositar_server
@@ -170,3 +171,11 @@ add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 =======
 
 >>>>>>> atualização do CMakeLists
+=======
+add_executable(pegar_container src/pegar_container.cpp)
+target_link_libraries(pegar_container
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
+>>>>>>> Primeiro commit
