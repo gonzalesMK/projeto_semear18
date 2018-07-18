@@ -153,6 +153,7 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+<<<<<<< 2c46a2b66ba647f7d62e380a82543e05b67d08b3
 <<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 <<<<<<< f0f03972ca605d198e7bab65fbea3c85f33eca65
 add_executable(depositar_server src/depositar_server.cpp)
@@ -179,3 +180,5 @@ target_link_libraries(pegar_container
 )
 add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 >>>>>>> Primeiro commit
+=======
+>>>>>>> Arrumar CMake
