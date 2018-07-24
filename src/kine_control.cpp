@@ -36,6 +36,15 @@ kineControl::robot::robot()
     lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1, boost::ref(colorFR_)));
     lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
 
+    ColorSensorR0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR0", 1, boost::bind(callback, _1, boost::ref(colorR0_)));
+    ColorSensorR1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR1", 1, boost::bind(callback, _1, boost::ref(colorR1_)));
+    ColorSensorR2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR2", 1, boost::bind(callback, _1, boost::ref(colorR2_)));
+    ColorSensorR3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR3", 1, boost::bind(callback, _1, boost::ref(colorR3_)));
+    ColorSensorL0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL0", 1, boost::bind(callback, _1, boost::ref(colorL0_)));  
+    ColorSensorL1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL1", 1, boost::bind(callback, _1, boost::ref(colorL1_)));
+    ColorSensorL2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL2", 1, boost::bind(callback, _1, boost::ref(colorL2_)));
+    ColorSensorL3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL3", 1, boost::bind(callback, _1, boost::ref(colorL3_)));
+
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.5).sleep();
     ros::spinOnce();
@@ -134,6 +143,47 @@ kineControl::color kineControl::robot::get_colorBR()
 {
     ros::spinOnce();
     return this->colorBR_;
+}
+
+kineControl::color kineControl::robot::get_colorR0()
+{
+    ros::spinOnce();
+    return this->colorR0_;
+}
+kineControl::color kineControl::robot::get_colorR1()
+{
+    ros::spinOnce();
+    return this->colorR1_;
+}
+kineControl::color kineControl::robot::get_colorR2()
+{
+    ros::spinOnce();
+    return this->colorR2_;
+}
+kineControl::color kineControl::robot::get_colorR3()
+{
+    ros::spinOnce();
+    return this->colorR3_;
+}
+kineControl::color kineControl::robot::get_colorL0()
+{
+    ros::spinOnce();
+    return this->colorL0_;
+}
+kineControl::color kineControl::robot::get_colorL1()
+{
+    ros::spinOnce();
+    return this->colorL1_;
+}
+kineControl::color kineControl::robot::get_colorL2()
+{
+    ros::spinOnce();
+    return this->colorL2_;
+}
+kineControl::color kineControl::robot::get_colorL3()
+{
+    ros::spinOnce();
+    return this->colorL3_;
 }
 
 void kineControl::alinhar(kineControl::robot &robot)
@@ -456,7 +506,6 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
     ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
-    double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
     const double VEL_ANG = kineControl::VEL_ANG;
 
     ros::Duration time(0.05);
@@ -506,4 +555,66 @@ void kineControl::linha_preta(kineControl::robot &robot)
     velocidade.angular.z = 0;
 
     robot.setVelocity(velocidade);
+}
+
+void kineControl::alinhar_containerdepositado(kineControl::robot &robot){
+    ROS_INFO("Alinhando com o container");
+    geometry_msgs::Twist velocidade;
+    int code = 0;
+    ros::Duration time(0.05);
+    ros::spinOnce();
+
+    // condição de não alinhamento: o robo não detecta azul ou verde
+    while ((robot.colorR0_ != AZUL_VERDE || robot.colorL0_ != AZUL_VERDE) && ros::ok())
+    {
+        code = 0;
+        velocidade.linear.x = 0;
+        velocidade.linear.y = 0;
+        velocidade.angular.z = 0;
+        //ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
+        // Caso 0: Sensor da esquerda detecta verde/azul, mas o da direita não -> ir para direita
+        // Caso 1: Sensor da direita detecta verde/azul, mas o da esquerda não -> ir para esquerda
+        if (robot.colorL0_ == AZUL_VERDE && robot.colorR0_ != AZUL_VERDE)
+            code = 0;
+        else if (robot.colorL0_ != AZUL_VERDE && robot.colorR0_ == AZUL_VERDE)
+            code = 1;
+   
+
+        //ROS_INFO_STREAM("\nCase: " << code);
+
+        switch (code)
+        {
+        case 0:
+            ROS_INFO("direita");
+            ROS_INFO_STREAM("\nlacor: " << AZUL_VERDE);
+            ROS_INFO_STREAM("\nlacor: " << robot.colorL0_);
+            ROS_INFO_STREAM("\nlacor: " << robot.colorR0_);
+            velocidade.linear.y = 0.05;
+            break;
+        case 1:
+            ROS_INFO("esquerda");
+            velocidade.linear.y = -0.05;
+            break;
+        }
+
+        robot.setVelocity(velocidade);
+        ros::spinOnce();
+        time.sleep();
+    }
+     switch (code)
+        {
+        case 0:
+            velocidade.linear.y = 0.05;
+            ros::Duration(1).sleep();
+            break;
+        case 1:
+            velocidade.linear.y = -0.05;
+            ros::Duration(1).sleep();
+            break;
+        }
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+
 }
