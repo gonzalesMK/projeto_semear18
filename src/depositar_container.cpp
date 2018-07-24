@@ -1,7 +1,12 @@
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
+#include <projeto_semear/kine_control.h>
 
+/* Código para depositar o container na doca correta.
+  Para execução do código, considera-se que o robô já está alinhado à doca certa e que 
+  o container já está na posição correta na garra para ser depositado.
+*/
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
 // Função de feedback do ActionLib
@@ -28,6 +33,8 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "Eletroima_client");
   ros::NodeHandle nh;
 
+  kineControl::robot motor;
+
   ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
   ros::Duration(0.5).sleep();
   ros::spinOnce();
@@ -39,31 +46,43 @@ int main(int argc, char** argv)
 
   Client client("moveEletroima", true); 
   client.waitForServer();
+  int code = 0; //variável que guarda quantos containers têm em uma pilha
 
   projeto_semear::moveEletroimaGoal goal;
-  goal.deslocamento.angular.z = 10/4;
-  goal.deslocamento.linear.x = 0;
-  goal.deslocamento.linear.y = 0;
-  goal.deslocamento.linear.z = 0;
-  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  client.waitForResult(ros::Duration());
+  
+  /*Code == 0: nenhum container depositado
+    Code != 0: já existe um ou mais containers na pilha*/
 
-  /*goal.deslocamento.linear.z = -0.137;
-  goal.deslocamento.angular.z = 0;
-  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  client.waitForResult(ros::Duration());
-
+  if(code == 0){
+      goal.deslocamento.angular.z = 0;
+      goal.deslocamento.linear.x = 0;
+      goal.deslocamento.linear.y = 0;
+      goal.deslocamento.linear.z = -0.137;
+      client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+      client.waitForResult(ros::Duration());
+      code++;
+  }else{
+      //alinhar com o container de baixo
+      kineControl::alinhar_containerdepositado(motor);
+      goal.deslocamento.angular.z = 0;
+      goal.deslocamento.linear.x = 0;
+      goal.deslocamento.linear.y = 0;
+      goal.deslocamento.linear.z = -0.137+(code*0.02); //0,2 chute da altura do container
+      client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+      client.waitForResult(ros::Duration());
+      code++;
+  }
+  //andar uma distância determinada para fica no meio do container já depositado
   goal.deslocamento.angular.z = 1;
   goal.deslocamento.linear.z = 0;
   client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  client.waitForResult(ros::Duration());*/
+  client.waitForResult(ros::Duration());
 
   ROS_INFO_STREAM("desligando o eletroima");
   msg.data = false;
   pub.publish(msg);
 
-
   client.waitForResult(ros::Duration());
-
+  
   return 0;
 }
