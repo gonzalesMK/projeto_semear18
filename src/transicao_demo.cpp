@@ -34,42 +34,11 @@ int main(int argc, char **argv)
 
     //** Como usar o motor para mudar a velocidade :
     ROS_INFO("Iniciando Teste");
-    kineControl::linha_preta(motor);
+    kineControl::alinhar_containerdepositado(motor);
     /*kineControl::esquerda(motor);  
     kineControl::ir_doca(motor);  
     kineControl::ir_quadrante(motor);  
-    kineControl::direita(motor);  */
-
-    Client client("moveEletroima", true); // true -> don't need ros::spin()
-    client.waitForServer();
-
-    // Meta para posicionar a garra em cima do container
-    projeto_semear::moveEletroimaGoal goal;
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = 0;
-    goal.deslocamento.linear.z = -0.12;
-    goal.deslocamento.angular.z = 0;
-
-    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-
-    client.waitForResult(ros::Duration());
-
-    ROS_INFO_STREAM("ligando o eletroima");
-    ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
-  
-    std_msgs::Bool msg;
-    msg.data = true;
-    pub.publish(msg);
-
-    goal.deslocamento.linear.z = 0.12;
- 
-
-    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-
-    client.waitForResult(ros::Duration());
-
-    kineControl::esquerda(motor);  
-    kineControl::ir_doca(motor); 
+    kineControl::direita(motor);*/
     
     return 0;
 }
