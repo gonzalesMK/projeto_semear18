@@ -54,7 +54,7 @@ std::ostream &operator<<(std::ostream &os, const projeto_semear::Pose &pose)
         os << "ERROR";
         break;
     default:
-        os << "UKNOW";
+        os << "UNKNOW";
     }
 
     os << ",\t ";

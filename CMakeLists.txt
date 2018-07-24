@@ -86,6 +86,12 @@ target_link_libraries(kine_control_demo
   motor_library
 )
 
+add_executable(escolher_container src/escolher_container.cpp)
+target_link_libraries(escolher_container
+  ${catkin_LIBRARIES}
+)
+add_dependencies(escolher_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(gps src/gps.cpp)
 target_link_libraries(gps
   ${catkin_LIBRARIES}
