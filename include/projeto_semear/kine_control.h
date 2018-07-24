@@ -62,10 +62,19 @@ protected:
   ros::NodeHandle nh_;
 
 public:
-  color colorFL_= BRANCO;
+  color colorFL_= BRANCO ; 
   color colorBL_= BRANCO ;
   color colorFR_= BRANCO ;
   color colorBR_= BRANCO ;
+
+  color colorR0_= BRANCO ; 
+  color colorR1_= BRANCO ;
+  color colorR2_= BRANCO ;
+  color colorR3_= BRANCO ;
+  color colorL0_= BRANCO ; 
+  color colorL1_= BRANCO ;
+  color colorL2_= BRANCO ;
+  color colorL3_= BRANCO ;
 
   ros::Publisher FR_Motor_;
   ros::Publisher FL_Motor_;
@@ -76,6 +85,15 @@ public:
   ros::Subscriber lineSensorFR_;
   ros::Subscriber lineSensorBL_;
   ros::Subscriber lineSensorBR_;
+
+    ros::Subscriber ColorSensorR0_;
+    ros::Subscriber ColorSensorR1_;
+    ros::Subscriber ColorSensorR2_;
+    ros::Subscriber ColorSensorR3_;
+    ros::Subscriber ColorSensorL0_;
+    ros::Subscriber ColorSensorL1_;
+    ros::Subscriber ColorSensorL2_;
+    ros::Subscriber ColorSensorL3_;
 
   robot();
 
@@ -97,6 +115,15 @@ public:
   color get_colorBL();
   color get_colorFR();
   color get_colorBR();
+
+  color get_colorR0();
+  color get_colorR1();
+  color get_colorR2();
+  color get_colorR3();
+  color get_colorL0();
+  color get_colorL1();
+  color get_colorL2();
+  color get_colorL3();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
@@ -111,6 +138,7 @@ void alinhar(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
 void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
+void alinhar_containerdepositado(kineControl::robot &robot);
 
 
 } // namespace kineControl
