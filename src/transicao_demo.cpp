@@ -34,10 +34,14 @@ int main(int argc, char **argv)
 
     //** Como usar o motor para mudar a velocidade :
     ROS_INFO("Iniciando Teste");
+<<<<<<< 55d7f5e5ba1bbef79f46538f84abed9470ab4f00
 <<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 <<<<<<< a9c83cc14bbcf51ca04c627fdba90a4672a077be
 <<<<<<< 165ad2252775e1b3114de7edd16e75c12b0cb889
 =======
+=======
+<<<<<<< 81310585d7bccfbcff7c41ea327bea39e2a48e00
+>>>>>>> Testes depositar
 <<<<<<< 2164c25943927943ea9c6b1da4b86d38d7ee859f
 >>>>>>> Primeiro commit
    /* kineControl::linha_preta(motor);
@@ -49,6 +53,7 @@ int main(int argc, char **argv)
     kineControl::alinhar(motor);  
 =======
     kineControl::linha_preta(motor);
+<<<<<<< 55d7f5e5ba1bbef79f46538f84abed9470ab4f00
 <<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 =======
     kineControl::alinhar_containerdepositado(motor);
@@ -94,6 +99,15 @@ int main(int argc, char **argv)
     kineControl::esquerda(motor);  
     kineControl::ir_doca(motor); 
 >>>>>>> Primeiro commit
+=======
+=======
+    kineControl::alinhar_containerdepositado(motor);
+>>>>>>> Testes depositar
+    /*kineControl::esquerda(motor);  
+    kineControl::ir_doca(motor);  
+    kineControl::ir_quadrante(motor);  
+    kineControl::direita(motor);*/
+>>>>>>> Testes depositar
     
     return 0;
 >>>>>>> Primeiro commit
