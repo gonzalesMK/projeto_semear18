@@ -17,7 +17,6 @@ int main(int argc, char **argv)
 
     projeto_semear::DepositarContainer srv;
 
-    srv.request.code = 1;
     depositar_client.call(srv);
     return 0;
 }
