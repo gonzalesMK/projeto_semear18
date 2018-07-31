@@ -33,6 +33,7 @@ add_service_files(
   FILES
   GetPose.srv
   PathPlanning.srv
+	DepositarContainer.srv
   #AlignRobot.srv
 )
 
@@ -152,3 +153,16 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(depositar_server src/depositar_server.cpp)
+target_link_libraries(depositar_server
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(depositar_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(depositar_client src/depositar_client.cpp)
+target_link_libraries(depositar_client
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
