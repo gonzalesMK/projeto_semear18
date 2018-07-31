@@ -17,16 +17,6 @@ int main(int argc, char **argv)
 
     projeto_semear::DepositarContainer srv;
 
-<<<<<<< HEAD
-<<<<<<< 895e33a0c017e2b2cc5b476424d7b09857cb7ef3
-<<<<<<< 3b2c4a9aa6091ee9d756a04c3bbf9cbd71c3032f
-=======
-    srv.request.code = 1;
->>>>>>> Cliente teste depositar_container
-=======
->>>>>>> Arrumando o serviço
-=======
->>>>>>> 078292d76bcf1d5a143daf6018daace08842d8fe
     depositar_client.call(srv);
     return 0;
 }
