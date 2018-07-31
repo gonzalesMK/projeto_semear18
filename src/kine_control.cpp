@@ -257,10 +257,7 @@ void kineControl::esquerda(kineControl::robot &robot)
     while (now - begin < ros::Duration(3))
     {
         // Andar uma distância predefinida
-        velocidade.linear.x = (
-            - (int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO)
-            + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)
-        ) * 0.025;
+        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.linear.y = -0.1;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
@@ -314,9 +311,9 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
 
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
-    
+
     // É possível alinhar com a linha verde, se necessário
-    
+
     kineControl::linha_preta(robot);
 }
 void kineControl::direita(kineControl::robot &robot)
@@ -325,7 +322,6 @@ void kineControl::direita(kineControl::robot &robot)
 
     ROS_INFO_STREAM("Transição do quadrante para DIREITA ");
 
-
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
     geometry_msgs::Twist velocidade;
@@ -333,10 +329,7 @@ void kineControl::direita(kineControl::robot &robot)
     while (now - begin < ros::Duration(3))
     {
         // Andar uma distância predefinida
-        velocidade.linear.x = (
-            - (int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO)
-            + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)
-        ) * 0.025;
+        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.linear.y = 0.1;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
@@ -532,4 +525,9 @@ void kineControl::linha_preta(kineControl::robot &robot)
     velocidade.angular.z = 0;
 
     robot.setVelocity(velocidade);
+}
+
+void kineControl::descobrir_cor(kineControl::robot &robot)
+{
+    
 }
