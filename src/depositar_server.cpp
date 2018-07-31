@@ -1,7 +1,11 @@
+#include <ros/ros.h>
+#include <projeto_semear/DepositarContainer.h>
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
 #include <projeto_semear/kine_control.h>
+
+int code = 1;
 
 /* Código para depositar o container na doca correta.
   Para execução do código, considera-se que o robô já está alinhado à doca certa e que 
@@ -28,13 +32,13 @@ void activeCb()
   ROS_INFO("Goal just went active");
 }
 
-int main(int argc, char** argv)
+bool depositar_container(projeto_semear::DepositarContainer::Request &req,
+         projeto_semear::DepositarContainer::Response &res)
 {
-  ros::init(argc, argv, "Eletroima_client");
+
   ros::NodeHandle nh;
 
   kineControl::robot motor;
-
   ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
   ros::Duration(0.5).sleep();
   ros::spinOnce();
@@ -46,7 +50,6 @@ int main(int argc, char** argv)
 
   Client client("moveEletroima", true); 
   client.waitForServer();
-  int code = 0; //variável que guarda quantos containers têm em uma pilha
 
   projeto_semear::moveEletroimaGoal goal;
   
@@ -72,18 +75,24 @@ int main(int argc, char** argv)
       client.waitForResult(ros::Duration());
       code++;
   }
-  //andar uma distância determinada para fica no meio do container já depositado
-  goal.deslocamento.angular.z = 1;
-  goal.deslocamento.linear.z = 0;
-  client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  client.waitForResult(ros::Duration());
 
   ROS_INFO_STREAM("desligando o eletroima");
   msg.data = false;
   pub.publish(msg);
 
-
   client.waitForResult(ros::Duration());
-
   return 0;
+}
+
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "depositar_container");
+    ros::NodeHandle node;
+    
+    // Cria o serviço
+    ros::ServiceServer service = node.advertiseService("depositar_container", depositar_container);
+
+    ros::spin();
+
+    return 0;
 }
