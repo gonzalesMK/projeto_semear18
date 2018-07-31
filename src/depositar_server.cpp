@@ -5,8 +5,11 @@
 #include <std_msgs/Bool.h>
 #include <projeto_semear/kine_control.h>
 
+<<<<<<< f3d0d2c15ea6e3b66448dc4772208d0b391f94ea
 int code = 1;
 
+=======
+>>>>>>> Serviço depositar_container
 /* Código para depositar o container na doca correta.
   Para execução do código, considera-se que o robô já está alinhado à doca certa e que 
   o container já está na posição correta na garra para ser depositado.
@@ -56,24 +59,39 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
 
+<<<<<<< f3d0d2c15ea6e3b66448dc4772208d0b391f94ea
   if(code == 0){
+=======
+  if(req.code == 0){
+>>>>>>> Serviço depositar_container
       goal.deslocamento.angular.z = 0;
       goal.deslocamento.linear.x = 0;
       goal.deslocamento.linear.y = 0;
       goal.deslocamento.linear.z = -0.137;
       client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
       client.waitForResult(ros::Duration());
+<<<<<<< f3d0d2c15ea6e3b66448dc4772208d0b391f94ea
       code++;
+=======
+      req.code++;
+>>>>>>> Serviço depositar_container
   }else{
       //alinhar com o container de baixo
       kineControl::alinhar_containerdepositado(motor);
       goal.deslocamento.angular.z = 0;
       goal.deslocamento.linear.x = 0;
       goal.deslocamento.linear.y = 0;
+<<<<<<< f3d0d2c15ea6e3b66448dc4772208d0b391f94ea
       goal.deslocamento.linear.z = -0.137+(code*0.02); //0,2 chute da altura do container
       client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
       client.waitForResult(ros::Duration());
       code++;
+=======
+      goal.deslocamento.linear.z = -0.137+(req.code*0.02); //0,2 chute da altura do container
+      client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+      client.waitForResult(ros::Duration());
+      req.code++;
+>>>>>>> Serviço depositar_container
   }
 
   ROS_INFO_STREAM("desligando o eletroima");
@@ -84,7 +102,10 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   return 0;
 }
 
+<<<<<<< f3d0d2c15ea6e3b66448dc4772208d0b391f94ea
 
+=======
+>>>>>>> Serviço depositar_container
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "depositar_container");
