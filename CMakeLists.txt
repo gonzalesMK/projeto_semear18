@@ -153,12 +153,15 @@ target_link_libraries(depositar_container
 )
 add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+<<<<<<< HEAD
 <<<<<<< c4a561123ef9295e5956866ed09dd400bb8ce443
 <<<<<<< 2c46a2b66ba647f7d62e380a82543e05b67d08b3
 <<<<<<< af1c596b3bf6c68830cd7427b35d4db629194fdc
 <<<<<<< f0f03972ca605d198e7bab65fbea3c85f33eca65
 =======
 >>>>>>> Atalização para adição de serviço depositar container
+=======
+>>>>>>> 078292d76bcf1d5a143daf6018daace08842d8fe
 add_executable(depositar_server src/depositar_server.cpp)
 target_link_libraries(depositar_server
   ${catkin_LIBRARIES}
@@ -171,6 +174,7 @@ target_link_libraries(depositar_client
   ${catkin_LIBRARIES}
   motor_library
 )
+<<<<<<< HEAD
 <<<<<<< c4a561123ef9295e5956866ed09dd400bb8ce443
 add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 =======
@@ -189,3 +193,6 @@ add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 =======
 add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 >>>>>>> Atalização para adição de serviço depositar container
+=======
+add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+>>>>>>> 078292d76bcf1d5a143daf6018daace08842d8fe
