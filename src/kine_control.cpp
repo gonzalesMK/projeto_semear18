@@ -616,5 +616,4 @@ void kineControl::alinhar_containerdepositado(kineControl::robot &robot){
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
-
 }
