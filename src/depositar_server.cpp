@@ -5,6 +5,8 @@
 #include <std_msgs/Bool.h>
 #include <projeto_semear/kine_control.h>
 
+int code = 1;
+
 /* Código para depositar o container na doca correta.
   Para execução do código, considera-se que o robô já está alinhado à doca certa e que 
   o container já está na posição correta na garra para ser depositado.
@@ -54,24 +56,24 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
 
-  if(req.code == 0){
+  if(code == 0){
       goal.deslocamento.angular.z = 0;
       goal.deslocamento.linear.x = 0;
       goal.deslocamento.linear.y = 0;
       goal.deslocamento.linear.z = -0.137;
       client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
       client.waitForResult(ros::Duration());
-      req.code++;
+      code++;
   }else{
       //alinhar com o container de baixo
       kineControl::alinhar_containerdepositado(motor);
       goal.deslocamento.angular.z = 0;
       goal.deslocamento.linear.x = 0;
       goal.deslocamento.linear.y = 0;
-      goal.deslocamento.linear.z = -0.137+(req.code*0.02); //0,2 chute da altura do container
+      goal.deslocamento.linear.z = -0.137+(code*0.02); //0,2 chute da altura do container
       client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
       client.waitForResult(ros::Duration());
-      req.code++;
+      code++;
   }
 
   ROS_INFO_STREAM("desligando o eletroima");
@@ -81,6 +83,7 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   client.waitForResult(ros::Duration());
   return 0;
 }
+
 
 int main(int argc, char **argv)
 {
