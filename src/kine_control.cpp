@@ -642,9 +642,13 @@ void kineControl::alinhar_containerdepositado(kineControl::robot &robot){
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
+<<<<<<< 6868852f233cef23f9b43962ab7b48075f40e326
 <<<<<<< a05c65c5599bd1b71706340c731f9737dfa23fb5
 }
 =======
 
 }
 >>>>>>> Configuração dos sensores da frente
+=======
+}
+>>>>>>> Correção na função alinhar_containerdepositado
