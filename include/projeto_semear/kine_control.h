@@ -53,7 +53,8 @@ enum color
 {
     PRETO,
     AZUL_VERDE,
-    BRANCO
+    BRANCO,
+    UNKNOWN
 };
 
 class robot
