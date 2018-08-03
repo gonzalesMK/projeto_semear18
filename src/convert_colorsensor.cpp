@@ -41,8 +41,8 @@ int main(int argc, char **argv)
     ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBR", 1000, callbackBR);
     ros::Subscriber subFR = n.subscribe("/AMR/lineSensorFR", 1000, callbackFR);
     ros::Subscriber subFL = n.subscribe("/AMR/lineSensorFL", 1000, callbackFL);
-    ros::Subscriber subGarraR = n.subscribe("/AMR/ColorSensorGarraL", 1000, callbackGarraR);
-    ros::Subscriber subGarraL = n.subscribe("/AMR/ColorSensorGarraR", 1000, callbackGarraL);
+    ros::Subscriber subGarraR = n.subscribe("/AMR/ColorSensorGarraR", 1000, callbackGarraR);
+    ros::Subscriber subGarraL = n.subscribe("/AMR/ColorSensorGarraL", 1000, callbackGarraL);
 
     
     
