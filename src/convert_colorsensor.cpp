@@ -52,8 +52,8 @@ int main(int argc, char **argv)
     pubBR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBR", 1);
     pubFR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFR", 1);
     pubFL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFL", 1);
-    pubGarraR = n.advertise<std_msgs::RGBA>("/image_converter/sensorGarraR", 1);
-    pubGarraL = n.advertise<std_msgs::RGBA>("/image_converter/sensorGarraL", 1);
+    pubGarraR = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraR", 1);
+    pubGarraL = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraL", 1);
     
 
     ros::spin();
