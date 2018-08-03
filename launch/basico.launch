@@ -12,4 +12,6 @@
 	
 	<node name="mapa" pkg="projeto_semear" type="mapa_container_server" respawn="false" output="screen"/>
 
+	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
+
 </launch>   
