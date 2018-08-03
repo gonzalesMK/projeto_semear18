@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <std_msgs/Float32.h>
+#include <std_msgs/ColorRGBA.h>
 
 #include <sensor_msgs/image_encodings.h>
 
@@ -51,8 +52,8 @@ int main(int argc, char **argv)
     pubBR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBR", 1);
     pubFR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFR", 1);
     pubFL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFL", 1);
-    pubGarraR = n.advertise<std_msgs::Float32>("/image_converter/sensorGarraR", 1);
-    pubGarraL = n.advertise<std_msgs::Float32>("/image_converter/sensorGarraL", 1);
+    pubGarraR = n.advertise<std_msgs::RGBA>("/image_converter/sensorGarraR", 1);
+    pubGarraL = n.advertise<std_msgs::RGBA>("/image_converter/sensorGarraL", 1);
     
 
     ros::spin();
@@ -91,15 +92,19 @@ void callbackFL(const sensor_msgs::ImageConstPtr &msg)
 
 void callbackGarraR(const sensor_msgs::ImageConstPtr &msg)
 {
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+    std_msgs::ColorRGBA message;
+    message.r = msg->data[0];
+    message.g = msg->data[1];
+    message.b = msg->data[2];
 
     pubGarraR.publish(message);
 }
 void callbackGarraL(const sensor_msgs::ImageConstPtr &msg)
 {
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+    std_msgs::ColorRGBA message;
+    message.r = msg->data[0];
+    message.g = msg->data[1];
+    message.b = msg->data[2];
 
     pubGarraL.publish(message);
 }
