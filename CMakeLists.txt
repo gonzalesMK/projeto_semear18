@@ -36,6 +36,7 @@ add_service_files(
   SetContainer.srv
   GetContainerInfo.srv
   MoveContainer.srv
+  DescobrirCor.srv
   #AlignRobot.srv
 )
 
@@ -162,4 +163,11 @@ target_link_libraries(mapa_container_demo
   motor_library
 )
 add_dependencies(mapa_container_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(descobrir_cor src/descobrir_cor.cpp)
+target_link_libraries(descobrir_cor
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(descobrir_cor ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
