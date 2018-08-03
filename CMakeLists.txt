@@ -148,10 +148,18 @@ target_link_libraries(navigating_server_demo
 )
 add_dependencies(navigating_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+
 add_executable(mapa_container_server src/mapa_container_server.cpp)
 target_link_libraries(mapa_container_server
   ${catkin_LIBRARIES}
   motor_library
 )
 add_dependencies(mapa_container_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(mapa_container_demo src/mapa_container_demo.cpp)
+target_link_libraries(mapa_container_demo
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(mapa_container_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 

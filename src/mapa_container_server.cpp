@@ -15,6 +15,29 @@ enum cores
     DESCONHECIDO = 255
 };
 
+bool checar_limites(int inteiro)
+{
+    if (inteiro >= 0 && inteiro <= 14)
+    {
+        return true;
+    }
+    ROS_ERROR_STREAM("LUGAR FORA DOS LIMITES DE 0 a 14: " << inteiro);
+
+    return false;
+}
+
+bool checar_cores(std::uint8_t cor)
+{
+    if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERMELHO && cor != cores::DESCONHECIDO))
+    {
+        return true;
+    }
+    ROS_ERROR_STREAM("Essa cor nao existe ! : " << (int) cor);
+
+
+    return false;
+}
+
 std::vector<std::vector<std::uint8_t>> MAPA =
     {
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 0
@@ -37,13 +60,26 @@ std::vector<std::vector<std::uint8_t>> MAPA =
 bool getContainerInfo(projeto_semear::GetContainerInfo::Request &req,
                       projeto_semear::GetContainerInfo::Response &res)
 {
+    if (!checar_limites(req.where))
+    {
+        return false;
+    }
     res.lista = MAPA[req.where];
+
     return true;
 }
 
 bool setContainer(projeto_semear::SetContainer::Request &req,
                   projeto_semear::SetContainer::Response &res)
 {
+    if (!checar_limites(req.where))
+    {
+        return false;
+    }
+    else if (!checar_cores(req.color))
+    {
+        return false;
+    }
 
     MAPA[req.where].back() = req.color;
     return true;
@@ -52,6 +88,11 @@ bool setContainer(projeto_semear::SetContainer::Request &req,
 bool moveContainer(projeto_semear::MoveContainer::Request &req,
                    projeto_semear::MoveContainer::Response &res)
 {
+
+    if (!checar_limites(req.where))
+    {
+        return false;
+    }
     unsigned char cor = MAPA[req.where].back();
 
     if (cor == cores::DESCONHECIDO)
