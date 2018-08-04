@@ -45,15 +45,6 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     Client client("moveEletroima", true); // true -> don't need ros::spin()
     client.waitForServer();
 
-    // Mover garra para Frente:
-    projeto_semear::moveEletroimaGoal goal;
-
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = -0.15;
-    goal.deslocamento.linear.z = 0;
-    goal.deslocamento.angular.z = 0;
-    client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-
     // Usar reconhecimento de cor para saber quando os containers começaram
     // A fazer
 
@@ -84,7 +75,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         ROS_ERROR(" Localizacao do robo pode estar errada! Nenhuma foi escolhida");
         return false;
     }
-    
+
     ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
     // Pegar informação das pilhas
     projeto_semear::GetContainerInfo get_esq;
@@ -126,6 +117,15 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         return true;
     }
 
+    // Mover garra para Frente:
+    projeto_semear::moveEletroimaGoal goal;
+
+    goal.deslocamento.linear.x = 0;
+    goal.deslocamento.linear.y = -0.15;
+    goal.deslocamento.linear.z = 0;
+    goal.deslocamento.angular.z = 0;
+    client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+
     // Dividir nos três casos: o da esquerda já é conhecido, o da direita ja é conhecido e nenhum é conhecido, levando em consideração
     // a altura das pilhas
     projeto_semear::SetContainer set_msg;
@@ -140,14 +140,16 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             ROS_INFO_STREAM("Cor Esquerda:  " << cor_garra_L << " | Cor Direita: " << cor_garra_R);
             set_msg.request.where = esq;
             set_msg.request.color = cor_garra_L;
-            if (cor_garra_L == set_msg.request.DESCONHECIDO){
+            if (cor_garra_L == set_msg.request.DESCONHECIDO)
+            {
                 ROS_ERROR("Container da esquerda nao foi identificado");
             }
             set_client.call(set_msg);
 
             set_msg.request.where = dir;
             set_msg.request.color = cor_garra_R;
-            if (cor_garra_R == set_msg.request.DESCONHECIDO){
+            if (cor_garra_R == set_msg.request.DESCONHECIDO)
+            {
                 ROS_ERROR("Container da direita nao foi identificado");
             }
             set_client.call(set_msg);
@@ -172,16 +174,18 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
 
-            ros::spinOnce(); // atualiza a leitura da garra
+            // Realiza a leitura
+            ros::spinOnce();
             ROS_INFO_STREAM("Cor Esquerda:  " << cor_garra_L << " | Cor Direita: " << cor_garra_R);
             set_msg.request.where = esq;
             set_msg.request.color = cor_garra_L;
-            if (cor_garra_L == set_msg.request.DESCONHECIDO){
+            if (cor_garra_L == set_msg.request.DESCONHECIDO)
+            {
                 ROS_ERROR("Container da esquerda nao foi identificado");
             }
             set_client.call(set_msg);
 
-            // Coloca a garra no lugar:
+            // Levanta a garra
             goal.deslocamento.linear.x = 0;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0.04 * (4 - size_esq);
@@ -190,8 +194,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
 
-            // Leitura do da direita
-            // Girar a garra 90graus e fazer apenas a leitura da direita
+            // Leva a garra para direita
             goal.deslocamento.linear.x = -0.04;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
@@ -202,19 +205,37 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             // Desce até o container
             goal.deslocamento.linear.x = 0.0;
             goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
+            goal.deslocamento.linear.z = -0.04 * (4 - size_dir);
             goal.deslocamento.angular.z = 0;
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
 
-            ros::spinOnce(); // atualiza a leitura da garra
+            // Realiza a leitura
+            ros::spinOnce();
             ROS_INFO_STREAM("Cor Esquerda:  " << cor_garra_L << " | Cor Direita: " << cor_garra_R);
             set_msg.request.where = dir;
             set_msg.request.color = cor_garra_R;
-            if (cor_garra_R == set_msg.request.DESCONHECIDO){
+            if (cor_garra_R == set_msg.request.DESCONHECIDO)
+            {
                 ROS_ERROR("Container da direita nao foi identificado");
             }
             set_client.call(set_msg);
+
+            // Levanta a Garra
+            goal.deslocamento.linear.x = 0.0;
+            goal.deslocamento.linear.y = 0;
+            goal.deslocamento.linear.z = 0.04 * (4 - size_dir);
+            goal.deslocamento.angular.z = 0;
+            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+            client.waitForResult(ros::Duration());
+
+            // Leva a garra ao meio
+            goal.deslocamento.linear.x = 0.02;
+            goal.deslocamento.linear.y = 0;
+            goal.deslocamento.linear.z = 0;
+            goal.deslocamento.angular.z = -3.14 / 4;
+            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+            client.waitForResult(ros::Duration());
         }
     }
     else if (ultimo_container_esq == get_esq.response.DESCONHECIDO)
@@ -235,18 +256,39 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
-        ros::spinOnce(); // atualiza a leitura da garra
+        // Realiza a leitura
+        ros::spinOnce(); 
         ROS_INFO_STREAM("Cor Esquerda:  " << cor_garra_L << " | Cor Direita: " << cor_garra_R);
         set_msg.request.where = esq;
         set_msg.request.color = cor_garra_L;
-        if (cor_garra_L == set_msg.request.DESCONHECIDO){
-                ROS_ERROR("Container da esquerda nao foi identificado");
-            }
+        if (cor_garra_L == set_msg.request.DESCONHECIDO)
+        {
+            ROS_ERROR("Container da esquerda nao foi identificado");
+        }
         set_client.call(set_msg);
+
+
+        // Levanta a Garra
+        goal.deslocamento.linear.x = 0.0;
+        goal.deslocamento.linear.y = 0;
+        goal.deslocamento.linear.z = 0.04 * (4 - size_esq);
+        goal.deslocamento.angular.z = 0;
+        client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+        client.waitForResult(ros::Duration());
+
+        // Girar a garra 90 graus e vai pro meio
+        goal.deslocamento.linear.x = - 0.02;
+        goal.deslocamento.linear.y = 0;
+        goal.deslocamento.linear.z = 0;
+        goal.deslocamento.angular.z = - 3.14 / 4;
+        client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+        client.waitForResult(ros::Duration());
+
+
     }
     else if (ultimo_container_dir == get_dir.response.DESCONHECIDO)
     {
-        // Girar a garra 90graus e fazer apenas a leitura da direita
+        // Girar a garra 90graus e leva para esquerda
         goal.deslocamento.linear.x = -0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
@@ -257,20 +299,46 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Desce até o container
         goal.deslocamento.linear.x = 0.0;
         goal.deslocamento.linear.y = 0;
-        goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
+        goal.deslocamento.linear.z = -0.04 * (4 - size_dir);
         goal.deslocamento.angular.z = 0;
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
-        ros::spinOnce(); // atualiza a leitura da garra
+        // Realiza a leitura
+        ros::spinOnce(); 
         ROS_INFO_STREAM("Cor Esquerda:  " << cor_garra_L << " | Cor Direita: " << cor_garra_R);
         set_msg.request.where = dir;
         set_msg.request.color = cor_garra_R;
-        if (cor_garra_R == set_msg.request.DESCONHECIDO){
-                ROS_ERROR("Container da direita nao foi identificado");
-            }
+        if (cor_garra_R == set_msg.request.DESCONHECIDO)
+        {
+            ROS_ERROR("Container da direita nao foi identificado");
+        }
         set_client.call(set_msg);
+
+        // Levanta a Garra
+        goal.deslocamento.linear.x = 0.0;
+        goal.deslocamento.linear.y = 0;
+        goal.deslocamento.linear.z = 0.04 * (4 - size_dir);
+        goal.deslocamento.angular.z = 0;
+        client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+        client.waitForResult(ros::Duration());
+
+        // Girar a garra 90 graus e vai pro meio
+        goal.deslocamento.linear.x = 0.02;
+        goal.deslocamento.linear.y = 0;
+        goal.deslocamento.linear.z = 0;
+        goal.deslocamento.angular.z = - 3.14 / 4;
+        client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+        client.waitForResult(ros::Duration());
+
     }
+
+    // Retorna a garra para trás
+    goal.deslocamento.linear.x = 0;
+    goal.deslocamento.linear.y = 0.15;
+    goal.deslocamento.linear.z = 0;
+    goal.deslocamento.angular.z = 0;
+    client.sendGoal(goal, doneCb, activeCb, feedbackCb);
 
     return true;
 }

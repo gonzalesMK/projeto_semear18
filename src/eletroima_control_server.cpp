@@ -26,7 +26,7 @@
 typedef actionlib::SimpleActionServer<projeto_semear::moveEletroimaAction> Server;
 
 // Constants
-const double FREQUENCIA = 10;           // Hertz
+const double FREQUENCIA = 20;           // Hertz
 const double VEL_X = 0.1 / FREQUENCIA; // metros/segundo
 const double VEL_Y = 0.1 / FREQUENCIA; // metros/segundo
 const double VEL_Z = 0.1 / FREQUENCIA; // metros/segundo
@@ -88,22 +88,22 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
     {
 
         // Preenche a mensagem a ser publicada
-        if (dist_w > W)
+        if (dist_w >= W)
         {
             pose_msg.angular.z += sent_w * W; // Soma à posição atual um deslocamento no sentido correto
             dist_w += -W;                     // Variável que controla o deslocamento
         }
-        if (dist_x > VEL_X)
+        if (dist_x >= VEL_X)
         {
             pose_msg.linear.x += sent_x * VEL_X;
             dist_x += -VEL_X;
         }
-        if (dist_y > VEL_Y)
+        if (dist_y >= VEL_Y)
         {
             pose_msg.linear.y += sent_y * VEL_Y;
             dist_y += -VEL_Y;
         }
-        if (dist_z > VEL_Z)
+        if (dist_z >= VEL_Z)
         {
             pose_msg.linear.z += sent_z * VEL_Z;
             dist_z += -VEL_Z;
