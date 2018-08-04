@@ -11,10 +11,22 @@
 #include <std_msgs/ColorRGBA.h>
 #include <std_msgs/Bool.h>
 
+/* Função responsável por, após o robô estar posicionado em relação aos containers, fazer a leitura das cores
+dos containers superiores. 
+
+Ele depende do posicionamento atual do robô, para saber em qual pilha olhar, e do mapa de containers, para saber
+quais containers precisam ter as cores descobertas.
+
+O serviço não tem entrada nem saida... poderia ser transformado numa função. */
+
+
+// Funções padrões para actionLib
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback); // Função de feedback do ActionLib
 void doneCb(const actionlib::SimpleClientGoalState &state,                      // Função executada quando a tarefa termina
             const projeto_semear::moveEletroimaResultConstPtr &result);
-void activeCb(); // Called once when the goal becomes active
+void activeCb(); 
+
+// Essas duas funções classificam a saída do sensor RGB em suas cores respectivas
 void callbackGarraR(const std_msgs::ColorRGBA &msg);
 void callbackGarraL(const std_msgs::ColorRGBA &msg);
 
