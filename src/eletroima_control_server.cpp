@@ -90,7 +90,7 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
         // Preenche a mensagem a ser publicada
         if (dist_w >= W)
         {
-            pose_msg.angular.z += sent_w * W; // Soma à posição atual um deslocamento no sentido correto
+            pose_msg.angular.z = sent_w * W; // Soma à posição atual um deslocamento no sentido correto
             dist_w += -W;                     // Variável que controla o deslocamento
         }
         if (dist_x >= VEL_X)
@@ -115,7 +115,7 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
         // Send feedback message:
         feedback.distance = sqrt(pow(dist_x, 2) + pow(dist_y, 2) + pow(dist_z, 2) + pow(dist_w, 2));
         as->publishFeedback(feedback);
-        ROS_INFO_STREAM("W: " << dist_w <<  "X: "<< dist_x << "Y: " << dist_y << "Z: " << dist_z);
+        ROS_INFO_STREAM("W: " << dist_w <<  "vel W: " << pose_msg.angular.z);
         // Check if Final Pose is reached.
         if (dist_w < W && dist_x < VEL_X && dist_y < VEL_Y && dist_z < VEL_Z)
             succeed = true;

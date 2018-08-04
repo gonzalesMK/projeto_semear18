@@ -28,7 +28,7 @@ bool checar_limites(int inteiro)
 
 bool checar_cores(std::uint8_t cor)
 {
-    if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERMELHO && cor != cores::DESCONHECIDO))
+    if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERDE  && cor != cores::DESCONHECIDO))
     {
         return true;
     }
