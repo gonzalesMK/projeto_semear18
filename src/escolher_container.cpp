@@ -17,26 +17,42 @@
 #include <projeto_semear/EscolherContainer.h>
 #include <projeto_semear/Colors.h>
 
-
-void escolha(projeto_semear18::EscolherContainer::Request &req,
-         projeto_semear18::EscolherContainer::Response &res)
+bool escolha(projeto_semear::EscolherContainer::Request &req,
+             projeto_semear::EscolherContainer::Response &res)
+{
+    if (req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN)
     {
-        if(req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN){res.container_escolhido = 0}  //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
-        else if(req.Cor_Direita.cor == req.Cor_Direita.BLUE){res.container_escolhido = 1} //caso o da direita seja azul, ja pega ele
-        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.GREEN){res.container_escolhido = 0}
-        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.RED){res.container_escolhido = 0}
-        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Direita.BLUE){res.container_escolhido = 1}
-        else if(req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Esquerda.RED){res.container_escolhido = 2}
-        
+        res.container_escolhido = 0;
+    } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
+    else if (req.Cor_Direita.cor == req.Cor_Direita.BLUE)
+    {
+        res.container_escolhido = 1;
+    } //caso o da direita seja azul, ja pega ele
+    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.GREEN)
+    {
+        res.container_escolhido = 0;
     }
+    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.RED)
+    {
+        res.container_escolhido = 0;
+    }
+    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Direita.BLUE)
+    {
+        res.container_escolhido = 1;
+    }
+    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Esquerda.RED)
+    {
+        res.container_escolhido = 2;
+    }
+}
 
- int main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     ros::init(argc, argv, "escolher_container");
     ros::NodeHandle node;
 
-    colors_client = node.serviceClient<projeto_semear::Colors>("EscolherContainer", escolha); // Requisita o serviço EscolherContain
-    ROS_INFO("Preparado para escolher o container"); 
+    ros::ServiceServer colors_client = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContain
+    ROS_INFO("Preparado para escolher o container");
     ros::spinOnce();
 
     return 0;

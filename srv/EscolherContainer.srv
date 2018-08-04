@@ -7,4 +7,4 @@ projeto_semear/Colors Cor_Direita   #idem do de cima
 ---
 #qual container escolhi:
 
-uint8[] container_escolhido # 0=esquerda, 1 = direita, 2 = só tem vermelho aqui
+uint8 container_escolhido # 0=esquerda, 1 = direita, 2 = só tem vermelho aqui

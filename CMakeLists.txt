@@ -32,6 +32,7 @@ add_message_files(
 # Generate services in the 'srv' folder
 add_service_files(
   FILES
+  EscolherContainer.srv
   GetPose.srv
   PathPlanning.srv
   #AlignRobot.srv
