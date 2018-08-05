@@ -174,7 +174,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             goal.deslocamento.linear.x = 0.02;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = 3.14 / 4;
+            goal.deslocamento.angular.z = 3.14 / 2;
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
 
@@ -245,7 +245,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             goal.deslocamento.linear.x = 0.02;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = -3.14 / 4;
+            goal.deslocamento.angular.z = -3.14 / 2;
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
         }
@@ -256,7 +256,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         goal.deslocamento.linear.x = 0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
-        goal.deslocamento.angular.z = 3.14 / 4;
+        goal.deslocamento.angular.z = 3.14 / 2;
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
@@ -292,7 +292,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         goal.deslocamento.linear.x = - 0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
-        goal.deslocamento.angular.z = - 3.14 / 4;
+        goal.deslocamento.angular.z = - 3.14 / 2;
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
@@ -304,7 +304,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         goal.deslocamento.linear.x = -0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
-        goal.deslocamento.angular.z = 3.14 / 4;
+        goal.deslocamento.angular.z = 3.14 / 2;
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
@@ -339,7 +339,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         goal.deslocamento.linear.x = 0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
-        goal.deslocamento.angular.z = - 3.14 / 4;
+        goal.deslocamento.angular.z = - 3.14 / 2;
         client.sendGoal(goal, doneCb, activeCb, feedbackCb);
         client.waitForResult(ros::Duration());
 
