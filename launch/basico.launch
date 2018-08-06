@@ -10,5 +10,5 @@
 
     	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
 
-		<node name="eletroima_">
+		<node name="eletroima_control_server" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
 </launch>   
