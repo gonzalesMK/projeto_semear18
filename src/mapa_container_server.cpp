@@ -4,9 +4,7 @@
 #include <projeto_semear/SetContainer.h>
 #include <projeto_semear/MoveContainer.h>
 
-/** 
-*/
-
+// Cores dos containers
 enum cores
 {
     AZUL = 13,
@@ -15,6 +13,7 @@ enum cores
     DESCONHECIDO = 255
 };
 
+// Função para checar se o número enviado para a posição da pilha está entre 0 e 14
 bool checar_limites(int inteiro)
 {
     if (inteiro >= 0 && inteiro <= 14)
@@ -26,6 +25,7 @@ bool checar_limites(int inteiro)
     return false;
 }
 
+// Função para checar se a cor enviada é VERMELHO, AZUL, VERDE ou DESCONHECIDO
 bool checar_cores(std::uint8_t cor)
 {
     if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERDE  && cor != cores::DESCONHECIDO))
@@ -38,6 +38,7 @@ bool checar_cores(std::uint8_t cor)
     return false;
 }
 
+// Vetor para armazenar o conhecimento sobre os containers
 std::vector<std::vector<std::uint8_t>> MAPA =
     {
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 0
@@ -57,6 +58,13 @@ std::vector<std::vector<std::uint8_t>> MAPA =
         {},                                                                                   // 14
 };
 
+/* Serviço para pegar  informações sobre a pilha do container:
+
+    Request:
+        where   -> qual pilha você quer receber informação
+    Response:
+        lista   -> lista (vetor) dos containers que estão na pilha requisitada, com as cores
+*/
 bool getContainerInfo(projeto_semear::GetContainerInfo::Request &req,
                       projeto_semear::GetContainerInfo::Response &res)
 {
@@ -69,6 +77,11 @@ bool getContainerInfo(projeto_semear::GetContainerInfo::Request &req,
     return true;
 }
 
+/* Serviço para colocar a cor dos containers:
+
+    Request:
+        where   -> qual  a pilha do container que você vai enviar informação da cor (o código muda a cor do ultimo container da pilha automaticamente)
+*/
 bool setContainer(projeto_semear::SetContainer::Request &req,
                   projeto_semear::SetContainer::Response &res)
 {
@@ -85,6 +98,11 @@ bool setContainer(projeto_semear::SetContainer::Request &req,
     return true;
 }
 
+/* Serviço para avisar que o container mudou de posição:
+
+    Request:
+        where   -> qual a pilha do container que você vai enviar mover ( o código move automaticamente o último container da pilha para o local correto)
+*/
 bool moveContainer(projeto_semear::MoveContainer::Request &req,
                    projeto_semear::MoveContainer::Response &res)
 {
