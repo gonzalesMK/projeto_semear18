@@ -8,6 +8,7 @@
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/math/constants/constants.hpp>
 
+
 /** Esse código é responsável por controlar o Eletroima do robô no V-REP
  * 
  * Mais especificamente, dentro do V-REP, há apenas a função para colocar a posição do
@@ -25,11 +26,11 @@
 typedef actionlib::SimpleActionServer<projeto_semear::moveEletroimaAction> Server;
 
 // Constants
-const double FREQUENCIA = 10;                                           // Hertz
-const double VEL_X = 0.1 / FREQUENCIA;                                  // metros/segundo
-const double VEL_Y = 0.1 / FREQUENCIA;                                  // metros/segundo
-const double VEL_Z = 0.1 / FREQUENCIA;                                  // metros/segundo
-const double W = boost::math::constants::pi<double>() / 2 / FREQUENCIA; // Rad/ segundo
+const double FREQUENCIA = 20;           // Hertz
+const double VEL_X = 0.1 / FREQUENCIA; // metros/segundo
+const double VEL_Y = 0.1 / FREQUENCIA; // metros/segundo
+const double VEL_Z = 0.1 / FREQUENCIA; // metros/segundo
+const double W =  boost::math::constants::pi<double>() / 4 / FREQUENCIA ;      // Rad/ segundo
 
 ros::Publisher eletro_twist;
 
@@ -52,42 +53,18 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
         catch (tf::TransformException ex)
         {
             ros::Duration(1.0).sleep();
-            ROS_ERROR("Não foi possível pegar tf do Eletroima");
         }
     }
-
-    while (true)
-    {
-        try
-        {
-            // A rotação é absoluta, portanto, o referencial é o próprio mundo
-            listener.lookupTransform("/world", "/eletroima",
-                                     ros::Time(0), orientation_transform);
-
-            break;
-        }
-        catch (tf::TransformException ex)
-        {
-            ros::Duration(1.0).sleep();
-            ROS_ERROR("Não foi possível pegar rotação do Eletroima");
-        }
-    }
-
-    // Conversão de Quartenion para Roll,Pitch,Yaw
-    tf::Matrix3x3 m(orientation_transform.getRotation());
-    double roll, pitch, yaw;
-    m.getRPY(roll, pitch, yaw);
 
     // Create Pose message to send to V-REP
     geometry_msgs::Twist pose_msg;
-    pose_msg.angular.z = yaw;
-    pose_msg.angular.y = pitch;
-    pose_msg.angular.x = roll;
+    pose_msg.angular.z = 0; 
+    pose_msg.angular.y = 0;
+    pose_msg.angular.x = 0;
     pose_msg.linear.x = pose_transform.getOrigin().x();
     pose_msg.linear.y = pose_transform.getOrigin().y();
     pose_msg.linear.z = pose_transform.getOrigin().z();
-    ROS_INFO_STREAM("pose_msg: row:" << roll << ", pitch: " << pitch << ", yaw: " << yaw);
-
+    
     // Distância a ser percorrida em cada direção
     double dist_x = fabs(goal->deslocamento.linear.x);
     double dist_y = fabs(goal->deslocamento.linear.y);
@@ -107,57 +84,46 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
     ros::Rate r(FREQUENCIA);
     bool succeed = false;
     ros::NodeHandle nh;
-    int j=0;
     while (!succeed && nh.ok())
     {
-        j = 0;
+
         // Preenche a mensagem a ser publicada
-        if (fabs(dist_w) > W)
+        if (dist_w >= W)
         {
-            pose_msg.angular.z += sent_w * W; // Soma à posição atual um deslocamento no sentido correto
-            dist_w += -W;   
-            j = 1;                  // Variável que controla o deslocamento
+            pose_msg.angular.z = sent_w * W; // Soma à posição atual um deslocamento no sentido correto
+            dist_w += -W;                     // Variável que controla o deslocamento
         }
-        if (fabs(dist_x) > VEL_X)
+        if (dist_x >= VEL_X)
         {
             pose_msg.linear.x += sent_x * VEL_X;
             dist_x += -VEL_X;
-            j = 1;
         }
-        if (fabs(dist_y) > VEL_Y)
+        if (dist_y >= VEL_Y)
         {
             pose_msg.linear.y += sent_y * VEL_Y;
             dist_y += -VEL_Y;
-            j = 1;
         }
-        if (fabs(dist_z) > VEL_Z)
+        if (dist_z >= VEL_Z)
         {
             pose_msg.linear.z += sent_z * VEL_Z;
             dist_z += -VEL_Z;
-            j = 1;
         }
 
         // Eletroima next pose publication
         eletro_twist.publish(pose_msg);
 
         // Send feedback message:
-        feedback.distance = sqrt(pow(dist_x, 2) + pow(dist_y, 2) + pow(dist_z, 2)+ pow(dist_w,2));
+        feedback.distance = sqrt(pow(dist_x, 2) + pow(dist_y, 2) + pow(dist_z, 2) + pow(dist_w, 2));
         as->publishFeedback(feedback);
-
+        ROS_INFO_STREAM("W: " << dist_w <<  "vel W: " << pose_msg.angular.z);
         // Check if Final Pose is reached.
-        if (j==0)
-        {
+        if (dist_w < W && dist_x < VEL_X && dist_y < VEL_Y && dist_z < VEL_Z)
             succeed = true;
-            ROS_INFO("SUCESSO");
-        }
         else
-        {
             r.sleep();
-        }
     }
 
     as->setSucceeded();
-    ROS_INFO("FINALIZADO");
 }
 
 int main(int argc, char **argv)

@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     Code != 0: já existe um ou mais containers na pilha*/
 
   if(code == 0){
-      goal.deslocamento.angular.z = 0;
+      goal.deslocamento.angular.z = 10;
       goal.deslocamento.linear.x = 0;
       goal.deslocamento.linear.y = 0;
       goal.deslocamento.linear.z = -0.137;
