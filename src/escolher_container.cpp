@@ -15,17 +15,20 @@
 
 #include <ros/ros.h>
 #include <projeto_semear/EscolherContainer.h>
+#include <projeto_semear/GetContainerInfo.h>
+#include <projeto_semear/Pose.h>
 #include <projeto_semear/Colors.h>
+#include <vector>
+#include <cstdint>
+
+
+projeto_semear::Pose pose;
 
 
 
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
-
-    //aqui, a partir da posição, terei a cor dos dois containers à frente
-
-    
 
     if (req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN)
     {
@@ -58,8 +61,30 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "escolher_container");
     ros::NodeHandle node;
 
-    ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContain
+    ros::ServiceClient get_client = node.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo"); //requisita o serviço de pegar info
+
+    projeto_semear::GetContainerInfo get_srv;
+
+    get_srv.request.where = pose.location * 2;   //pilha requisitada e essa conta existe pq é o da esquerda CONTA ERRADA!!!
+
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec = get_srv.response.lista;
+
+    std::uint8_t cor_esquerda = vec.front(); //a cor da esquerda é o primeiro elemento do vetor vec
+
+    get_srv.request.where = pose.location * 2 + 1;   //pilha requisitada e essa conta existe pq é o da direita CONTA ERRADA!!!
+
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec = get_srv.response.lista;
+
+    std::uint8_t cor_direita = vec.front(); //a cor da direita é o primeiro elemento do vetor vec
+
+
+    ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContainer
     ROS_INFO("Preparado para escolher o container");
+
     ros::spinOnce();
 
     return 0;
