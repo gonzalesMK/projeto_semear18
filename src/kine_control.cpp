@@ -248,15 +248,22 @@ void kineControl::esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transicaoo do quadrante para ESQUERDA ");
+    ROS_INFO_STREAM("Transicao do quadrante para ESQUERDA ");
 
-    // Andar uma distância predefinida
+    ros::Time begin = ros::Time::now();
+    ros::Time now = ros::Time::now();
     geometry_msgs::Twist velocidade;
-    velocidade.linear.x = 0;
-    velocidade.linear.y = -0.1;
-    velocidade.angular.z = 0;
-    robot.setVelocity(velocidade);
-    ros::Duration(3).sleep();
+    ros::Rate rate(10);
+    while (now - begin < ros::Duration(3))
+    {
+        // Andar uma distância predefinida
+        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.linear.y = -0.1;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        now = ros::Time::now();
+        rate.sleep();
+    }
 
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
@@ -285,12 +292,15 @@ void kineControl::ir_doca(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 
+    // É possível alinhar com a linha verde, se necessário
+
     // Alinhar
     kineControl::alinhar_doca(robot);
 }
 
-void kineControl::ir_quadrante(kineControl::robot &robot){
-    
+void kineControl::ir_quadrante(kineControl::robot &robot)
+{
+
     ROS_INFO_STREAM("Transicao da Doca para Quadrante");
     geometry_msgs::Twist velocidade;
 
@@ -298,9 +308,11 @@ void kineControl::ir_quadrante(kineControl::robot &robot){
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = PI / 3;
-    
+
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
+
+    // É possível alinhar com a linha verde, se necessário
 
     kineControl::linha_preta(robot);
 }
@@ -310,13 +322,20 @@ void kineControl::direita(kineControl::robot &robot)
 
     ROS_INFO_STREAM("Transição do quadrante para DIREITA ");
 
-    // Andar uma distância predefinida
+    ros::Time begin = ros::Time::now();
+    ros::Time now = ros::Time::now();
     geometry_msgs::Twist velocidade;
-    velocidade.linear.x = 0;
-    velocidade.linear.y = 0.1;
-    velocidade.angular.z = 0;
-    robot.setVelocity(velocidade);
-    ros::Duration(3).sleep();
+    ros::Rate rate(10);
+    while (now - begin < ros::Duration(3))
+    {
+        // Andar uma distância predefinida
+        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.linear.y = 0.1;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        now = ros::Time::now();
+        rate.sleep();
+    }
 
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
@@ -506,4 +525,9 @@ void kineControl::linha_preta(kineControl::robot &robot)
     velocidade.angular.z = 0;
 
     robot.setVelocity(velocidade);
+}
+
+void kineControl::descobrir_cor(kineControl::robot &robot)
+{
+    
 }

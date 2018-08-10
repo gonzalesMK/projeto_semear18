@@ -43,16 +43,18 @@ const double PI = 3.141592653589793238463;
 
 enum wheel
 {
-  BR,
-  BL,
-  FR,
-  FL
+    BR,
+    BL,
+    FR,
+    FL
 };
 
-enum color{
+enum color
+{
     PRETO,
     AZUL_VERDE,
-    BRANCO
+    BRANCO,
+    UNKNOWN
 };
 
 class robot
@@ -77,13 +79,11 @@ public:
   ros::Subscriber lineSensorBL_;
   ros::Subscriber lineSensorBR_;
 
-  robot();
-
-  //! Set the velocity of the robot.
-  bool setVelocity(const geometry_msgs::Twist &vel);
-
-  // Quando o robô gira em torno de uma de suas rodas - Ainda não funciona
-  bool concerning(const wheel w, double modulo_vel);
+  public:
+    color colorFL_ = BRANCO;
+    color colorBL_ = BRANCO;
+    color colorFR_ = BRANCO;
+    color colorBR_ = BRANCO;
 
   // Encapsula o ros::spinOnce e ros::Duration
   void update(double periodo = 0)
@@ -92,33 +92,53 @@ public:
     if(periodo != 0) ros::Duration(periodo).sleep();
   }
 
-  // Funções que chama o ros::spinOnce e devolve o valor da variável
-  color get_colorFL();
-  color get_colorBL();
-  color get_colorFR();
-  color get_colorBR();
+    ros::Subscriber lineSensorFL_;
+    ros::Subscriber lineSensorFR_;
+    ros::Subscriber lineSensorBL_;
+    ros::Subscriber lineSensorBR_;
+
+    robot();
+
+    //! Set the velocity of the robot.
+    bool setVelocity(const geometry_msgs::Twist &vel);
+
+    // Quando o robô gira em torno de uma de suas rodas - Ainda não funciona
+    bool concerning(const wheel w, double modulo_vel);
+
+    // Encapsula o ros::spinOnce e ros::Duration
+    void update(double periodo = 0)
+    {
+        ros::spinOnce();
+        if (periodo != 0)
+            ros::Duration(periodo).sleep();
+    }
+
+    // Funções que chama o ros::spinOnce e devolve o valor da variável
+    color get_colorFL();
+    color get_colorBL();
+    color get_colorFR();
+    color get_colorBR();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
-// Apenas util para os 3 quadrantes.  
+// Apenas util para os 3 quadrantes.
 // MUDAS APENAS 1 QUADRANTE POR VEZ !! SE MANDAR DIREITA E ESQUERDA, VAI PARAR NO CENTRO.
-void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
+// void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
 void linha_preta(kineControl::robot &robot);
-
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
 void alinhar(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
 void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
-
+void descobrir_cor(kineControl::robot &robot);
 
 } // namespace kineControl
 
-// Overload of << for the Pose 
+// Overload of << for the Pose
 std::ostream &operator<<(std::ostream &os, const projeto_semear::Pose &pose)
 {
-    os << "\t(" ;
+    os << "\t(";
     switch (pose.location)
     {
     case 0:
