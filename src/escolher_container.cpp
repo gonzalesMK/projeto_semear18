@@ -1,25 +1,32 @@
 /** Esse programa é um SERVIÇO responsável por escolher qual container deve pegar
  * 
  * Definição do serviço EscolherContainer: 
- *         cor do da esquerda
- *         cor do da direita
+ *         posição
  *         ---
  *         retorno(0=pega o da esquerda/1=pega o da direita/2=mude de setor)
  * 
- *  As entradas são as cores do container da esquerda e da direita logo à frente do container
+ *  A entrada é a posição do robô e a partir do mapa, serão adquiridas as cores do container da esquerda e da direita logo à frente do container
  *  A saída é o container escolhido
  * 
  * Nome do serviço : EscolherContainer
  * */
 
 //esse código considera que o navio verde estará NECESSARIAMENTE à esquerda
+
 #include <ros/ros.h>
 #include <projeto_semear/EscolherContainer.h>
 #include <projeto_semear/Colors.h>
 
+
+
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
+
+    //aqui, a partir da posição, terei a cor dos dois containers à frente
+
+    
+
     if (req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN)
     {
         res.container_escolhido = 0;
@@ -51,7 +58,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "escolher_container");
     ros::NodeHandle node;
 
-    ros::ServiceServer colors_client = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContain
+    ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContain
     ROS_INFO("Preparado para escolher o container");
     ros::spinOnce();
 
