@@ -60,24 +60,8 @@ enum color
 class robot
 {
 
-protected:
-  ros::NodeHandle nh_;
-
-public:
-  color colorFL_= BRANCO;
-  color colorBL_= BRANCO ;
-  color colorFR_= BRANCO ;
-  color colorBR_= BRANCO ;
-
-  ros::Publisher FR_Motor_;
-  ros::Publisher FL_Motor_;
-  ros::Publisher BR_Motor_;
-  ros::Publisher BL_Motor_;
-
-  ros::Subscriber lineSensorFL_;
-  ros::Subscriber lineSensorFR_;
-  ros::Subscriber lineSensorBL_;
-  ros::Subscriber lineSensorBR_;
+  protected:
+    ros::NodeHandle nh_;
 
   public:
     color colorFL_ = BRANCO;
@@ -85,12 +69,10 @@ public:
     color colorFR_ = BRANCO;
     color colorBR_ = BRANCO;
 
-  // Encapsula o ros::spinOnce e ros::Duration
-  void update(double periodo = 0)
-  {
-    ros::spinOnce();
-    if(periodo != 0) ros::Duration(periodo).sleep();
-  }
+    ros::Publisher FR_Motor_;
+    ros::Publisher FL_Motor_;
+    ros::Publisher BR_Motor_;
+    ros::Publisher BL_Motor_;
 
     ros::Subscriber lineSensorFL_;
     ros::Subscriber lineSensorFR_;
