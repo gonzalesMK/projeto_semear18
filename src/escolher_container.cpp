@@ -21,39 +21,85 @@
 #include <vector>
 #include <cstdint>
 
-
 projeto_semear::Pose pose;
-
-
+ros::ServiceClient get_client;
 
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
+    projeto_semear::GetContainerInfo get_srv;
 
-    if (req.Cor_Esquerda.cor == req.Cor_Esquerda.GREEN)
+    int dir,esq;
+    switch (req.Posicao.location)
     {
-        res.container_escolhido = 0;
+    case projeto_semear::Pose::QUADRANTE_ESQUERDO:
+        esq = 0;
+        dir = 1;
+        break;
+    case projeto_semear::Pose::QUADRANTE_CENTRAL:
+        esq = 2;
+        dir = 3;
+        break;
+    case projeto_semear::Pose::QUADRANTE_DIREITO:
+        esq = 4;
+        dir = 5;
+        break;
+    default:
+        ROS_ERROR(" Localizacao do robo pode estar errada! Nenhuma foi escolhida");
+        return false;
+    }
+
+    get_srv.request.where =  esq;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec = get_srv.response.lista;
+    std::uint8_t cor_esquerda = vec.back(); // O último container é o primeiro da pilha
+
+    get_srv.request.where = dir;
+    get_client.call(get_srv);
+
+    vec = get_srv.response.lista; 
+    std::uint8_t cor_direita = vec.back(); // O último container é o primeiro da pilha
+
+    enum ESCOLHIDO{
+            ESQUERDA = 0,
+            DIREITA = 1,
+            NENHUM = 2
+    };
+
+    enum cores
+    {
+    AZUL = 13,
+    VERDE = 12,
+    VERMELHO = 14,
+    DESCONHECIDO = 255
+    };
+
+    if (cor_esquerda == VERDE)
+    {
+        res.container_escolhido = ESQUERDA;
     } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
-    else if (req.Cor_Direita.cor == req.Cor_Direita.BLUE)
+    else if (cor_direita == AZUL)
     {
-        res.container_escolhido = 1;
+        res.container_escolhido = DIREITA;
     } //caso o da direita seja azul, ja pega ele
-    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.GREEN)
+    else if (cor_esquerda == AZUL && cor_direita == VERDE)
     {
-        res.container_escolhido = 0;
+        res.container_escolhido = ESQUERDA;
     }
-    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.BLUE && req.Cor_Direita.cor == req.Cor_Direita.RED)
+    else if (cor_esquerda == AZUL && cor_direita == VERMELHO)
     {
-        res.container_escolhido = 0;
+        res.container_escolhido = ESQUERDA;
     }
-    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Direita.BLUE)
+    else if (cor_esquerda == VERMELHO && cor_direita == VERDE)
     {
-        res.container_escolhido = 1;
+        res.container_escolhido = DIREITA;
     }
-    else if (req.Cor_Esquerda.cor == req.Cor_Esquerda.RED && req.Cor_Direita.cor == req.Cor_Esquerda.RED)
+    else if (cor_esquerda == VERMELHO && cor_direita == VERMELHO)
     {
-        res.container_escolhido = 2;
+        res.container_escolhido = NENHUM;
     }
+
 }
 
 int main(int argc, char **argv)
@@ -61,26 +107,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "escolher_container");
     ros::NodeHandle node;
 
-    ros::ServiceClient get_client = node.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo"); //requisita o serviço de pegar info
-
-    projeto_semear::GetContainerInfo get_srv;
-
-    get_srv.request.where = pose.location * 2;   //pilha requisitada e essa conta existe pq é o da esquerda CONTA ERRADA!!!
-
-    get_client.call(get_srv);
-
-    std::vector<std::uint8_t> vec = get_srv.response.lista;
-
-    std::uint8_t cor_esquerda = vec.front(); //a cor da esquerda é o primeiro elemento do vetor vec
-
-    get_srv.request.where = pose.location * 2 + 1;   //pilha requisitada e essa conta existe pq é o da direita CONTA ERRADA!!!
-
-    get_client.call(get_srv);
-
-    std::vector<std::uint8_t> vec = get_srv.response.lista;
-
-    std::uint8_t cor_direita = vec.front(); //a cor da direita é o primeiro elemento do vetor vec
-
+    // Inicializa o cliente
+    get_client = node.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
 
     ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContainer
     ROS_INFO("Preparado para escolher o container");
@@ -89,5 +117,10 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+
+
+
+
 
 
