@@ -9,6 +9,11 @@
 	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
 
 	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
+	
+	<node name="mapa" pkg="projeto_semear" type="mapa_container_server" respawn="false" output="screen"/>
 
-	<node name="eletroima_control_server" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
+	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
+
+	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor" respawn="false" output="screen"/>
+
 </launch>   

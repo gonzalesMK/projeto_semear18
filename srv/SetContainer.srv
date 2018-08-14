@@ -1,0 +1,8 @@
+uint8 color  
+uint8 where   # Colocar o número da figura
+uint8 AZUL=13
+uint8 VERDE=12
+uint8 VERMELHO=14
+uint8 DESCONHECIDO=255
+---
+
