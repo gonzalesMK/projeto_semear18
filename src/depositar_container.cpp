@@ -1,6 +1,9 @@
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
+#include <projeto_semear/GetContainerInfo.h>
+#include <vector>
+#include <projeto_semear/GetPose.h>
 #include <projeto_semear/kine_control.h>
 
 /* Código para depositar o container na doca correta.
@@ -31,11 +34,11 @@ void activeCb()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Eletroima_client");
-  ros::NodeHandle nh;
+  ros::NodeHandle node;
 
   kineControl::robot motor;
 
-  ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
+  ros::Publisher pub = node.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
   ros::Duration(0.5).sleep();
   ros::spinOnce();
   
@@ -49,18 +52,19 @@ int main(int argc, char** argv)
 
   projeto_semear::moveEletroimaGoal goal;
 
-
-
   //utilizando o servico de gps para encontrar a localização
   ros::ServiceClient pose_client = node.serviceClient<projeto_semear::GetPose>("gps");
   projeto_semear::GetPose srv;
 
   //pegando a localização
+  pose_client.call(srv);
   int localizacao = (std::uint8_t)srv.response.pose.location;
 
   //utilizando o servico de mapa_container
   ros::ServiceClient get_client = node.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
   projeto_semear::GetContainerInfo get_srv;
+
+  srv.request.set = false;
 
   //informando a localizacao da pilha onde o robo se encontra
   get_srv.request.where = localizacao;
@@ -69,17 +73,10 @@ int main(int argc, char** argv)
   //pegando o vetor que contem os containers depositados
   std::vector<std::uint8_t> vec = get_srv.response.lista;
 
-  int code = 0; //variável que guarda quantos containers têm em uma pilha
+  int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
 
-  for (auto i = vec.begin(); i != vec.end(); i++)
-  {
-    if(vec[i]!=255) code++;
-  }  
-  
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
-
-
 
   //alinhar com o container de baixo
   if(code != 0) kineControl::alinhar_containerdepositado(motor);
@@ -90,7 +87,7 @@ int main(int argc, char** argv)
   goal.deslocamento.linear.z = -0.137+(code*0.02); //0,2 chute da altura do container
   client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
   client.waitForResult(ros::Duration());
-  }
+  
   //andar uma distância determinada para fica no meio do container já depositado
   goal.deslocamento.angular.z = 1;
   goal.deslocamento.linear.z = 0;
