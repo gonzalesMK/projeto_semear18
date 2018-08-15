@@ -520,7 +520,7 @@ void doneCb(const actionlib::SimpleClientGoalState &state,const projeto_semear::
 
 void activeCb(){}
 
-void pegar_container(kineControl::robot &robot)
+void kineControl::pegar_container(kineControl::robot &robot)
 {  
     ros::NodeHandle nh;
 
@@ -550,7 +550,7 @@ void pegar_container(kineControl::robot &robot)
     msg.data = true;
     pub.publish(msg);
 
-    goal.deslocamento.linear.z = 0.04;
+    goal.deslocamento.linear.z = 0.05;
     goal.deslocamento.linear.x = -0.01;
     goal.deslocamento.linear.y = 0.05;
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
