@@ -19,5 +19,3 @@ uint8 TREM=6
 # Mensagem com localização e orientação
 uint8 location
 uint8 orientation
-
-uint8 algo

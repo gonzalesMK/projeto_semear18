@@ -1,5 +1,7 @@
 #include "projeto_semear/kine_control.h"
-
+#include <actionlib/client/simple_action_client.h>
+#include <projeto_semear/moveEletroimaAction.h>
+#include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
 
 const double PI = 3.141592653589793238463;
@@ -505,4 +507,52 @@ void kineControl::linha_preta(kineControl::robot &robot)
     velocidade.angular.z = 0;
 
     robot.setVelocity(velocidade);
+}
+
+
+
+
+typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
+
+void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback){}
+
+void doneCb(const actionlib::SimpleClientGoalState &state,const projeto_semear::moveEletroimaResultConstPtr &result){}
+
+void activeCb(){}
+
+void pegar_container(kineControl::robot &robot)
+{  
+    ros::NodeHandle nh;
+
+    ROS_INFO_STREAM("ligando o eletroima");
+    ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
+    std_msgs::Bool msg;
+    msg.data = false;
+    pub.publish(msg);
+
+    // Espera-se que o código já saiba se deve pegar o container da direita ou da esquerda
+    Client client("moveEletroima", true); // true -> don't need ros::spin()
+    client.waitForServer();
+
+    // Meta para posicionar a garra em cima do container
+    projeto_semear::moveEletroimaGoal goal;
+    goal.deslocamento.linear.x = 0.01;
+    goal.deslocamento.linear.y = -0.15;
+    goal.deslocamento.linear.z = 0;
+    goal.deslocamento.angular.z = 0;
+
+    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+    client.waitForResult(ros::Duration());
+
+    // Girar a guarra 90º 
+    // Ligar o Eletroimã:
+    ROS_INFO_STREAM("ligando o eletroima");
+    msg.data = true;
+    pub.publish(msg);
+
+    goal.deslocamento.linear.z = 0.04;
+    goal.deslocamento.linear.x = -0.01;
+    goal.deslocamento.linear.y = 0.05;
+    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+    client.waitForResult(ros::Duration());
 }

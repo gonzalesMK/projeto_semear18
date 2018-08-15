@@ -32,8 +32,7 @@ add_message_files(
 add_service_files(
   FILES
   GetPose.srv
-  PathPlanning.srv]
-  PegarContainer.srv
+  PathPlanning.srv
   #AlignRobot.srv
 )
 
@@ -145,13 +144,6 @@ target_link_libraries(navigating_server_demo
   motor_library
 )
 add_dependencies(navigating_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(pegar_server src/pegar_server.cpp)
-target_link_libraries(pegar_server
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(pegar_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(pegar_container src/pegar_container.cpp)
 target_link_libraries(pegar_container
