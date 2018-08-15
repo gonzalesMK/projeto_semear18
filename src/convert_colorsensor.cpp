@@ -33,8 +33,8 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber subBL = n.subscribe("/AMR/lineSensorBL", 1000, callbackBR);
-    ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBR", 1000, callbackBL);
+    ros::Subscriber subBL = n.subscribe("/AMR/lineSensorBL", 1000, callbackBL);
+    ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBR", 1000, callbackBR);
     ros::Subscriber subFR = n.subscribe("/AMR/lineSensorFR", 1000, callbackFR);
     ros::Subscriber subFL = n.subscribe("/AMR/lineSensorFL", 1000, callbackFL);
 
