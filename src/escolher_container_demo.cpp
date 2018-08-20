@@ -1,48 +1,56 @@
 #include <ros/ros.h>
 #include <projeto_semear/EscolherContainer.h>
 #include <projeto_semear/GetContainerInfo.h>
+#include <projeto_semear/SetContainer.h>
 #include <projeto_semear/Pose.h>
 #include <projeto_semear/Colors.h>
 #include <vector>
 #include <cstdint>
+
+int pilha;
+int cor;
+int aux;
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "escolher_container_demo");
     ros::NodeHandle node;
 
-    // Cria o serviço
+    // Cria os serviços
     ros::ServiceClient choose_client = node.serviceClient<projeto_semear::EscolherContainer>("escolher_container");
+    ros::ServiceClient set_client = node.serviceClient<projeto_semear::SetContainer>("setContainer");
 
     projeto_semear::EscolherContainer srv;
+    projeto_semear::SetContainer set_srv;
+
+
     bool stop = false;
     while (!stop)
     {
 
-        
-        /*
-        // Set Pose
-        char temp;
-        std::cout << " Set Location: ";
-        std::cin >> srv.request.pose.location;
+        //Set Pose
+        std::cout << "Set Location(quadrante)";
+        std::cin >> srv.request.Posicao.location;
 
-        std::cout << "Set orientation: ";
-        std::cin >> srv.request.pose.orientation;
+        for(aux=0;aux=2;aux++) //só precisa de duas pilhas
+        {
 
-        srv.request.set = true;
+            std::cout << "digite a pilha de container a ser informado";
+            std::cin >> pilha;
 
-        if (!pose_client.call(srv))
-            ROS_ERROR_STREAM("NOT POSSIBLE TO SET");
+            set_srv.request.where = pilha;
 
-        // Get pose
-        srv.request.set = false;
-        if (pose_client.call(srv))
-            ROS_INFO_STREAM("Location: " << (std::uint8_t)srv.response.pose.location << "\t Orientation: " << (std::uint8_t)srv.response.pose.orientation);
-        else
-            ROS_ERROR("Failed to call gps");
+            std::cout << "Digite a cor: AZUL (13), VERDE (12) ou VERMELHO(14)";
+            std::cin >> cor;
 
-        std::cout << "Stop (0/1) ? ";
-        std::cin >> stop;*/
+            set_srv.request.color = cor;
+
+            set_client.call(set_srv);
+
+        }
+
+    //agora temos a posição e a cor de dois containers
+
     }
     return 0;
 }
