@@ -3,6 +3,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/navigationAction.h>
 #include <projeto_semear/DescobrirCor.h>
+#include <projeto_semear/EscolherContainer.h>
 
 typedef Client;
 void print_path(const std::vector<std::uint8_t> path);
@@ -21,7 +22,7 @@ int main(int argc, char **argv)
     // Actionlib de navegação
     actionlib::SimpleActionClient<projeto_semear::navigationAction> navigation_client("navigation", true);
     navigation_client.waitForServer();
-    
+
     projeto_semear::navigationGoal navigation_msg; // mensagem para a action lib de navegação
 
     // Serviço de descobrir container
@@ -30,9 +31,12 @@ int main(int argc, char **argv)
 
     projeto_semear::DescobrirCor descobrir_container_msg; // mensagem para o serviço de descobrir container
 
-
     // Indo para linha Preta
-    kineControl::linha_preta(motor);
+    navigation_msg.goal_pose.location = navigation_msg.goal_pose.QUADRANTE_CENTRAL;
+    navigation_msg.goal_pose.location = navigation_msg.goal_pose.TREM;
+
+    navigation_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+    navigation_client.waitForResult();
 
     bool fim = false;
     while (!fim)
@@ -41,8 +45,9 @@ int main(int argc, char **argv)
 
         // Descobrindo cores dos containers
         descobrir_cor_srv.call(descobrir_container_msg);
-        
+
         // Escolhendo containers
+
 
         // Levando o container para doca correta
         goal.goal_pose.location = goal.goal_pose.DOCA_VERDE;
