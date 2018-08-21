@@ -25,12 +25,14 @@ find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
+  Colors.msg
   Pose.msg
 )
 
 # Generate services in the 'srv' folder
 add_service_files(
   FILES
+  EscolherContainer.srv
   GetPose.srv
   PathPlanning.srv
   SetContainer.srv
@@ -88,6 +90,12 @@ target_link_libraries(kine_control_demo
   ${catkin_LIBRARIES}
   motor_library
 )
+
+add_executable(escolher_container src/escolher_container.cpp)
+target_link_libraries(escolher_container
+  ${catkin_LIBRARIES}
+)
+add_dependencies(escolher_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(gps src/gps.cpp)
 target_link_libraries(gps
@@ -170,6 +178,7 @@ target_link_libraries(descobrir_cor
   motor_library
 )
 add_dependencies(descobrir_cor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(pegar_container src/pegar_container.cpp)
 target_link_libraries(pegar_container
   ${catkin_LIBRARIES}
