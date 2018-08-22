@@ -17,20 +17,29 @@
 #include <projeto_semear/EscolherContainer.h>
 #include <projeto_semear/GetContainerInfo.h>
 #include <projeto_semear/Pose.h>
+#include <projeto_semear/GetPose.h>
 #include <projeto_semear/Colors.h>
 #include <vector>
 #include <cstdint>
 
 projeto_semear::Pose pose;
+
 ros::ServiceClient get_client;
+ros::ServiceClient pose_client;
 
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
     projeto_semear::GetContainerInfo get_srv;
 
+    projeto_semear::GetPose get_pose_msg; 
+
+    get_pose_msg.request.set = false;
+    
+    pose_client.call(get_pose_msg);
+    
     int dir,esq;
-    switch (req.Posicao.location)
+    switch (get_pose_msg.response.pose.location)
     {
     case projeto_semear::Pose::QUADRANTE_ESQUERDO:
         esq = 0;
@@ -109,6 +118,9 @@ int main(int argc, char **argv)
 
     // Inicializa o cliente
     get_client = node.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
+
+    // Serviço da posição do robô
+    pose_client = node.serviceClient<projeto_semear::GetPose>("gps");
 
     ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContainer
     ROS_INFO("Preparado para escolher o container");

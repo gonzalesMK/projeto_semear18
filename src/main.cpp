@@ -31,25 +31,40 @@ int main(int argc, char **argv)
 
     projeto_semear::DescobrirCor descobrir_container_msg; // mensagem para o serviço de descobrir container
 
+    // Serviço de escolher container
+    ros::ServiceClient escolher_container_srv = nh.serviceClient<projeto_semear::EscolherContainer>("EscolherContainer"); 
+    escolher_container_srv.waitForExistence();
 
-    // 
+    projeto_semear::EscolherContainer escolher_container_msg;
+
+
     // Indo para linha Preta
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.QUADRANTE_CENTRAL;
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.TREM;
 
-    navigation_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+    navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
     navigation_client.waitForResult();
 
     bool fim = false;
     while (!fim)
     {
-        // Alinhando com os containers
+        // Alinhando com o container da esquerda primeiro
+        kineControl::alinhar_pilha(motor, 0);
+        
+        // Descobrir cores dos containers
+        descobrir_cor_srv.call(descobrir_container_msg);
 
-        // Descobrindo cores dos containers
+        // Alinhando com o container da direita
+        kineControl::alinhar_pilha(motor, 0);
+        
+        // Descobrir cores dos containers
         descobrir_cor_srv.call(descobrir_container_msg);
 
         // Escolhendo containers
-        
+        escolher_container_srv.call(escolher_container_msg);
+
+        // Alinhar com a pilha escolhida
+        kineControl::alinhar_pilha(motor, escolher_container_msg.response.container_escolhido);
 
         // Levando o container para doca correta
         goal.goal_pose.location = goal.goal_pose.DOCA_VERDE;
@@ -63,5 +78,5 @@ int main(int argc, char **argv)
         // Voltando para doca mais próxima
     }
 
-    client.waitForResult(ros::Duration());
+    navigation_client.waitForResult(ros::Duration());
 }
