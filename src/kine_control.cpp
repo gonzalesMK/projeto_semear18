@@ -26,6 +26,11 @@ void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
         color = kineControl::color::PRETO;
 }
 
+void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
+{
+    variable = msg->data;   
+}
+
 kineControl::robot::robot()
 {
     FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFRSpeed", 1);
@@ -37,6 +42,7 @@ kineControl::robot::robot()
     lineSensorBL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBL", 1, boost::bind(callback, _1, boost::ref(colorBL_)));
     lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1, boost::ref(colorFR_)));
     lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
+    lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.5).sleep();
@@ -317,6 +323,7 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
 
     kineControl::linha_preta(robot);
 }
+
 void kineControl::direita(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
@@ -528,6 +535,11 @@ void kineControl::linha_preta(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+void kineControl::alinhar_pilha(kineControl::robot &robot){
+
+    ros::spinOnce();
+    robot.lateral_distance_;    
+}
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback){}
@@ -571,4 +583,6 @@ void kineControl::pegar_container(kineControl::robot &robot)
     goal.deslocamento.linear.y = 0.05;
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     client.waitForResult(ros::Duration());
+    
 }
+

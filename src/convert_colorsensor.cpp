@@ -45,9 +45,6 @@ int main(int argc, char **argv)
     ros::Subscriber subGarraR = n.subscribe("/AMR/ColorSensorGarraR", 1000, callbackGarraR);
     ros::Subscriber subGarraL = n.subscribe("/AMR/ColorSensorGarraL", 1000, callbackGarraL);
 
-    
-    
-
     pubBL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBL", 1);
     pubBR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBR", 1);
     pubFR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFR", 1);
