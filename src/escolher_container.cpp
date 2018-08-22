@@ -84,7 +84,58 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     DESCONHECIDO = 255
     };
 
-    if (cor_esquerda == VERDE)
+
+    if(req.Posicao.location == 1) //esquerda
+    {
+        if(cor_esquerda == VERDE)
+        {
+            res.container_escolhido = ESQUERDA;
+        }
+        else if(cor_direita == VERDE)
+        {
+            res.container_escolhido = DIREITA;
+        }
+        else if(cor_direita == AZUL)
+        {
+            res.container_escolhido = DIREITA;
+        }
+        else if(cor_esquerda == AZUL)
+        {
+            res.container_escolhido = ESQUERDA;
+        }
+        else
+        {
+            res.container_escolhido = NENHUM;
+        }
+    }
+
+
+    else if(req.Posicao.location == 2) //direita
+    {
+        if(cor_direita == AZUL)
+        {
+            res.container_escolhido = DIREITA;
+        }
+        else if(cor_esquerda == AZUL)
+        {
+            res.container_escolhido = ESQUERDA;
+        }
+        else if(cor_esquerda == VERDE)
+        {
+            res.container_escolhido = ESQUERDA;
+        }
+        else if(cor_direita == VERDE)
+        {
+            res.container_escolhido = DIREITA;
+        }
+        else
+        {
+            res.container_escolhido = NENHUM;
+        }
+    }
+
+                                         //meio
+    else if (cor_esquerda == VERDE)
     {
         res.container_escolhido = ESQUERDA;
     } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
@@ -92,19 +143,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     {
         res.container_escolhido = DIREITA;
     } //caso o da direita seja azul, ja pega ele
-    else if (cor_esquerda == AZUL && cor_direita == VERDE)
+    else if (cor_esquerda == AZUL)
     {
         res.container_escolhido = ESQUERDA;
     }
-    else if (cor_esquerda == AZUL && cor_direita == VERMELHO)
-    {
-        res.container_escolhido = ESQUERDA;
-    }
-    else if (cor_esquerda == VERMELHO && cor_direita == VERDE)
+    else if (cor_direita == VERDE)
     {
         res.container_escolhido = DIREITA;
     }
-    else if (cor_esquerda == VERMELHO && cor_direita == VERMELHO)
+    else
     {
         res.container_escolhido = NENHUM;
     }
