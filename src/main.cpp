@@ -48,18 +48,28 @@ int main(int argc, char **argv)
     bool fim = false;
     while (!fim)
     {
+        // Aproximar da pilha 
+        //kineControl::aproximar_pilha(motor);
+
+
+        // Escolhendo containers
+        escolher_container_srv.call(escolher_container_msg);
+
+        // Na primeira vez que der NENHUM, verificar se todos os containers estão descobertos
+ /////////////////// Englobar tudo dentro de Descobrir container ////////////////////////////////////////////
         // Alinhando com o container da esquerda primeiro
         kineControl::alinhar_pilha(motor, 0);
         
-        // Descobrir cores dos containers
+        // Descobrir cor do container
         descobrir_cor_srv.call(descobrir_container_msg);
 
         // Alinhando com o container da direita
-        kineControl::alinhar_pilha(motor, 0);
-        
-        // Descobrir cores dos containers
-        descobrir_cor_srv.call(descobrir_container_msg);
+        kineControl::alinhar_pilha(motor, 1);
 
+        // Descobrir cor do container
+        descobrir_cor_srv.call(descobrir_container_msg);
+//////////////////////////////////////////////////////////////////////
+        
         // Escolhendo containers
         escolher_container_srv.call(escolher_container_msg);
 
@@ -67,13 +77,14 @@ int main(int argc, char **argv)
         kineControl::alinhar_pilha(motor, escolher_container_msg.response.container_escolhido);
 
         // Levando o container para doca correta
-        goal.goal_pose.location = goal.goal_pose.DOCA_VERDE;
-        goal.goal_pose.orientation = goal.goal_pose.LESTE;
+        navigation_msg.goal_pose.location = navigation_msg.goal_pose.DOCA_VERDE;
+        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
 
-        navigation_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+        navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
 
         // Depositando  o container
+        kineControl::
 
         // Voltando para doca mais próxima
     }

@@ -53,7 +53,7 @@ std::vector<std::vector<std::uint8_t>> MAPA =
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 9
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 10
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 11
-        {},                                                                                   // 12
+        {},                                                                                   // 12 - Doca
         {},                                                                                   // 13
         {},                                                                                   // 14
 };
