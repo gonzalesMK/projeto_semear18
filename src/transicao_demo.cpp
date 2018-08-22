@@ -23,12 +23,11 @@ void activeCb()
 {
   ROS_INFO("Goal just went active");
 }
+#include <std_msgs/Bool.h>
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "transicion_demo");
-
-    ros::NodeHandle nh;
 
     kineControl::robot motor;
 
@@ -36,6 +35,14 @@ int main(int argc, char **argv)
     ROS_INFO("Iniciando Teste");
     kineControl::linha_preta(motor);
     /*kineControl::esquerda(motor);  
+    kineControl::pegar_container(motor);
+    /*kineControl::esquerda(motor);  
+    kineControl::ir_doca(motor);  
+    kineControl::ir_quadrante(motor);  
+    kineControl::direita(motor);   */  
+       
+   /* kineControl::linha_preta(motor);
+    kineControl::esquerda(motor);  
     kineControl::ir_doca(motor);  
     kineControl::ir_quadrante(motor);  
     kineControl::direita(motor);  */

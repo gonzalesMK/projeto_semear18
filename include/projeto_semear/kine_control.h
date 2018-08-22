@@ -141,6 +141,7 @@ void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
 void alinhar_containerdepositado(kineControl::robot &robot);
 void descobrir_cor(kineControl::robot &robot);
+void pegar_container(kineControl::robot &robot);
 
 } // namespace kineControl
 
