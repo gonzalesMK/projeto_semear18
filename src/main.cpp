@@ -49,7 +49,7 @@ int main(int argc, char **argv)
         descobrir_cor_srv.call(descobrir_container_msg);
 
         // Escolhendo containers
-
+        
 
         // Levando o container para doca correta
         goal.goal_pose.location = goal.goal_pose.DOCA_VERDE;

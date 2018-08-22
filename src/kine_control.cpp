@@ -535,10 +535,13 @@ void kineControl::linha_preta(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
-void kineControl::alinhar_pilha(kineControl::robot &robot){
+void kineControl::alinhar_pilha(kineControl::robot &robot, int dir){
 
     ros::spinOnce();
     robot.lateral_distance_;    
+    
+
+    
 }
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
