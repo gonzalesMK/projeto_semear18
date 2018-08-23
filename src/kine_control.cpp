@@ -3,6 +3,7 @@
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
+#include <stdlib.h>
 
 const double PI = 3.141592653589793238463;
 const double DIAMETRO = 0.099060; // Diametro da RODA
@@ -586,9 +587,64 @@ void kineControl::linha_preta(kineControl::robot &robot)
 void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
 {
 
+    // 0.07 -> container da esquerda 0
+    // 0.01   -> container da direita 1
+
     ros::spinOnce();
     robot.lateral_distance_;
+    ros::Rate rate(10);
+    geometry_msgs::Twist velocidade;
 
+    // Alinhar para frente
+    bool alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+    while (!alinhado && ros::ok())
+    {
+        // Andar uma distância predefinida
+        velocidade.linear.y = 0;
+        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        rate.sleep();
+        ros::spinOnce();
+        alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+    }
+    velocidade.linear.y = 0;
+    velocidade.linear.x = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+
+    // esquerda é 0 e direita é 1
+    double dist;
+    if (dir == 0)
+    {
+        dist = 0.071;
+    }
+    else
+    {
+        dist = 0.01;
+    }
+    // Alinhar lateralmente
+    double dif = dist - robot.lateral_distance_;
+    
+    ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
+    
+    while ( std::fabs(dif) > 0.005 && ros::ok())
+    {   
+        // Andar uma distância predefinida
+        velocidade.linear.y = - dif * 2;
+        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        rate.sleep();
+        ros::spinOnce();
+        alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+        dif = dist - robot.lateral_distance_;
+    }
+
+    velocidade.linear.y = 0;
+    velocidade.linear.x = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
 }
 
 void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
@@ -695,4 +751,3 @@ void kineControl::pegar_container(kineControl::robot &robot)
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     client.waitForResult(ros::Duration());
 }
-

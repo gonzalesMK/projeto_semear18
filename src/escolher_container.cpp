@@ -31,15 +31,8 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
     projeto_semear::GetContainerInfo get_srv;
-
-    projeto_semear::GetPose get_pose_msg; 
-
-    get_pose_msg.request.set = false;
-    
-    pose_client.call(get_pose_msg);
-    
     int dir,esq;
-    switch (get_pose_msg.response.pose.location)
+    switch (req.Posicao.location)
     {
     case projeto_semear::Pose::QUADRANTE_ESQUERDO:
         esq = 0;

@@ -72,7 +72,7 @@ add_library(motor_library src/kine_control.cpp
 )
 # Link Library with respective dependencies
 target_link_libraries(motor_library ${catkin_LIBRARIES})
-
+add_dependencies(motor_library ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(eletroima_control_server src/eletroima_control_server.cpp)
 target_link_libraries(eletroima_control_server

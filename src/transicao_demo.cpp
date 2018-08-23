@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     kineControl::robot motor;
-
+/*
     //** Como usar o motor para mudar a velocidade :
     ROS_INFO("Iniciando Teste");
     kineControl::linha_preta(motor);
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     kineControl::ir_doca(motor);  
     kineControl::ir_quadrante(motor);  
     kineControl::direita(motor);  */
-
+/*
     Client client("moveEletroima", true); // true -> don't need ros::spin()
     client.waitForServer();
 
@@ -78,6 +78,8 @@ int main(int argc, char **argv)
 
     kineControl::esquerda(motor);  
     kineControl::ir_doca(motor); 
-    
+    */
+    kineControl::alinhar_pilha(motor,0);
+
     return 0;
 }
