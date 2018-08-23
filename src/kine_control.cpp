@@ -601,12 +601,13 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
     {
         // Andar uma distância predefinida
         velocidade.linear.y = 0;
-        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.linear.x = ((int)(robot.colorFL_ != PRETO) + (int)(robot.colorFR_ != PRETO) - (int)(robot.colorBL_ == PRETO) - (int)(robot.colorBR_ == PRETO)) * 0.025;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
         rate.sleep();
         ros::spinOnce();
         alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+    
     }
     velocidade.linear.y = 0;
     velocidade.linear.x = 0;
@@ -639,6 +640,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
         ros::spinOnce();
         alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
         dif = dist - robot.lateral_distance_;
+    
     }
 
     velocidade.linear.y = 0;

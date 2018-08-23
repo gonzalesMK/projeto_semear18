@@ -10,6 +10,7 @@
 #include <projeto_semear/Pose.h>
 #include <std_msgs/ColorRGBA.h>
 #include <std_msgs/Bool.h>
+#include <projeto_semear/kine_control.h>
 
 /* Função responsável por, após o robô estar posicionado em relação aos containers, fazer a leitura das cores
 dos containers superiores. 
@@ -65,6 +66,8 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     pose_msg.request.set = false;
     pose_client.call(pose_msg);
 
+    kineControl::robot robot;
+
     int esq, dir;
 
     // Converte a posição do robô para os valores das pilhas
@@ -89,6 +92,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     }
 
     ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
+    
     // Pegar informação das pilhas
     projeto_semear::GetContainerInfo get_esq;
     projeto_semear::GetContainerInfo get_dir;
@@ -171,7 +175,9 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             ROS_INFO("Caso 2");
             // Leitura do da esquerda
             // Girar a garra 90 graus
-            goal.deslocamento.linear.x = 0.02;
+            // Alinhar com esquerda
+            kineControl::alinhar_pilha(robot, 0);
+            goal.deslocamento.linear.x = 0.0;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
             goal.deslocamento.angular.z = 3.14 / 2;
@@ -201,13 +207,13 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             goal.deslocamento.linear.x = 0;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0.04 * (4 - size_esq);
-            ;
             goal.deslocamento.angular.z = 0;
             client.sendGoal(goal, doneCb, activeCb, feedbackCb);
             client.waitForResult(ros::Duration());
 
             // Leva a garra para direita
-            goal.deslocamento.linear.x = -0.04;
+            kineControl::alinhar_pilha(robot, 1);
+            goal.deslocamento.linear.x = 0.0;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
             goal.deslocamento.angular.z = 0;
@@ -242,7 +248,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             client.waitForResult(ros::Duration());
 
             // Leva a garra ao meio
-            goal.deslocamento.linear.x = 0.02;
+            goal.deslocamento.linear.x = 0.0;
             goal.deslocamento.linear.y = 0;
             goal.deslocamento.linear.z = 0;
             goal.deslocamento.angular.z = -3.14 / 2;
@@ -252,8 +258,10 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     }
     else if (ultimo_container_esq == get_esq.response.DESCONHECIDO)
     {
+        
         // Girar a garra 90 graus
-        goal.deslocamento.linear.x = 0.02;
+        kineControl::alinhar_pilha(robot, 0);
+        goal.deslocamento.linear.x = 0.0;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
         goal.deslocamento.angular.z = 3.14 / 2;
@@ -289,7 +297,8 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         client.waitForResult(ros::Duration());
 
         // Girar a garra 90 graus e vai pro meio
-        goal.deslocamento.linear.x = - 0.02;
+        
+        goal.deslocamento.linear.x = 0.02;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
         goal.deslocamento.angular.z = - 3.14 / 2;
@@ -300,8 +309,9 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     }
     else if (ultimo_container_dir == get_dir.response.DESCONHECIDO)
     {
+        
         // Girar a garra 90graus e leva para esquerda
-        goal.deslocamento.linear.x = -0.02;
+        goal.deslocamento.linear.x = 0;
         goal.deslocamento.linear.y = 0;
         goal.deslocamento.linear.z = 0;
         goal.deslocamento.angular.z = 3.14 / 2;

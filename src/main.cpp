@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "main");
     ros::NodeHandle nh;
 
-    kineControl::robot motor;
+    kineControl::robot robot;
 
     // Actionlib de navegação
     actionlib::SimpleActionClient<projeto_semear::navigationAction> navigation_client("navigation", true);
@@ -55,25 +55,22 @@ int main(int argc, char **argv)
     int proximo_quadrante = -1;
     int antigo_quadrante = -1;
 
-    while (!fim)
-    {
-        // Aproximar da pilha
-        //kineControl::aproximar_pilha(motor);
-
-        /////////////////// Englobar tudo dentro de Descobrir container ////////////////////////////////////////////
-        // Alinhando com o container da esquerda primeiro
-        kineControl::alinhar_pilha(motor, 0);
+        // Alinhar com a pilha
+        kineControl::alinhar_pilha(robot, 0);
 
         // Descobrir cor do container
         descobrir_cor_srv.call(descobrir_container_msg);
 
         // Alinhando com o container da direita
-        kineControl::alinhar_pilha(motor, 1);
+        kineControl::alinhar_pilha(robot, 1);
 
         // Descobrir cor do container
         descobrir_cor_srv.call(descobrir_container_msg);
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+    while (!fim)
+    {
         // Escolhendo containers
         escolher_container_srv.call(escolher_container_msg);
 
@@ -111,14 +108,29 @@ int main(int argc, char **argv)
                 proximo_quadrante = 0;
                 antigo_quadrante = 2;
             }
+
+            // Movendo o Robô para o próximo quadrante
+            navigation_msg.goal_pose.location = proximo_quadrante;
+            navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+
+            navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
+            navigation_client.waitForResult();
+
+            // Alinhar com a pilha
+            kineControl::alinhar_pilha(robot, 0);
+
+            // Descobrir cor do container
+            descobrir_cor_srv.call(descobrir_container_msg);
+
+            // Alinhando com o container da direita
+            kineControl::alinhar_pilha(robot, 1);
+
+            // Descobrir cor do container
+            descobrir_cor_srv.call(descobrir_container_msg);
+
+            // Escolhendo containers
+            escolher_container_srv.call(escolher_container_msg);
         }
-        // Movendo o Robô para o próximo quadrante
-        navigation_msg.goal_pose.location = proximo_quadrante;
-        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
-
-        navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
-        navigation_client.waitForResult();
-
         // Escolhendo containers
         escolher_container_srv.call(escolher_container_msg);
 
