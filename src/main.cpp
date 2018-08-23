@@ -55,6 +55,30 @@ int main(int argc, char **argv)
     int proximo_quadrante = -1;
     int antigo_quadrante = -1;
 
+    // Alinhar com a pilha
+    kineControl::alinhar_pilha(robot, 0);
+
+    // Descobrir cor do container
+    descobrir_cor_srv.call(descobrir_container_msg);
+
+    // Alinhando com o container da direita
+    kineControl::alinhar_pilha(robot, 1);
+
+    // Descobrir cor do container
+    descobrir_cor_srv.call(descobrir_container_msg);
+
+    while (!fim)
+    {
+        // Escolhendo containers
+        escolher_container_srv.call(escolher_container_msg);
+
+        // Movendo o Robô para o próximo quadrante
+        navigation_msg.goal_pose.location = proximo_quadrante;
+        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+
+        navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
+        navigation_client.waitForResult();
+
         // Alinhar com a pilha
         kineControl::alinhar_pilha(robot, 0);
 
@@ -67,87 +91,26 @@ int main(int argc, char **argv)
         // Descobrir cor do container
         descobrir_cor_srv.call(descobrir_container_msg);
 
-
-
-    while (!fim)
-    {
         // Escolhendo containers
         escolher_container_srv.call(escolher_container_msg);
-
-        // Caso não haja um container nesta pilha, ir para outra pilha.
-        while (escolher_container_msg.response.container_escolhido == 2)
-        {
-            gps_msg.request.set = false;
-            gps_srv.call(gps_msg);
-
-            if (gps_msg.response.pose.location == 1) // esquerda
-            {
-                proximo_quadrante = 0;
-                antigo_quadrante = 1;
-            }
-            else if (gps_msg.response.pose.location == 0) // centro
-            {
-                if (proximo_quadrante == -1)
-                {
-                    proximo_quadrante = 1;
-                    antigo_quadrante = 0;
-                }
-                else if (antigo_quadrante == 2)
-                {
-                    proximo_quadrante = 1;
-                    antigo_quadrante = 0;
-                }
-                else if (antigo_quadrante == 1)
-                {
-                    proximo_quadrante = 2;
-                    antigo_quadrante = 0;
-                }
-            }
-            else if (gps_msg.response.pose.location == 2) // direita
-            {
-                proximo_quadrante = 0;
-                antigo_quadrante = 2;
-            }
-
-            // Movendo o Robô para o próximo quadrante
-            navigation_msg.goal_pose.location = proximo_quadrante;
-            navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
-
-            navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
-            navigation_client.waitForResult();
-
-            // Alinhar com a pilha
-            kineControl::alinhar_pilha(robot, 0);
-
-            // Descobrir cor do container
-            descobrir_cor_srv.call(descobrir_container_msg);
-
-            // Alinhando com o container da direita
-            kineControl::alinhar_pilha(robot, 1);
-
-            // Descobrir cor do container
-            descobrir_cor_srv.call(descobrir_container_msg);
-
-            // Escolhendo containers
-            escolher_container_srv.call(escolher_container_msg);
-        }
-        // Escolhendo containers
-        escolher_container_srv.call(escolher_container_msg);
-
-        // Alinhar com a pilha escolhida
-        kineControl::alinhar_pilha(motor, escolher_container_msg.response.container_escolhido);
-
-        // Levando o container para doca correta
-        navigation_msg.goal_pose.location = navigation_msg.goal_pose.DOCA_VERDE;
-        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
-
-        navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
-        navigation_client.waitForResult();
-
-        // Depositando  o container
-
-        // Voltando para doca mais próxima
     }
+    // Escolhendo containers
+    escolher_container_srv.call(escolher_container_msg);
 
-    navigation_client.waitForResult(ros::Duration());
+    // Alinhar com a pilha escolhida
+    kineControl::alinhar_pilha(motor, escolher_container_msg.response.container_escolhido);
+
+    // Levando o container para doca correta
+    navigation_msg.goal_pose.location = navigation_msg.goal_pose.DOCA_VERDE;
+    navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+
+    navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
+    navigation_client.waitForResult();
+
+    // Depositando  o container
+
+    // Voltando para doca mais próxima
+}
+
+navigation_client.waitForResult(ros::Duration());
 }
