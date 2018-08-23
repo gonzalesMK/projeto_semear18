@@ -35,6 +35,7 @@ add_service_files(
   EscolherContainer.srv
   GetPose.srv
   PathPlanning.srv
+	DepositarContainer.srv
   SetContainer.srv
   GetContainerInfo.srv
   MoveContainer.srv
@@ -71,7 +72,7 @@ add_library(motor_library src/kine_control.cpp
 )
 # Link Library with respective dependencies
 target_link_libraries(motor_library ${catkin_LIBRARIES})
-
+add_dependencies(motor_library ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(eletroima_control_server src/eletroima_control_server.cpp)
 target_link_libraries(eletroima_control_server
@@ -157,6 +158,27 @@ target_link_libraries(navigating_server_demo
 )
 add_dependencies(navigating_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(depositar_container src/depositar_container.cpp)
+target_link_libraries(depositar_container
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(depositar_server src/depositar_server.cpp)
+target_link_libraries(depositar_server
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(depositar_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(depositar_client src/depositar_client.cpp)
+target_link_libraries(depositar_client
+  ${catkin_LIBRARIES}
+  motor_library
+)
+
+add_dependencies(depositar_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(mapa_container_server src/mapa_container_server.cpp)
 target_link_libraries(mapa_container_server

@@ -3,6 +3,7 @@
 #include <projeto_semear/moveEletroimaAction.h>
 #include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
+#include <stdlib.h>
 
 const double PI = 3.141592653589793238463;
 const double DIAMETRO = 0.099060; // Diametro da RODA
@@ -26,6 +27,11 @@ void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
         color = kineControl::color::PRETO;
 }
 
+void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
+{
+    variable = msg->data;
+}
+
 kineControl::robot::robot()
 {
     FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFRSpeed", 1);
@@ -37,6 +43,16 @@ kineControl::robot::robot()
     lineSensorBL_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBL", 1, boost::bind(callback, _1, boost::ref(colorBL_)));
     lineSensorFR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorFR", 1, boost::bind(callback, _1, boost::ref(colorFR_)));
     lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
+    lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
+
+    ColorSensorR0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR0", 1, boost::bind(callback, _1, boost::ref(colorR0_)));
+    ColorSensorR1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR1", 1, boost::bind(callback, _1, boost::ref(colorR1_)));
+    ColorSensorR2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR2", 1, boost::bind(callback, _1, boost::ref(colorR2_)));
+    ColorSensorR3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR3", 1, boost::bind(callback, _1, boost::ref(colorR3_)));
+    ColorSensorL0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL0", 1, boost::bind(callback, _1, boost::ref(colorL0_)));
+    ColorSensorL1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL1", 1, boost::bind(callback, _1, boost::ref(colorL1_)));
+    ColorSensorL2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL2", 1, boost::bind(callback, _1, boost::ref(colorL2_)));
+    ColorSensorL3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL3", 1, boost::bind(callback, _1, boost::ref(colorL3_)));
 
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.5).sleep();
@@ -136,6 +152,46 @@ kineControl::color kineControl::robot::get_colorBR()
 {
     ros::spinOnce();
     return this->colorBR_;
+}
+kineControl::color kineControl::robot::get_colorR0()
+{
+    ros::spinOnce();
+    return this->colorR0_;
+}
+kineControl::color kineControl::robot::get_colorR1()
+{
+    ros::spinOnce();
+    return this->colorR1_;
+}
+kineControl::color kineControl::robot::get_colorR2()
+{
+    ros::spinOnce();
+    return this->colorR2_;
+}
+kineControl::color kineControl::robot::get_colorR3()
+{
+    ros::spinOnce();
+    return this->colorR3_;
+}
+kineControl::color kineControl::robot::get_colorL0()
+{
+    ros::spinOnce();
+    return this->colorL0_;
+}
+kineControl::color kineControl::robot::get_colorL1()
+{
+    ros::spinOnce();
+    return this->colorL1_;
+}
+kineControl::color kineControl::robot::get_colorL2()
+{
+    ros::spinOnce();
+    return this->colorL2_;
+}
+kineControl::color kineControl::robot::get_colorL3()
+{
+    ros::spinOnce();
+    return this->colorL3_;
 }
 
 void kineControl::alinhar(kineControl::robot &robot)
@@ -317,6 +373,7 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
 
     kineControl::linha_preta(robot);
 }
+
 void kineControl::direita(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
@@ -476,7 +533,6 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
     ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
-    double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
     const double VEL_ANG = kineControl::VEL_ANG;
 
     ros::Duration time(0.05);
@@ -528,16 +584,141 @@ void kineControl::linha_preta(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
+{
+
+    // 0.07 -> container da esquerda 0
+    // 0.01   -> container da direita 1
+
+    ros::spinOnce();
+    robot.lateral_distance_;
+    ros::Rate rate(10);
+    geometry_msgs::Twist velocidade;
+
+    // Alinhar para frente
+    bool alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+    while (!alinhado && ros::ok())
+    {
+        // Andar uma distância predefinida
+        velocidade.linear.y = 0;
+        velocidade.linear.x = ((int)(robot.colorFL_ != PRETO) + (int)(robot.colorFR_ != PRETO) - (int)(robot.colorBL_ == PRETO) - (int)(robot.colorBR_ == PRETO)) * 0.025;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        rate.sleep();
+        ros::spinOnce();
+        alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+    
+    }
+    velocidade.linear.y = 0;
+    velocidade.linear.x = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+
+    // esquerda é 0 e direita é 1
+    double dist;
+    if (dir == 0)
+    {
+        dist = 0.071;
+    }
+    else
+    {
+        dist = 0.01;
+    }
+    // Alinhar lateralmente
+    double dif = dist - robot.lateral_distance_;
+    
+    ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
+    
+    while ( std::fabs(dif) > 0.005 && ros::ok())
+    {   
+        // Andar uma distância predefinida
+        velocidade.linear.y = - dif * 2;
+        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.angular.z = 0;
+        robot.setVelocity(velocidade);
+        rate.sleep();
+        ros::spinOnce();
+        alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
+        dif = dist - robot.lateral_distance_;
+    
+    }
+
+    velocidade.linear.y = 0;
+    velocidade.linear.x = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
+
+void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
+{
+    ROS_INFO("Alinhando com o container");
+    geometry_msgs::Twist velocidade;
+    int code = 0;
+    ros::Duration time(0.05);
+    ros::spinOnce();
+
+    // condição de não alinhamento: o robo não detecta azul ou verde
+    while ((robot.colorR0_ != AZUL_VERDE || robot.colorL0_ != AZUL_VERDE) && ros::ok())
+    {
+        code = 0;
+        velocidade.linear.x = 0;
+        velocidade.linear.y = 0;
+        velocidade.angular.z = 0;
+        //ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
+        // Caso 0: Sensor da esquerda detecta verde/azul, mas o da direita não -> ir para direita
+        // Caso 1: Sensor da direita detecta verde/azul, mas o da esquerda não -> ir para esquerda
+        if (robot.colorL0_ == AZUL_VERDE && robot.colorR0_ != AZUL_VERDE)
+            code = 0;
+        else if (robot.colorL0_ != AZUL_VERDE && robot.colorR0_ == AZUL_VERDE)
+            code = 1;
+
+        //ROS_INFO_STREAM("\nCase: " << code);
+
+        switch (code)
+        {
+        case 0:
+            ROS_INFO("direita");
+            ROS_INFO_STREAM("\nlacor: " << AZUL_VERDE);
+            ROS_INFO_STREAM("\nlacor: " << robot.colorL0_);
+            ROS_INFO_STREAM("\nlacor: " << robot.colorR0_);
+            velocidade.linear.y = 0.05;
+            break;
+        case 1:
+            ROS_INFO("esquerda");
+            velocidade.linear.y = -0.05;
+            break;
+        }
+
+        robot.setVelocity(velocidade);
+        ros::spinOnce();
+        time.sleep();
+    }
+    switch (code)
+    {
+    case 0:
+        velocidade.linear.y = 0.05;
+        ros::Duration(1).sleep();
+        break;
+    case 1:
+        velocidade.linear.y = -0.05;
+        ros::Duration(1).sleep();
+        break;
+    }
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+}
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
 
-void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback){}
+void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback) {}
 
-void doneCb(const actionlib::SimpleClientGoalState &state,const projeto_semear::moveEletroimaResultConstPtr &result){}
+void doneCb(const actionlib::SimpleClientGoalState &state, const projeto_semear::moveEletroimaResultConstPtr &result) {}
 
-void activeCb(){}
+void activeCb() {}
 
 void kineControl::pegar_container(kineControl::robot &robot)
-{  
+{
     ros::NodeHandle nh;
 
     ROS_INFO_STREAM("ligando o eletroima");
@@ -560,7 +741,7 @@ void kineControl::pegar_container(kineControl::robot &robot)
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     client.waitForResult(ros::Duration());
 
-    // Girar a guarra 90º 
+    // Girar a guarra 90º
     // Ligar o Eletroimã:
     ROS_INFO_STREAM("ligando o eletroima");
     msg.data = true;

@@ -4,6 +4,7 @@
 #include <projeto_semear/navigationAction.h>
 #include <projeto_semear/DescobrirCor.h>
 #include <projeto_semear/EscolherContainer.h>
+#include <projeto_semear/GetPose.h>
 
 typedef Client;
 void print_path(const std::vector<std::uint8_t> path);
@@ -17,7 +18,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "main");
     ros::NodeHandle nh;
 
-    kineControl::robot motor;
+    kineControl::robot robot;
 
     // Actionlib de navegação
     actionlib::SimpleActionClient<projeto_semear::navigationAction> navigation_client("navigation", true);
@@ -31,35 +32,85 @@ int main(int argc, char **argv)
 
     projeto_semear::DescobrirCor descobrir_container_msg; // mensagem para o serviço de descobrir container
 
+    // Serviço de escolher container
+    ros::ServiceClient escolher_container_srv = nh.serviceClient<projeto_semear::EscolherContainer>("EscolherContainer");
+    escolher_container_srv.waitForExistence();
+
+    projeto_semear::EscolherContainer escolher_container_msg;
+
+    // Serviço GPS
+    ros::ServiceClient gps_srv = nh.serviceClient<projeto_semear::GetPose>("gps");
+    gps_srv.waitForExistence();
+
+    projeto_semear::GetPose gps_msg;
+
     // Indo para linha Preta
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.QUADRANTE_CENTRAL;
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.TREM;
 
-    navigation_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
+    navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
     navigation_client.waitForResult();
 
     bool fim = false;
+    int proximo_quadrante = -1;
+    int antigo_quadrante = -1;
+
+    // Alinhar com a pilha
+    kineControl::alinhar_pilha(robot, 0);
+
+    // Descobrir cor do container
+    descobrir_cor_srv.call(descobrir_container_msg);
+
+    // Alinhando com o container da direita
+    kineControl::alinhar_pilha(robot, 1);
+
+    // Descobrir cor do container
+    descobrir_cor_srv.call(descobrir_container_msg);
+
     while (!fim)
     {
-        // Alinhando com os containers
+        // Escolhendo containers
+        escolher_container_srv.call(escolher_container_msg);
 
-        // Descobrindo cores dos containers
+        // Movendo o Robô para o próximo quadrante
+        navigation_msg.goal_pose.location = proximo_quadrante;
+        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+
+        navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
+        navigation_client.waitForResult();
+
+        // Alinhar com a pilha
+        kineControl::alinhar_pilha(robot, 0);
+
+        // Descobrir cor do container
+        descobrir_cor_srv.call(descobrir_container_msg);
+
+        // Alinhando com o container da direita
+        kineControl::alinhar_pilha(robot, 1);
+
+        // Descobrir cor do container
         descobrir_cor_srv.call(descobrir_container_msg);
 
         // Escolhendo containers
-
-
-        // Levando o container para doca correta
-        goal.goal_pose.location = goal.goal_pose.DOCA_VERDE;
-        goal.goal_pose.orientation = goal.goal_pose.LESTE;
-
-        navigation_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-        navigation_client.waitForResult();
-
-        // Depositando  o container
-
-        // Voltando para doca mais próxima
+        escolher_container_srv.call(escolher_container_msg);
     }
+    // Escolhendo containers
+    escolher_container_srv.call(escolher_container_msg);
 
-    client.waitForResult(ros::Duration());
+    // Alinhar com a pilha escolhida
+    kineControl::alinhar_pilha(motor, escolher_container_msg.response.container_escolhido);
+
+    // Levando o container para doca correta
+    navigation_msg.goal_pose.location = navigation_msg.goal_pose.DOCA_VERDE;
+    navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+
+    navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
+    navigation_client.waitForResult();
+
+    // Depositando  o container
+
+    // Voltando para doca mais próxima
+}
+
+navigation_client.waitForResult(ros::Duration());
 }
