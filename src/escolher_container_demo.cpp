@@ -49,7 +49,9 @@ int main(int argc, char **argv)
 
         }
 
-    //agora temos a posição e a cor de dois containers
+    //agora temos a posição e a cor de dois containers, so falta chamar o servico e testá-lo
+
+
 
     }
     return 0;

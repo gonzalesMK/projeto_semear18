@@ -160,7 +160,7 @@ int main(int argc, char **argv)
     ros::ServiceServer choose_service = node.advertiseService("EscolherContainer", escolha); // Requisita o serviço EscolherContainer
     ROS_INFO("Preparado para escolher o container");
 
-    ros::spinOnce();
+    ros::spin();
 
     return 0;
 }
