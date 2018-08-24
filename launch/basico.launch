@@ -14,6 +14,11 @@
 
 	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
 
-	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor" respawn="false" output="screen"/>
+	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output="screen"/>
+
+	<node name="escolher_container" pkg="projeto_semear" type="escolher_container" respawn="false" output="screen"/>
+
+	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
+
 
 </launch>   

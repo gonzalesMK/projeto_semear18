@@ -5,13 +5,10 @@ considera-se que ele já esteja com a frente voltada para a linha preta (como na
 #include <ros/ros.h>
 #include <projeto_semear/kine_control.h>
 #include <std_msgs/Float32.h>
-
-void callbackFL(const std_msgs::Float32ConstPtr &msg);
-void callbackFR(const std_msgs::Float32ConstPtr &msg);
  
 // Variáveis para armazenar os valores dos sensores
-double colorFL = -1;
-double colorFR = -1;
+double colorBL = -1;
+double colorBR = -1;
 geometry_msgs::Twist velocidade;
 
 const double MAIOR_QUE_PRETO = 60;  // Constante para marcar o valor do preto
@@ -24,16 +21,16 @@ int main(int argc, char **argv){
 
     kineControl::robot robot;
 
-    colorFL = robot.get_colorFL();
-    colorFR = robot.get_colorFR();
+    colorBL = robot.get_colorBL();
+    colorBR = robot.get_colorBR();
     
-    while (colorFL == -1 || colorFR == -1){
+    while (colorBL == -1 || colorBR == -1){
         //se entrar nesse while, significa que não está recebendo as mensagens do convert
         ROS_INFO("rosrun no convert, por favor");
         ros::spinOnce(); 
         ros::Duration(0.5).sleep();
-        colorFL = robot.get_colorFL();
-        colorFR = robot.get_colorFR();
+        colorBL = robot.get_colorBL();
+        colorBR = robot.get_colorBR();
     }
 
     ros::Duration time(0.05);
@@ -41,23 +38,23 @@ int main(int argc, char **argv){
     int code = 0;
 
     ros::Time begin = ros::Time::now();        
-    while ((colorFR > MAIOR_QUE_PRETO || colorFL > MAIOR_QUE_PRETO)){
+    while ((colorBR > MAIOR_QUE_PRETO || colorBL > MAIOR_QUE_PRETO)){
         velocidade.linear.x = 0;
         velocidade.linear.y = 0;
         velocidade.angular.z = 0;
    
-        colorFL = robot.get_colorFL();
-        colorFR = robot.get_colorFR();
+        colorBL = robot.get_colorBL();
+        colorBR = robot.get_colorBR();
         
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
-        ROS_INFO_STREAM("\nFL " << colorFL << " FR " << colorFR);
-        if(colorFL > MAIOR_QUE_PRETO && colorFR > MAIOR_QUE_PRETO)
+        ROS_INFO_STREAM("\nFL " << colorBL << " FR " << colorBR);
+        if(colorBL > MAIOR_QUE_PRETO && colorBR > MAIOR_QUE_PRETO)
             code = 0;
-        else if (colorFL > MAIOR_QUE_PRETO && colorFR < MAIOR_QUE_PRETO)
+        else if (colorBL > MAIOR_QUE_PRETO && colorBR < MAIOR_QUE_PRETO)
             code = 1;
-        else if (colorFL < MAIOR_QUE_PRETO && colorFR > MAIOR_QUE_PRETO)
+        else if (colorBL < MAIOR_QUE_PRETO && colorBR > MAIOR_QUE_PRETO)
             code = 2;
         ROS_INFO_STREAM("Case: " << code);     
         switch(code){
@@ -74,6 +71,7 @@ int main(int argc, char **argv){
         
         robot.setVelocity(velocidade);
         time.sleep();
+        ros::spinOnce;
     }
     ros::Time end = ros::Time::now();
     float distance = (end.sec - begin.sec)*0.05;

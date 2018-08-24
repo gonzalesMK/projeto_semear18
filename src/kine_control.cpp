@@ -196,7 +196,7 @@ kineControl::color kineControl::robot::get_colorL3()
 
 void kineControl::alinhar(kineControl::robot &robot)
 {
-    ROS_INFO("Alinhando com a linha Preta (a linha preta esta atras)");
+    //ROS_INFO("Alinhando com a linha Preta (a linha preta esta atras)");
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Duration time(0.05);
@@ -336,6 +336,13 @@ void kineControl::ir_doca(kineControl::robot &robot)
 
     geometry_msgs::Twist velocidade;
 
+    // Ir para trás
+    velocidade.linear.x = -0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(1).sleep();
+
     // Girar 90 Graus
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
@@ -362,10 +369,16 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
     geometry_msgs::Twist velocidade;
 
     // Girar 90 Graus
+    velocidade.linear.x = -0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(1).sleep();
+
+    // Girar 90 Graus
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = PI / 3;
-
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
 
@@ -532,7 +545,7 @@ void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, 
 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
-    ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
+    //ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
     const double VEL_ANG = kineControl::VEL_ANG;
 
     ros::Duration time(0.05);
@@ -540,7 +553,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
     int code = 0;
     ros::Time begin = ros::Time::now();
     ros::spinOnce();
-    while ((robot.colorFR_ != PRETO || robot.colorFL_ != PRETO) && ros::ok())
+    while ((robot.colorBR_ != PRETO || robot.colorBL_ != PRETO) && ros::ok())
     {
         velocidade.linear.x = 0;
         velocidade.linear.y = 0;
@@ -548,18 +561,18 @@ void kineControl::linha_preta(kineControl::robot &robot)
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
-        //ROS_INFO_STREAM("\nFL " << robot.colorFL_ << " FR " << robot.colorFR_);
-        if (robot.colorFL_ != PRETO && robot.colorFR_ != PRETO)
+        //ROS_INFO_STREAM("\nFL " << robot.colorBL_ << " FR " << robot.colorBR_);
+        if (robot.colorBL_ != PRETO && robot.colorBR_ != PRETO)
             code = 0;
-        else if (robot.colorFL_ != PRETO && robot.colorFR_ == PRETO)
+        else if (robot.colorBL_ != PRETO && robot.colorBR_ == PRETO)
             code = 1;
-        else if (robot.colorFL_ == PRETO && robot.colorFR_ != PRETO)
+        else if (robot.colorBL_ == PRETO && robot.colorBR_ != PRETO)
             code = 2;
         // ROS_INFO_STREAM("Case: " << code);
         switch (code)
         {
         case 0:
-            velocidade.linear.x = 0.05;
+            velocidade.linear.x = 0.15;
             break;
         case 1:
             velocidade.angular.z = -VEL_ANG;
@@ -601,38 +614,41 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
     {
         // Andar uma distância predefinida
         velocidade.linear.y = 0;
-        velocidade.linear.x = ((int)(robot.colorFL_ != PRETO) + (int)(robot.colorFR_ != PRETO) - (int)(robot.colorBL_ == PRETO) - (int)(robot.colorBR_ == PRETO)) * 0.025;
+        velocidade.linear.x =  ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
         rate.sleep();
         ros::spinOnce();
         alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
-    
     }
     velocidade.linear.y = 0;
     velocidade.linear.x = 0;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 
-    // esquerda é 0 e direita é 1
+    // esquerda é 0 e direita é 1 e 2 é o centro
     double dist;
     if (dir == 0)
     {
         dist = 0.071;
     }
-    else
+    else if (dir == 1)
     {
         dist = 0.01;
     }
+    else if (dir == 2)
+    {
+        dist = 0.04;
+    }
     // Alinhar lateralmente
     double dif = dist - robot.lateral_distance_;
-    
-    ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
-    
-    while ( std::fabs(dif) > 0.005 && ros::ok())
-    {   
+
+    //ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
+
+    while (std::fabs(dif) > 0.005 && ros::ok())
+    {
         // Andar uma distância predefinida
-        velocidade.linear.y = - dif * 2;
+        velocidade.linear.y = -dif ;
         velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
@@ -640,7 +656,8 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
         ros::spinOnce();
         alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
         dif = dist - robot.lateral_distance_;
-    
+        
+        //ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
     }
 
     velocidade.linear.y = 0;

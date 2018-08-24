@@ -11,20 +11,20 @@ typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Clien
 // Função de feedback do ActionLib
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
 {
-    ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
+    //ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
 }
 
 // Função executada quando a tarefa termina
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::moveEletroimaResultConstPtr &result)
 {
-    ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
+ //   ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
 }
 
 // Called once when the goal becomes active
 void activeCb()
 {
-    ROS_INFO("Goal just went active");
+    // ROS_INFO("Goal just went active");
 }
 
 int main(int argc, char **argv)

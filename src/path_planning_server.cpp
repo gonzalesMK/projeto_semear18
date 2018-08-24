@@ -95,6 +95,14 @@ bool path_plannning(projeto_semear::PathPlanning::Request &req,
     projeto_semear::Pose robot_pose = req.initial_pose;
     projeto_semear::Pose goal_pose =  req.goal_pose;
 
+    if(robot_pose.location > 6 && robot_pose.location < 0){
+        ROS_ERROR_STREAM("A posicao do robot para o PathPlanning está fora dos limites de 0 a 6: " << robot_pose.location);
+    }
+
+    if(goal_pose.location > 6 && goal_pose.location < 0){
+        ROS_ERROR_STREAM("A posicao do objetivo para o PathPlanning está fora dos limites de 0 a 6: " << robot_pose.location);
+    }
+
     // Get PATH
     if( robot_pose.location == goal_pose.location){
         res.path = std::vector<std::uint8_t>(0, -1);

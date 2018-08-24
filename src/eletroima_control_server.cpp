@@ -115,7 +115,7 @@ void execute(const projeto_semear::moveEletroimaGoalConstPtr &goal, Server *as)
         // Send feedback message:
         feedback.distance = sqrt(pow(dist_x, 2) + pow(dist_y, 2) + pow(dist_z, 2) + pow(dist_w, 2));
         as->publishFeedback(feedback);
-        ROS_INFO_STREAM("W: " << dist_w <<  "vel W: " << pose_msg.angular.z);
+        //ROS_INFO_STREAM("W: " << dist_w <<  "vel W: " << pose_msg.angular.z);
         // Check if Final Pose is reached.
         if (dist_w < W && dist_x < VEL_X && dist_y < VEL_Y && dist_z < VEL_Z)
             succeed = true;

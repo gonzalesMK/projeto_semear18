@@ -194,12 +194,12 @@ target_link_libraries(mapa_container_demo
 )
 add_dependencies(mapa_container_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(descobrir_cor src/descobrir_cor.cpp)
-target_link_libraries(descobrir_cor
+add_executable(descobrir_cor_server src/descobrir_cor_server.cpp)
+target_link_libraries(descobrir_cor_server
   ${catkin_LIBRARIES}
   motor_library
 )
-add_dependencies(descobrir_cor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(descobrir_cor_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(pegar_container src/pegar_container.cpp)
 target_link_libraries(pegar_container
@@ -208,4 +208,16 @@ target_link_libraries(pegar_container
 )
 add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(descobrir_cor_demo src/descobrir_cor_demo.cpp)
+target_link_libraries(descobrir_cor_demo
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(descobrir_cor_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(main src/main.cpp)
+target_link_libraries(main
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS})

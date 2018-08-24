@@ -50,11 +50,14 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
     {
         ROS_ERROR("Can't find pathPlanning server");
         ros::Duration(1).sleep();
+        path_client.waitForExistence();
+        
+        
     }
     std::vector<std::uint8_t> path = path_srv.response.path;
 
     // Debug
-    ROS_INFO_STREAM("GOAL: " << (int)path_srv.request.goal_pose.location << " INITIAL: " << (int)path_srv.request.initial_pose.location);
+    //ROS_INFO_STREAM("GOAL: " << (int)path_srv.request.goal_pose.location << " INITIAL: " << (int)path_srv.request.initial_pose.location);
 
     // Envie um feedback preliminar com o caminho
     projeto_semear::navigationFeedback feedback;
@@ -78,7 +81,7 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         auto it_actual_goal = it_pose + 1;
 
         unsigned int code = 10 * (*it_pose) + (*it_actual_goal);
-        ROS_INFO_STREAM(code);
+        //ROS_INFO_STREAM(code);
         feedback.code = code;
         as->publishFeedback(feedback);
 
