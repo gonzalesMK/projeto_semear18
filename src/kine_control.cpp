@@ -93,106 +93,6 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BL_Motor_.publish(Wbl);
 }
 
-// Concerning is not properly working yet, need to improve the math
-// Concerning é quando o robô gira em torno de uma das suas rodas.
-bool kineControl::robot::concerning(const wheel w, double modulo_vel)
-{
-    std_msgs::Float32 Wfl;
-    std_msgs::Float32 Wfr;
-    std_msgs::Float32 Wbl;
-    std_msgs::Float32 Wbr;
-    modulo_vel = modulo_vel / DIAMETRO * PI;
-
-    switch (w)
-    {
-    case kineControl::FL:
-        Wfl.data = 0;
-        Wfr.data = -modulo_vel;
-        Wbl.data = 0;
-        Wbr.data = -modulo_vel;
-    case kineControl::BL:
-        Wfl.data = 0;
-        Wfr.data = modulo_vel;
-        Wbl.data = 0;
-        Wbr.data = modulo_vel;
-    case kineControl::FR:
-        Wfl.data = -modulo_vel;
-        Wfr.data = 0;
-        Wbl.data = -modulo_vel;
-        Wbr.data = 0;
-    case kineControl::BR:
-        Wfl.data = modulo_vel;
-        Wfr.data = 0;
-        Wbl.data = modulo_vel;
-        Wbr.data = 0;
-    }
-    // Publicação para o motor
-    FR_Motor_.publish(Wfr);
-    FL_Motor_.publish(Wfl);
-    BR_Motor_.publish(Wbr);
-    BL_Motor_.publish(Wbl);
-}
-
-kineControl::color kineControl::robot::get_colorFL()
-{
-    ros::spinOnce();
-    return this->colorFL_;
-}
-kineControl::color kineControl::robot::get_colorBL()
-{
-    ros::spinOnce();
-    return this->colorBL_;
-}
-kineControl::color kineControl::robot::get_colorFR()
-{
-    ros::spinOnce();
-    return this->colorFR_;
-}
-kineControl::color kineControl::robot::get_colorBR()
-{
-    ros::spinOnce();
-    return this->colorBR_;
-}
-kineControl::color kineControl::robot::get_colorR0()
-{
-    ros::spinOnce();
-    return this->colorR0_;
-}
-kineControl::color kineControl::robot::get_colorR1()
-{
-    ros::spinOnce();
-    return this->colorR1_;
-}
-kineControl::color kineControl::robot::get_colorR2()
-{
-    ros::spinOnce();
-    return this->colorR2_;
-}
-kineControl::color kineControl::robot::get_colorR3()
-{
-    ros::spinOnce();
-    return this->colorR3_;
-}
-kineControl::color kineControl::robot::get_colorL0()
-{
-    ros::spinOnce();
-    return this->colorL0_;
-}
-kineControl::color kineControl::robot::get_colorL1()
-{
-    ros::spinOnce();
-    return this->colorL1_;
-}
-kineControl::color kineControl::robot::get_colorL2()
-{
-    ros::spinOnce();
-    return this->colorL2_;
-}
-kineControl::color kineControl::robot::get_colorL3()
-{
-    ros::spinOnce();
-    return this->colorL3_;
-}
 
 void kineControl::alinhar(kineControl::robot &robot)
 {
@@ -738,7 +638,6 @@ void kineControl::pegar_container(kineControl::robot &robot)
 {
     ros::NodeHandle nh;
 
-    ROS_INFO_STREAM("ligando o eletroima");
     ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
     std_msgs::Bool msg;
     msg.data = false;
@@ -750,11 +649,10 @@ void kineControl::pegar_container(kineControl::robot &robot)
 
     // Meta para posicionar a garra em cima do container
     projeto_semear::moveEletroimaGoal goal;
-    goal.deslocamento.linear.x = 0.01;
+    goal.deslocamento.linear.x = 0;
     goal.deslocamento.linear.y = -0.15;
     goal.deslocamento.linear.z = 0;
     goal.deslocamento.angular.z = 0;
-
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     client.waitForResult(ros::Duration());
 
@@ -765,8 +663,110 @@ void kineControl::pegar_container(kineControl::robot &robot)
     pub.publish(msg);
 
     goal.deslocamento.linear.z = 0.05;
-    goal.deslocamento.linear.x = -0.01;
+    goal.deslocamento.linear.x = 0;
     goal.deslocamento.linear.y = 0.05;
+    goal.deslocamento.angular.z = PI/2;
     client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
     client.waitForResult(ros::Duration());
+}
+
+// Concerning is not properly working yet, need to improve the math
+// Concerning é quando o robô gira em torno de uma das suas rodas.
+bool kineControl::robot::concerning(const wheel w, double modulo_vel)
+{
+    std_msgs::Float32 Wfl;
+    std_msgs::Float32 Wfr;
+    std_msgs::Float32 Wbl;
+    std_msgs::Float32 Wbr;
+    modulo_vel = modulo_vel / DIAMETRO * PI;
+
+    switch (w)
+    {
+    case kineControl::FL:
+        Wfl.data = 0;
+        Wfr.data = -modulo_vel;
+        Wbl.data = 0;
+        Wbr.data = -modulo_vel;
+    case kineControl::BL:
+        Wfl.data = 0;
+        Wfr.data = modulo_vel;
+        Wbl.data = 0;
+        Wbr.data = modulo_vel;
+    case kineControl::FR:
+        Wfl.data = -modulo_vel;
+        Wfr.data = 0;
+        Wbl.data = -modulo_vel;
+        Wbr.data = 0;
+    case kineControl::BR:
+        Wfl.data = modulo_vel;
+        Wfr.data = 0;
+        Wbl.data = modulo_vel;
+        Wbr.data = 0;
+    }
+    // Publicação para o motor
+    FR_Motor_.publish(Wfr);
+    FL_Motor_.publish(Wfl);
+    BR_Motor_.publish(Wbr);
+    BL_Motor_.publish(Wbl);
+}
+
+kineControl::color kineControl::robot::get_colorFL()
+{
+    ros::spinOnce();
+    return this->colorFL_;
+}
+kineControl::color kineControl::robot::get_colorBL()
+{
+    ros::spinOnce();
+    return this->colorBL_;
+}
+kineControl::color kineControl::robot::get_colorFR()
+{
+    ros::spinOnce();
+    return this->colorFR_;
+}
+kineControl::color kineControl::robot::get_colorBR()
+{
+    ros::spinOnce();
+    return this->colorBR_;
+}
+kineControl::color kineControl::robot::get_colorR0()
+{
+    ros::spinOnce();
+    return this->colorR0_;
+}
+kineControl::color kineControl::robot::get_colorR1()
+{
+    ros::spinOnce();
+    return this->colorR1_;
+}
+kineControl::color kineControl::robot::get_colorR2()
+{
+    ros::spinOnce();
+    return this->colorR2_;
+}
+kineControl::color kineControl::robot::get_colorR3()
+{
+    ros::spinOnce();
+    return this->colorR3_;
+}
+kineControl::color kineControl::robot::get_colorL0()
+{
+    ros::spinOnce();
+    return this->colorL0_;
+}
+kineControl::color kineControl::robot::get_colorL1()
+{
+    ros::spinOnce();
+    return this->colorL1_;
+}
+kineControl::color kineControl::robot::get_colorL2()
+{
+    ros::spinOnce();
+    return this->colorL2_;
+}
+kineControl::color kineControl::robot::get_colorL3()
+{
+    ros::spinOnce();
+    return this->colorL3_;
 }
