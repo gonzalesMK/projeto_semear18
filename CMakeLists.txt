@@ -33,6 +33,7 @@ add_message_files(
 add_service_files(
   FILES
   EscolherContainer.srv
+  Strategy.srv
   GetPose.srv
   PathPlanning.srv
 	DepositarContainer.srv
@@ -97,6 +98,12 @@ target_link_libraries(escolher_container
   ${catkin_LIBRARIES}
 )
 add_dependencies(escolher_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(estrategia_server src/estrategia_server.cpp)
+target_link_libraries(estrategia_server
+  ${catkin_LIBRARIES}
+)
+add_dependencies(estrategia_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(gps src/gps.cpp)
 target_link_libraries(gps
