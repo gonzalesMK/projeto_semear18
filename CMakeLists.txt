@@ -46,6 +46,7 @@ add_service_files(
 add_action_files(
   FILES 
   moveEletroima.action
+  setEletroima.action
   navigation.action
 )
     
