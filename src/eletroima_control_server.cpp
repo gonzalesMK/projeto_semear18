@@ -185,8 +185,8 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     else if (goal->pose == goal->posicao_pegar_container_superior)
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -.190;
-        final_pose_msg.linear.z = .170;
+        final_pose_msg.linear.y = -1.8000e-1;
+        final_pose_msg.linear.z = +1.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = .0;
