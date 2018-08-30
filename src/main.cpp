@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 
         // Pegar container
         ROS_INFO("Pegando Container");
-        kineControl::pegar_container(robot);
+        kineControl::pegar_container(robot, escolher_container_msg.response.container_escolhido);
 
         // Levando o container para doca correta
         ROS_INFO("Indo para Doca Correta");

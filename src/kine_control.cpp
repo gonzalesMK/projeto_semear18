@@ -1,6 +1,10 @@
 #include "projeto_semear/kine_control.h"
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
+#include <projeto_semear/setEletroimaAction.h>
+#include <projeto_semear/GetContainerInfo.h>
+#include <vector>
+#include <projeto_semear/GetPose.h>
 #include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
 #include <stdlib.h>
@@ -92,7 +96,6 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
 }
-
 
 void kineControl::alinhar(kineControl::robot &robot)
 {
@@ -313,135 +316,6 @@ void kineControl::direita(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 }
-/*
-void kineControl::mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to)
-{
-    // Change names. Avoid have global variables
-    double MAIOR_QUE_VERDE = kineControl::MAIOR_QUE_VERDE;
-    double MAIOR_QUE_PRETO = kineControl::MAIOR_QUE_PRETO;
-    const double VEL_ANG = kineControl::VEL_ANG;
-
-    double colorBL = robot.get_colorBL();
-    double colorBR = robot.get_colorBR();
-    double colorFL = robot.get_colorFL();
-    double colorFR = robot.get_colorFR();
-
-    projeto_semear::Pose pose_from, pose_to;
-    pose_from.location = from;
-    pose_from.orientation = 0;
-    pose_to.location = to;
-    pose_to.orientation = 0;
-
-    // Checa se o parametro quadrante to está correto
-    if (from != projeto_semear::Pose::QUADRANTE_ESQUERDO && from != projeto_semear::Pose::QUADRANTE_CENTRAL && from != projeto_semear::Pose::QUADRANTE_DIREITO)
-    {
-        ROS_ERROR_STREAM("O Quadrante início deve ser o da esquerda (1), ou direito (2), ou centro (0), mas ele eh: " << pose_from);
-    }
-    if (to != projeto_semear::Pose::QUADRANTE_ESQUERDO && to != projeto_semear::Pose::QUADRANTE_CENTRAL && to != projeto_semear::Pose::QUADRANTE_DIREITO)
-    {
-        ROS_ERROR_STREAM("O Quadrante alvo deve conectado ao quadrante requisitado. : " << pose_to);
-    }
-
-    int direita_ou_esquerda = 0;
-    switch (from)
-    {
-    case (projeto_semear::Pose::QUADRANTE_ESQUERDO):
-        direita_ou_esquerda = 1;
-        if (to == projeto_semear::Pose::QUADRANTE_ESQUERDO) // caso seja repetido, não há o que enviar
-            return;
-        break;
-
-    case (projeto_semear::Pose::QUADRANTE_DIREITO):
-        direita_ou_esquerda = -1;
-        if (to == projeto_semear::Pose::QUADRANTE_DIREITO) // caso seja repetido, não há o que enviar
-            return;
-        break;
-
-    case (projeto_semear::Pose::QUADRANTE_CENTRAL):
-        direita_ou_esquerda = to == projeto_semear::Pose::QUADRANTE_DIREITO ? 1 : -1;
-        if (to == projeto_semear::Pose::QUADRANTE_CENTRAL) // caso seja repetido, não há o que enviar
-            return;
-        break;
-    }
-
-    // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
-    ros::Duration time(0.05);
-    geometry_msgs::Twist velocidade;
-    int code = 0;
-
-    ROS_INFO("Alinhando com a linha preta e verde");
-    while ((colorBL > MAIOR_QUE_VERDE || colorBR > MAIOR_QUE_VERDE || colorFR > MAIOR_QUE_PRETO || colorFL > MAIOR_QUE_PRETO))
-    {
-
-        int code = 0;
-        velocidade.linear.x = 0;
-        velocidade.linear.y = 0;
-        velocidade.angular.z = 0;
-
-        // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
-        // Caso 1: Caso o sensor BackRight esteja marcando verde, mas o BackLeft não -> girar positivo
-        // Caso 2: Caso o sensor BackLeft esteja marcando verde, mas o BackRight não -> girar negativo
-        // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
-        // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
-        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
-
-        if (colorBL > MAIOR_QUE_VERDE && colorBR > MAIOR_QUE_VERDE && colorFL > MAIOR_QUE_VERDE && colorFR > MAIOR_QUE_VERDE)
-            code = 0;
-        else if (colorBL > MAIOR_QUE_VERDE && colorBR < MAIOR_QUE_VERDE)
-            code = 1;
-        else if (colorBL < MAIOR_QUE_VERDE && colorBR > MAIOR_QUE_VERDE)
-            code = 2;
-        else if (colorFL > MAIOR_QUE_PRETO && colorFR < MAIOR_QUE_PRETO)
-            code = 3;
-        else if (colorFL < MAIOR_QUE_PRETO && colorFR > MAIOR_QUE_PRETO)
-            code = 4;
-
-        //ROS_INFO_STREAM("Case: " << code);
-
-        switch (code)
-        {
-        case 0:
-            velocidade.linear.x = -0.05;
-        case 1:
-            velocidade.angular.z = -VEL_ANG;
-            break;
-        case 2:
-            velocidade.angular.z = VEL_ANG;
-            break;
-        case 3:
-            velocidade.angular.z = -VEL_ANG;
-            break;
-        case 4:
-            velocidade.angular.z = VEL_ANG;
-            break;
-        }
-
-        robot.setVelocity(velocidade);
-        ros::spinOnce();
-        colorBL = robot.colorBL_;
-        colorBR = robot.colorBR_;
-        colorFL = robot.colorFL_;
-        colorFR = robot.colorFR_;
-        time.sleep();
-    }
-
-    ROS_INFO_STREAM("Transição do quadrante: " << direita_ou_esquerda);
-    // Vá para direita até o sensor da direita atingir o fita preta
-    velocidade.linear.x = 0;
-    velocidade.linear.y = direita_ou_esquerda * 0.1;
-    velocidade.angular.z = 0;
-
-    robot.setVelocity(velocidade);
-
-    // Quinto, andar uma distância predefinida
-    ros::Duration(3).sleep();
-
-    velocidade.linear.x = 0;
-    velocidade.linear.y = 0;
-    velocidade.angular.z = 0;
-
-    robot.setVelocity(velocidade);
-}*/
 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
@@ -514,7 +388,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
     {
         // Andar uma distância predefinida
         velocidade.linear.y = 0;
-        velocidade.linear.x =  ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
+        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
         rate.sleep();
@@ -548,7 +422,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
     while (std::fabs(dif) > 0.005 && ros::ok())
     {
         // Andar uma distância predefinida
-        velocidade.linear.y = -dif ;
+        velocidade.linear.y = -dif;
         velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * 0.025;
         velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
@@ -556,7 +430,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
         ros::spinOnce();
         alinhado = robot.colorFL_ != PRETO && robot.colorFR_ != PRETO && robot.colorBL_ == PRETO && robot.colorBR_ == PRETO;
         dif = dist - robot.lateral_distance_;
-        
+
         //ROS_INFO_STREAM("diff: " << dif << " Lateral: " << robot.lateral_distance_ << " dist: " << dist);
     }
 
@@ -626,48 +500,99 @@ void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
 }
-typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
+typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> MoveClient;
+typedef actionlib::SimpleActionClient<projeto_semear::setEletroimaAction> SetClient;
 
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback) {}
-
 void doneCb(const actionlib::SimpleClientGoalState &state, const projeto_semear::moveEletroimaResultConstPtr &result) {}
-
+void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback) {}
+void doneCb2(const actionlib::SimpleClientGoalState &state, const projeto_semear::setEletroimaResultConstPtr &result) {}
 void activeCb() {}
 
-void kineControl::pegar_container(kineControl::robot &robot)
+void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido)
 {
+    // Espera-se que o código já saiba se deve pegar o container da direita ou da esquerda
     ros::NodeHandle nh;
 
     ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
+    ros::ServiceClient pose_client = nh.serviceClient<projeto_semear::GetPose>("gps");
+    ros::ServiceClient get_client = nh.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
+    MoveClient move_client("moveEletroima", true); // true -> don't need ros::spin()
+    SetClient set_client("setEletroima", true);    // true -> don't need ros::spin()
+
+    // Desligando Eletroima
     std_msgs::Bool msg;
     msg.data = false;
     pub.publish(msg);
 
-    // Espera-se que o código já saiba se deve pegar o container da direita ou da esquerda
-    Client client("moveEletroima", true); // true -> don't need ros::spin()
-    client.waitForServer();
+    // Pegar a posição do robô
+    projeto_semear::GetPose pose_msg;
+    pose_msg.request.set = false;
+    pose_client.call(pose_msg);
+
+    // Encontrar qual a pilha
+    double esq, dir;
+    switch (pose_msg.response.pose.location)
+    {
+    case projeto_semear::Pose::QUADRANTE_ESQUERDO:
+        esq = 0;
+        dir = 1;
+        break;
+    case projeto_semear::Pose::QUADRANTE_CENTRAL:
+        esq = 2;
+        dir = 3;
+        break;
+    case projeto_semear::Pose::QUADRANTE_DIREITO:
+        esq = 4;
+        dir = 5;
+        break;
+    default:
+        ROS_ERROR(" Localizacao do robo pode estar errada! Nenhuma foi escolhida");
+        return;
+    }
+    char lado;
+    if (lado_escolhido == 0)
+    {
+        lado = esq;
+    }
+    else if (lado_escolhido == 1)
+    {
+        lado = dir;
+    }
+    else
+    {
+        ROS_ERROR("Nenhum lado foi escolhido. Erro em pegar container");
+    }
 
     // Meta para posicionar a garra em cima do container
     projeto_semear::moveEletroimaGoal goal;
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = -0.15;
-    goal.deslocamento.linear.z = 0;
-    goal.deslocamento.angular.z = 0;
-    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    client.waitForResult(ros::Duration());
+    projeto_semear::setEletroimaGoal set_goal;
 
+    move_client.waitForServer();
+    set_client.waitForServer();
+
+    ROS_INFO("PEGAR CONTAINER - Centralizar garra no container superior");
+
+    set_goal.pose = set_goal.posicao_pegar_container_superior;
+
+    set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
+    set_client.waitForResult(ros::Duration());
+
+    // Verificar o número de containers na pilha
+    projeto_semear::GetContainerInfo get_container_info_msg;
+    get_container_info_msg.request.where = lado;
+
+    get_client.call(get_container_info_msg);
     // Girar a guarra 90º
     // Ligar o Eletroimã:
-    ROS_INFO_STREAM("ligando o eletroima");
+    ROS_INFO_STREAM("PEGAR CONTAINER - Ligando o eletroima");
     msg.data = true;
     pub.publish(msg);
 
-    goal.deslocamento.linear.z = 0.05;
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = 0.05;
-    goal.deslocamento.angular.z = PI/2;
-    client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-    client.waitForResult(ros::Duration());
+    ROS_INFO_STREAM("PEGAR CONTAINER - Rotacionar Container em cima");
+    set_goal.pose = set_goal.posicao_pegar_container_superior_rotacionado;
+    set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
+    set_client.waitForResult(ros::Duration());
 }
 
 // Concerning is not properly working yet, need to improve the math
