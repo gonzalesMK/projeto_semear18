@@ -24,13 +24,11 @@
  * Para se comunicar com esse nó, ver exemplo no código: eletroima_control_demo
  * */
 
-
-
 // Constants
-const double FREQUENCIA = 20;                                           // Hertz
-const double VEL_X = 0.2 / FREQUENCIA;                                  // metros/segundo
-const double VEL_Y = 0.2 / FREQUENCIA;                                  // metros/segundo
-const double VEL_Z = 0.2 / FREQUENCIA;                                  // metros/segundo
+const double FREQUENCIA = 20;                                       // Hertz
+const double VEL_X = 0.2 / FREQUENCIA;                              // metros/segundo
+const double VEL_Y = 0.2 / FREQUENCIA;                              // metros/segundo
+const double VEL_Z = 0.2 / FREQUENCIA;                              // metros/segundo
 const double W = boost::math::constants::pi<double>() / FREQUENCIA; // Rad/ segundo
 
 ros::Publisher eletro_twist;
@@ -150,46 +148,169 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
 }
 
 // Função de feedback do ActionLib
-void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr& feedback)
+void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
 {
-  ROS_INFO_STREAM("Distance to Goal" <<  feedback->distance) ;
+    ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
 }
 
 // Função executada quando a tarefa termina
-void doneCb(const actionlib::SimpleClientGoalState& state,
-            const projeto_semear::moveEletroimaResultConstPtr& result)
+void doneCb(const actionlib::SimpleClientGoalState &state,
+            const projeto_semear::moveEletroimaResultConstPtr &result)
 {
-  ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
+    ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
 }
 
 // Called once when the goal becomes active
 void activeCb()
 {
-  ROS_INFO("Goal just went active");
+    ROS_INFO("Goal just went active");
 }
 
-void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionlib::SimpleActionServer<projeto_semear::setEletroimaAction>  *as)
+void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionlib::SimpleActionServer<projeto_semear::setEletroimaAction> *as)
 {
-    
-    geometry_msgs::Twist pose_msg;
+
+    geometry_msgs::Twist final_pose_msg;
 
     actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> client("moveEletroima", true);
 
-    if (goal->pose == goal->posicao_pegar_container_superior)
+    if (goal->pose == goal->posicao_inicial)
     {
-        pose_msg.linear.x = 0;
-        pose_msg.linear.y = -.190;
-        pose_msg.linear.z = .170;
-        pose_msg.angular.x = .0;
-        pose_msg.angular.y = .0;
-        pose_msg.angular.z = .0;
+        final_pose_msg.linear.x = 0;
+        final_pose_msg.linear.y = -1.4999e-1;
+        final_pose_msg.linear.z = +1.0816e-1;
+        final_pose_msg.angular.x = .0;
+        final_pose_msg.angular.y = .0;
+        final_pose_msg.angular.z = .0;
+    }
+    else if (goal->pose == goal->posicao_pegar_container_superior)
+    {
+        final_pose_msg.linear.x = 0;
+        final_pose_msg.linear.y = -.190;
+        final_pose_msg.linear.z = .170;
+        final_pose_msg.angular.x = .0;
+        final_pose_msg.angular.y = .0;
+        final_pose_msg.angular.z = .0;
+    }
+    else if (goal->pose == goal->posicao_inicial_rotacionada)
+    {
+        final_pose_msg.linear.x = 0;
+        final_pose_msg.linear.y = 0;
+        final_pose_msg.linear.z = -0.01;
+        final_pose_msg.angular.x = .0;
+        final_pose_msg.angular.y = .0;
+        final_pose_msg.angular.z = boost::math::constants::pi<double>() / 2;
+    }
+    else
+    {
+        ROS_ERROR_STREAM("Posicao nao conhecida: " << goal->pose);
     }
 
-    projeto_semear::moveEletroimaGoal move_msg;
-    move_msg.deslocamento = pose_msg;
-    
-    client.sendGoal(move_msg, &doneCb, &activeCb, &feedbackCb);
-    client.waitForResult(ros::Duration());
+    // Recebe a posição atual do eletroima
+    tf::TransformListener listener;
+    tf::StampedTransform pose_transform, orientation_transform;
+
+    while (true)
+    {
+        try
+        {
+            // Pega a posição do Eletroima em relação ao robô.
+            listener.lookupTransform("/AMR", "/eletroima",
+                                     ros::Time(0), pose_transform);
+            // A rotação é em relação ao mundo
+            listener.lookupTransform("/world", "/eletroima",
+                                     ros::Time(0), orientation_transform);
+
+            break;
+        }
+        catch (tf::TransformException ex)
+        {
+            ros::Duration(1.0).sleep();
+        }
+    }
+
+    // Create Pose message to send to V-REP
+    // A mensagem para o vrep envia a posição absoluta em que queremos o eletroimã, mas não envia o angulo absoluto. O ãngulo enviado é um deslocamento angular.
+    geometry_msgs::Twist pose_msg;
+    tf::Matrix3x3(orientation_transform.getRotation()).getRPY(pose_msg.angular.x, pose_msg.angular.y, pose_msg.angular.z);
+    pose_msg.linear.x = pose_transform.getOrigin().x();
+    pose_msg.linear.y = pose_transform.getOrigin().y();
+    pose_msg.linear.z = pose_transform.getOrigin().z();
+
+    // Distância a ser percorrida em cada direção
+    double goal_x = final_pose_msg.linear.x;
+    double goal_y = final_pose_msg.linear.y;
+    double goal_z = final_pose_msg.linear.z;
+    double goal_w = final_pose_msg.angular.z;
+
+    double dist_x = goal_x - pose_msg.linear.x;
+    double dist_y = goal_y - pose_msg.linear.y;
+    double dist_z = goal_z - pose_msg.linear.z;
+    double dist_w = goal_w - pose_msg.angular.z;
+
+    // Sentido a ser percorrido em cada direção
+    double sent_x = boost::math::sign(dist_x); //devolve o sinal
+    double sent_y = dist_y > 0 ? 1 : -1;       // Pode ser assim também
+    double sent_z = boost::math::sign(dist_z);
+    double sent_w = boost::math::sign(dist_w);
+
+    // helper variables
+    ros::Rate r(FREQUENCIA);
+    bool succeed = false;
+    ros::NodeHandle nh;
+
+    bool parou = true;
+    while (!succeed && nh.ok())
+    {
+        listener.lookupTransform("/AMR", "/eletroima", ros::Time(0), pose_transform);
+        listener.lookupTransform("/world", "/eletroima", ros::Time(0), orientation_transform);
+
+        tf::Matrix3x3(orientation_transform.getRotation()).getRPY(pose_msg.angular.x, pose_msg.angular.y, pose_msg.angular.z);
+        pose_msg.linear.x = pose_transform.getOrigin().x();
+        pose_msg.linear.y = pose_transform.getOrigin().y();
+        pose_msg.linear.z = pose_transform.getOrigin().z();
+
+        dist_x = goal_x - pose_msg.linear.x;
+        dist_y = goal_y - pose_msg.linear.y;
+        dist_z = goal_z - pose_msg.linear.z;
+        dist_w = goal_w - pose_msg.angular.z;
+
+        parou = true;
+        // Preenche a mensagem a ser publicada
+        if (dist_w * sent_w >= W)
+        {
+            pose_msg.angular.z += sent_w * W; // Soma à posição atual um deslocamento no sentido correto
+            dist_w += -W;                     // Variável que controla o deslocamento
+            parou = false;
+        }
+        if (dist_x * sent_x >= VEL_X)
+        {
+            pose_msg.linear.x += sent_x * VEL_X;
+            dist_x += -VEL_X;
+            parou = false;
+        }
+        if (dist_y * sent_y >= VEL_Y)
+        {
+            pose_msg.linear.y += sent_y * VEL_Y;
+            dist_y += -VEL_Y;
+            parou = false;
+        }
+        if (dist_z * sent_z >= VEL_Z)
+        {
+            pose_msg.linear.z += sent_z * VEL_Z;
+            dist_z += -VEL_Z;
+            parou = false;
+        }
+
+        // Eletroima next pose publication
+        eletro_twist.publish(pose_msg);
+
+        ROS_INFO_STREAM("W: " << dist_w << " Pose W: " << pose_msg.angular.z);
+        // Check if Final Pose is reached.
+        if (parou)
+            succeed = true;
+        else
+            r.sleep();
+    }
 
     as->setSucceeded();
 }

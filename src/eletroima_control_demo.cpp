@@ -85,6 +85,7 @@ int main(int argc, char **argv)
         return -1;
       }
       if (goal.pose==1){
+        ROS_INFO("POSE == 1");
         goal.pose=goal.posicao_inicial;
       }
       client.sendGoal(goal,&doneCb2, &activeCb, &feedbackCb2);

@@ -1,8 +1,8 @@
 #goal definition
-uint8 pose
-uint8 posicao_inicial=1
-uint8 posicao_pegar_container_superior=2
-uint8 posicao_incial_rotacionada=3
+uint32 pose
+uint32 posicao_inicial=1
+uint32 posicao_pegar_container_superior=2
+uint32 posicao_inicial_rotacionada=3
 
 ---
 #result definition
