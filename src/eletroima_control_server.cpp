@@ -39,8 +39,8 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
     // Recebe a posição atual do eletroima
 
     tf::StampedTransform pose_transform, orientation_transform;
-    ROS_INFO("ESPERANDO TRANSFORMER");
-    while (true)
+    //ROS_INFO("ESPERANDO TRANSFORMER");
+    while (true && ros::ok())
     {
         try
         {
@@ -55,7 +55,7 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
             ros::Duration(1.0).sleep();
         }
     }
-    ROS_INFO("PEGO TRANSFORMER");
+    //ROS_INFO("PEGO TRANSFORMER");
     // Create Pose message to send to V-REP
     // A mensagem para o vrep envia a posição absoluta em que queremos o eletroimã, mas não envia o angulo absoluto. O ãngulo enviado é um deslocamento angular.
     geometry_msgs::Twist pose_msg;
@@ -86,7 +86,7 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
 
     double dist_x, dist_y, dist_z, dist_w, dist_w2;
     bool parou = true;
-    while (!succeed && nh.ok())
+    while (!succeed && nh.ok() && ros::ok())
     {
         listener.lookupTransform("/AMR", "/eletroima", ros::Time(0), pose_transform);
         //        listener.lookupTransform("/AMR", "/eletroima", ros::Time(0), orientation_transform);
@@ -144,20 +144,20 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
 // Função de feedback do ActionLib
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
 {
-    ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
+    //ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
 }
 
 // Função executada quando a tarefa termina
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::moveEletroimaResultConstPtr &result)
 {
-    ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
+   //ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
 }
 
 // Called once when the goal becomes active
 void activeCb()
 {
-    ROS_INFO("Goal just went active");
+    //ROS_INFO("Goal just went active");
 }
 
 void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionlib::SimpleActionServer<projeto_semear::setEletroimaAction> *as, tf::TransformListener &listener)
@@ -194,14 +194,24 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = boost::math::constants::pi<double>() / 2;
     }
-    else if (goal->pose == goal->posicao_pegar_container_superior_rotacionado)
+    else if (goal->pose == goal->posicao_segurar_container)
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -0.2;
-        final_pose_msg.linear.z = +1.0816e-1;
+        final_pose_msg.linear.z = +2.0816e-1;
+        final_pose_msg.angular.x = .0;
+        final_pose_msg.angular.y = .0;
+        final_pose_msg.angular.z = .0;
+    }
+    else if (goal->pose == goal->posicao_segurar_container_rotacionado)
+    {
+        final_pose_msg.linear.x = 0;
+        final_pose_msg.linear.y = -0.2;
+        final_pose_msg.linear.z = +2.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = boost::math::constants::pi<double>() / 2;
+        
     }
     else
     {
@@ -211,7 +221,7 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     // Recebe a posição atual do eletroima
     tf::StampedTransform pose_transform, orientation_transform;
 
-    while (true)
+    while (true && ros::ok())
     {
         try
         {
@@ -257,7 +267,7 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     ros::NodeHandle nh;
 
     bool parou = true;
-    while (!succeed && nh.ok())
+    while (!succeed && nh.ok() && ros::ok())
     {
         listener.lookupTransform("/AMR", "/eletroima", ros::Time(0), pose_transform);
         tf::Matrix3x3(pose_transform.getRotation()).getRPY(pose_msg.angular.x, pose_msg.angular.y, pose_msg.angular.z);
@@ -296,7 +306,7 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         // Eletroima next pose publication
         eletro_twist.publish(pose_msg);
 
-        ROS_INFO_STREAM("W: " << dist_w << " Pose W: " << pose_msg.angular.z);
+        //ROS_INFO_STREAM("W: " << dist_w << " Pose W: " << pose_msg.angular.z);
         // Check if Final Pose is reached.
         if (parou)
             succeed = true;

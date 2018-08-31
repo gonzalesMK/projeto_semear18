@@ -99,7 +99,7 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
 
 void kineControl::alinhar(kineControl::robot &robot)
 {
-    //ROS_INFO("Alinhando com a linha Preta (a linha preta esta atras)");
+    ROS_INFO("ALINHAR - a linha preta esta atras");
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Duration time(0.05);
@@ -133,10 +133,10 @@ void kineControl::alinhar(kineControl::robot &robot)
             velocidade.linear.x = -0.05;
             break;
         case 1:
-            velocidade.angular.z = -VEL_ANG;
+            velocidade.angular.z = VEL_ANG;
             break;
         case 2:
-            velocidade.angular.z = VEL_ANG;
+            velocidade.angular.z = -VEL_ANG;
             break;
         }
 
@@ -153,7 +153,7 @@ void kineControl::alinhar(kineControl::robot &robot)
 void kineControl::alinhar_doca(kineControl::robot &robot)
 {
 
-    ROS_INFO("Alinhando com a linha da doca");
+    ROS_INFO("ALINHAR DOCA");
 
     geometry_msgs::Twist velocidade;
 
@@ -206,9 +206,10 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 
 void kineControl::esquerda(kineControl::robot &robot)
 {
+
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transicao do quadrante para ESQUERDA ");
+    ROS_INFO_STREAM("ESQUERDA");
 
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
@@ -235,7 +236,7 @@ void kineControl::ir_doca(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transicao do quadrante para docas ");
+    ROS_INFO_STREAM("IR DOCA");
 
     geometry_msgs::Twist velocidade;
 
@@ -268,15 +269,8 @@ void kineControl::ir_doca(kineControl::robot &robot)
 void kineControl::ir_quadrante(kineControl::robot &robot)
 {
 
-    ROS_INFO_STREAM("Transicao da Doca para Quadrante");
+    ROS_INFO_STREAM("IR QUADRANTE");
     geometry_msgs::Twist velocidade;
-
-    // Girar 90 Graus
-    velocidade.linear.x = -0.1;
-    velocidade.linear.y = 0;
-    velocidade.angular.z = 0;
-    robot.setVelocity(velocidade);
-    ros::Duration(1).sleep();
 
     // Girar 90 Graus
     velocidade.linear.x = 0;
@@ -285,16 +279,25 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
 
+    /* Girar 90 Graus
+    velocidade.linear.x = -0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(1).sleep();
+    */
+
     // É possível alinhar com a linha verde, se necessário
 
     kineControl::linha_preta(robot);
+    ROS_INFO("CHEGOU NO QUADRANTE");
 }
 
 void kineControl::direita(kineControl::robot &robot)
 {
     kineControl::alinhar(robot);
 
-    ROS_INFO_STREAM("Transição do quadrante para DIREITA ");
+    ROS_INFO_STREAM("DIREITA ");
 
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
@@ -319,19 +322,21 @@ void kineControl::direita(kineControl::robot &robot)
 
 void kineControl::linha_preta(kineControl::robot &robot)
 {
-    //ROS_INFO("Alinhando com a linha preta (a linha preta esta a frente)");
+    ROS_INFO(" LINHA PRETA - a linha preta esta a frente");
     const double VEL_ANG = kineControl::VEL_ANG;
 
-    ros::Duration time(0.05);
+    ros::Duration time(0.01);
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Time begin = ros::Time::now();
     ros::spinOnce();
+
     while ((robot.colorBR_ != PRETO || robot.colorBL_ != PRETO) && ros::ok())
     {
         velocidade.linear.x = 0;
         velocidade.linear.y = 0;
         velocidade.angular.z = 0;
+
         //Caso 0: Nenhum dos sensores na faixa pretav -> anda para frente
         //Caso 1: Sensor FrontRight no preto e FrontLeft não -> girar para direita
         //Caso 2: Sensor FrontLeft no preto e FrontRight não -> girar para esquerda
@@ -376,7 +381,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
 
     // 0.07 -> container da esquerda 0
     // 0.01   -> container da direita 1
-
+    ROS_INFO("ALINHAR PILHA");
     ros::spinOnce();
     robot.lateral_distance_;
     ros::Rate rate(10);
@@ -442,7 +447,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
 
 void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
 {
-    ROS_INFO("Alinhando com o container");
+    ROS_INFO("ALINHAR CONTAINER DEPOSITADO");
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Duration time(0.05);
@@ -567,14 +572,12 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     // Meta para posicionar a garra em cima do container
     projeto_semear::moveEletroimaGoal goal;
     projeto_semear::setEletroimaGoal set_goal;
-
     move_client.waitForServer();
     set_client.waitForServer();
 
     ROS_INFO("PEGAR CONTAINER - Centralizar garra no container superior");
 
     set_goal.pose = set_goal.posicao_pegar_container_superior;
-
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
 
@@ -583,14 +586,30 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     get_container_info_msg.request.where = lado;
 
     get_client.call(get_container_info_msg);
-    // Girar a guarra 90º
+    double altura = get_container_info_msg.response.lista.size();
+
     // Ligar o Eletroimã:
     ROS_INFO_STREAM("PEGAR CONTAINER - Ligando o eletroima");
     msg.data = true;
     pub.publish(msg);
 
+    // Girar a guarra 90º
+    ROS_INFO_STREAM("PEGAR CONTAINER - Descendo Garra");
+    projeto_semear::moveEletroimaGoal move_goal;
+    move_goal.deslocamento.linear.x = 0.0;
+    move_goal.deslocamento.linear.y = 0;
+    move_goal.deslocamento.linear.z = 0.045 * (4 - altura);
+    move_goal.deslocamento.angular.z = 0;
+    move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+    move_client.waitForResult(ros::Duration());
+
+    ROS_INFO_STREAM("PEGAR CONTAINER - Erguer Container");
+    set_goal.pose = set_goal.posicao_segurar_container;
+    set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
+    set_client.waitForResult(ros::Duration());
+
     ROS_INFO_STREAM("PEGAR CONTAINER - Rotacionar Container em cima");
-    set_goal.pose = set_goal.posicao_pegar_container_superior_rotacionado;
+    set_goal.pose = set_goal.posicao_segurar_container_rotacionado;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
 }
