@@ -6,6 +6,6 @@ projeto_semear/Pose Posicao
 
 uint8 container_escolhido # 0=esquerda, 1 = direita, 2 = só tem vermelho aqui
 uint8 cor # 13=azul, 12=verde, 14=vermelho //mudar aqui para a .msg
-#posição da pilha que pegou
+uint8 pilha #posição da pilha que pegou
 
 

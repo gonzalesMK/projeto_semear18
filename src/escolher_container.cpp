@@ -74,6 +74,7 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     AZUL = 13,
     VERDE = 12,
     VERMELHO = 14,
+    NENHUMA = 254,
     DESCONHECIDO = 255
     };
 
@@ -83,22 +84,31 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         if(cor_esquerda == VERDE)
         {
             res.container_escolhido = ESQUERDA;
+            res.cor = VERDE;
+            res.pilha = 0;
         }
         else if(cor_direita == VERDE)
         {
             res.container_escolhido = DIREITA;
+            res.cor = VERDE;
+            res.pilha = 1;
         }
         else if(cor_direita == AZUL)
         {
             res.container_escolhido = DIREITA;
+            res.cor = AZUL;
+            res.pilha = 1;
         }
         else if(cor_esquerda == AZUL)
         {
             res.container_escolhido = ESQUERDA;
+            res.cor = AZUL;
+            res.pilha = 0;
         }
         else
         {
             res.container_escolhido = NENHUM;
+            res.cor = NENHUMA;
         }
     }
 
@@ -108,22 +118,27 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         if(cor_direita == AZUL)
         {
             res.container_escolhido = DIREITA;
+            res.cor = AZUL;
         }
         else if(cor_esquerda == AZUL)
         {
             res.container_escolhido = ESQUERDA;
+            res.cor = AZUL;
         }
         else if(cor_esquerda == VERDE)
         {
             res.container_escolhido = ESQUERDA;
+            res.cor = VERDE;
         }
         else if(cor_direita == VERDE)
         {
             res.container_escolhido = DIREITA;
+            res.cor = VERDE;
         }
         else
         {
             res.container_escolhido = NENHUM;
+            res.cor = NENHUMA;
         }
     }
 
@@ -131,22 +146,27 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     else if (cor_esquerda == VERDE)
     {
         res.container_escolhido = ESQUERDA;
+        res.cor = VERDE;
     } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
     else if (cor_direita == AZUL)
     {
         res.container_escolhido = DIREITA;
+        res.cor = AZUL;
     } //caso o da direita seja azul, ja pega ele
     else if (cor_esquerda == AZUL)
     {
         res.container_escolhido = ESQUERDA;
+        res.cor = AZUL;
     }
     else if (cor_direita == VERDE)
     {
         res.container_escolhido = DIREITA;
+        res.cor = VERDE;
     }
     else
     {
         res.container_escolhido = NENHUM;
+        res.cor = NENHUMA;
     }
 
 }
