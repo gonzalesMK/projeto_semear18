@@ -119,21 +119,25 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         {
             res.container_escolhido = DIREITA;
             res.cor = AZUL;
+            res.pilha = 5;
         }
         else if(cor_esquerda == AZUL)
         {
             res.container_escolhido = ESQUERDA;
             res.cor = AZUL;
+            res.pilha = 4;
         }
         else if(cor_esquerda == VERDE)
         {
             res.container_escolhido = ESQUERDA;
             res.cor = VERDE;
+            res.pilha = 4;
         }
         else if(cor_direita == VERDE)
         {
             res.container_escolhido = DIREITA;
             res.cor = VERDE;
+            res.pilha = 5;
         }
         else
         {
@@ -147,21 +151,25 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     {
         res.container_escolhido = ESQUERDA;
         res.cor = VERDE;
+        res.pilha = 2;
     } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
     else if (cor_direita == AZUL)
     {
         res.container_escolhido = DIREITA;
         res.cor = AZUL;
+        res.pilha = 3;
     } //caso o da direita seja azul, ja pega ele
     else if (cor_esquerda == AZUL)
     {
         res.container_escolhido = ESQUERDA;
         res.cor = AZUL;
+        res.pilha = 2;
     }
     else if (cor_direita == VERDE)
     {
         res.container_escolhido = DIREITA;
         res.cor = VERDE;
+        res.pilha = 3;
     }
     else
     {
