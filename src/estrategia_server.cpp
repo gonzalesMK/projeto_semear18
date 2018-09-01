@@ -40,7 +40,7 @@ a ordem resumida do que ele fará será o seguinte:
 projeto_semear::Pose pose;
 ros::ServiceClient get_client;
 
-enum cores
+enum pose
 {
     QUADRANTE_CENTRAL=0,
     QUADRANTE_ESQUERDO=1,
@@ -49,19 +49,43 @@ enum cores
     DOCA_AZUL=4
 };
 
+
+
+
 bool estrategia(projeto_semear::Strategy::Request &req,
                 projeto_semear::Strategy::Response &res)
              
 {
-    if(/*pegou um verde*/true)
+    projeto_semear::EscolherContainer escolher_container_srv;
+    int cor,posicao,retorno;
+
+    escolher_container_srv.response.cor = cor;
+    get_client.call(escolher_container_srv);
+
+    escolher_container_srv.request.Posicao = posicao;
+    get_client.call(escolher_container_srv);
+
+    escolher_container_srv.response.container_escolhido = retorno;
+    get_client.call(escolher_container_srv);
+
+    enum cores
+    {
+    AZUL = 13,
+    VERDE = 12,
+    VERMELHO = 14,
+    NENHUMA = 254,
+    DESCONHECIDO = 255
+    };
+
+    if(cor == VERDE)
     {
         res.to_go.location = DOCA_VERDE;
     }
-    else if(/*pegou um azul*/true)
+    else if(cor == AZUL)
     {
         res.to_go.location = DOCA_AZUL;
     }
-    else if(/*ta no meio e retornou 2*/true)
+    else if(posicao == 0 && retorno == 2)
     {
         if(/*esquerda NÃO só tem vermelho*/true)
         {
@@ -72,7 +96,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_DIREITO;
         }
     }
-    else if(/*ta na direita E retornou 2*/true)
+    else if(posicao == 2 && retorno == 2)
     {
         if(/*O meio não tem só vermelho*/true)
         {
@@ -83,7 +107,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_DIREITO;
         }
     }
-    else if(/*ta na esquerda E retornou 2*/true)
+    else if(posicao == 1 && retorno = 2)
     {
         if(/*O meio não tem só vermelho*/true)
         {
@@ -98,7 +122,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
 
 }
 
-//isso é só cópia, nada foi modificado daqui pra baixo ainda
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "estrategia_server");
@@ -113,7 +137,7 @@ int main(int argc, char **argv)
     ros::ServiceServer choose_service = node.advertiseService("Estrategia", estrategia);
     ROS_INFO("Pensando...");
 
-    ros::spinOnce();
+    ros::spin();
 
     return 0;
 }
