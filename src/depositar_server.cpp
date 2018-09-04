@@ -54,7 +54,6 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   ros::spinOnce();
 
   std_msgs::Bool msg;
-  ROS_INFO_STREAM("ligando o eletroima");
   msg.data = true;
   pub.publish(msg);
 
@@ -105,7 +104,7 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
 
   int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
 
-  ROS_INFO_STREAM("Valor do code:" << code);
+  ROS_INFO_STREAM("DEPOSITAR CONTAINER: Valor do code:" << code);
 
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
