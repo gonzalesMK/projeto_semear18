@@ -62,7 +62,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     escolher_container_srv.response.cor = cor;
     get_client.call(escolher_container_srv);
 
-    escolher_container_srv.request.Posicao = posicao;
+    escolher_container_srv.request.Posicao.location= posicao;
     get_client.call(escolher_container_srv);
 
     escolher_container_srv.response.container_escolhido = retorno;
@@ -77,45 +77,115 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     DESCONHECIDO = 255
     };
 
+    //abaixo daqui é para atribuir o valor dos containers que estão em cima à suas respectivas cores
+
+    projeto_semear::GetContainerInfo get_srv;
+    /*
+    int Qesq_esq, Qesq_dir; //os dois do quadrante esquerdo
+    int Qcen_esq, Qcen_dir; //os dois do quadrante central
+    int Qdir_esq, Qdir_dir; //os dois do quadrante direito
+    */
+    get_srv.request.where = 0;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec0 = get_srv.response.lista;
+    std::uint8_t Qesq_esq = vec0.back();
+
+    get_srv.request.where = 1;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec1 = get_srv.response.lista;
+    std::uint8_t Qesq_dir = vec1.back();
+
+    get_srv.request.where = 2;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec2 = get_srv.response.lista;
+    std::uint8_t Qcen_esq = vec2.back();
+
+    get_srv.request.where = 3;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec3 = get_srv.response.lista;
+    std::uint8_t Qcen_dir = vec3.back();
+
+    get_srv.request.where = 4;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec4 = get_srv.response.lista;
+    std::uint8_t Qdir_esq = vec4.back();
+
+    get_srv.request.where = 5;
+    get_client.call(get_srv);
+
+    std::vector<std::uint8_t> vec5 = get_srv.response.lista;
+    std::uint8_t Qdir_dir = vec5.back();
+
+    //abaixo daqui é a estratégia 
+
     if(cor == VERDE)
     {
         res.to_go.location = DOCA_VERDE;
+        res.container_escolhido = retorno;
+        res.cor = cor;
+        res.pilha = posicao;
     }
     else if(cor == AZUL)
     {
         res.to_go.location = DOCA_AZUL;
+        res.container_escolhido = retorno;
+        res.cor = cor;
+        res.pilha = posicao;
     }
     else if(posicao == 0 && retorno == 2)
     {
-        if(/*esquerda NÃO só tem vermelho*/true)
+        if(Qesq_esq != 0 || Qesq_dir != 0)
         {
             res.to_go.location = QUADRANTE_ESQUERDO;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
         else
         {
             res.to_go.location = QUADRANTE_DIREITO;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
     }
     else if(posicao == 2 && retorno == 2)
     {
-        if(/*O meio não tem só vermelho*/true)
+        if(Qcen_esq != 0 || Qcen_dir != 0)
         {
             res.to_go.location = QUADRANTE_CENTRAL;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
         else
         {
             res.to_go.location = QUADRANTE_DIREITO;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
     }
-    else if(posicao == 1 && retorno = 2)
+    else if(posicao == 1 && retorno == 2)
     {
-        if(/*O meio não tem só vermelho*/true)
+        if(Qcen_esq != 0 || Qcen_dir != 0)
         {
             res.to_go.location = QUADRANTE_CENTRAL;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
         else
         {
             res.to_go.location = QUADRANTE_ESQUERDO;
+            res.container_escolhido = retorno;
+            res.cor = cor;
+            res.pilha = posicao;
         }
     }
 
