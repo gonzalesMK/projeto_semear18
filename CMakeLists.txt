@@ -138,19 +138,6 @@ target_link_libraries(convert_colorsensor
 )
 add_dependencies(convert_colorsensor ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(transicao_demo src/transicao_demo.cpp)
-target_link_libraries(transicao_demo
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(transicao_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(linha_preta src/linha_preta.cpp)
-target_link_libraries(linha_preta
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(linha_preta ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(navigating_server_demo src/navigating_server_demo.cpp)
 target_link_libraries(navigating_server_demo
@@ -159,12 +146,6 @@ target_link_libraries(navigating_server_demo
 )
 add_dependencies(navigating_server_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(depositar_container src/depositar_container.cpp)
-target_link_libraries(depositar_container
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(depositar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(depositar_server src/depositar_server.cpp)
 target_link_libraries(depositar_server
@@ -201,13 +182,6 @@ target_link_libraries(descobrir_cor_server
   motor_library
 )
 add_dependencies(descobrir_cor_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(pegar_container src/pegar_container.cpp)
-target_link_libraries(pegar_container
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(pegar_container ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(descobrir_cor_demo src/descobrir_cor_demo.cpp)
 target_link_libraries(descobrir_cor_demo
