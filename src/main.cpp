@@ -151,6 +151,8 @@ int main(int argc, char **argv)
 
         // Depositando  o container
         ROS_INFO("Depositando Container");
+        depositar_msg.request.posicao_origem_do_container = proximo_quadrante;
+        depositar_msg.request.dir_ou_esq = escolher_container_msg.response.container_escolhido;
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima

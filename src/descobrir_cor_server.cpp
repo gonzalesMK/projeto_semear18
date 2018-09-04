@@ -30,7 +30,7 @@ void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback); 
 void doneCb2(const actionlib::SimpleClientGoalState &state,                      // Função executada quando a tarefa termina
             const projeto_semear::setEletroimaResultConstPtr &result);
 void activeCb();
-// Essas duas funções classificam a saída do sensor RGB em suas cores respectivas
+// Essas duas funções classificam a saída do sensor. RGB em suas cores respectivas
 void callbackGarraR(const std_msgs::ColorRGBA &msg);
 void callbackGarraL(const std_msgs::ColorRGBA &msg);
 

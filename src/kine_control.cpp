@@ -575,7 +575,7 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     move_client.waitForServer();
     set_client.waitForServer();
 
-    ROS_INFO("PEGAR CONTAINER - Centralizar garra no container superior");
+    ROS_INFO_STREAM("PEGAR CONTAINER - Centralizar garra no container superior da posicao: " << (int) lado);
 
     set_goal.pose = set_goal.posicao_pegar_container_superior;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
@@ -594,11 +594,11 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     pub.publish(msg);
 
     // Girar a guarra 90º
-    ROS_INFO_STREAM("PEGAR CONTAINER - Descendo Garra");
+    ROS_INFO_STREAM("PEGAR CONTAINER - Descendo Garra, altura: " << altura);
     projeto_semear::moveEletroimaGoal move_goal;
     move_goal.deslocamento.linear.x = 0.0;
     move_goal.deslocamento.linear.y = 0;
-    move_goal.deslocamento.linear.z = 0.045 * (4 - altura);
+    move_goal.deslocamento.linear.z = - 0.045 * (4 - altura);
     move_goal.deslocamento.angular.z = 0;
     move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
     move_client.waitForResult(ros::Duration());
