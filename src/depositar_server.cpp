@@ -74,7 +74,7 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   ros::ServiceClient pose_client = node.serviceClient<projeto_semear::GetPose>("gps");
   projeto_semear::GetPose srv;
   pose_client.call(srv);
-  int localizacao_aux = (std::uint8_t)srv.response.pose.location;
+  int localizacao_aux = (std::uint32_t)srv.response.pose.location;
 
   // Transformando a localização_aux para localização correta
   int localizacao;
@@ -100,7 +100,7 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   get_client.call(get_srv);
 
   // Pegando o vetor que contem os containers depositados
-  std::vector<std::uint8_t> vec = get_srv.response.lista;
+  std::vector<std::uint32_t> vec = get_srv.response.lista;
 
   int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
 

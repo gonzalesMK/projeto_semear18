@@ -2,7 +2,7 @@
 #include <projeto_semear/navigationAction.h>
 
 typedef actionlib::SimpleActionClient<projeto_semear::navigationAction> Client;
-void print_path(const std::vector<std::uint8_t> path);
+void print_path(const std::vector<std::uint32_t> path);
 void feedbackCb(const projeto_semear::navigationFeedbackConstPtr &feedback);
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::navigationResultConstPtr &result);
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void print_path(const std::vector<std::uint8_t> path)
+void print_path(const std::vector<std::uint32_t> path)
 {
   std::ostringstream foo;
   for (auto it = path.begin(); it != path.end(); it++)

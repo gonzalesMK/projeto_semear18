@@ -54,7 +54,7 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         
         
     }
-    std::vector<std::uint8_t> path = path_srv.response.path;
+    std::vector<std::uint32_t> path = path_srv.response.path;
 
     // Debug
     //ROS_INFO_STREAM("GOAL: " << (int)path_srv.request.goal_pose.location << " INITIAL: " << (int)path_srv.request.initial_pose.location);

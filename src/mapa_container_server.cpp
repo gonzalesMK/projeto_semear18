@@ -26,7 +26,7 @@ bool checar_limites(int inteiro)
 }
 
 // Função para checar se a cor enviada é VERMELHO, AZUL, VERDE ou DESCONHECIDO
-bool checar_cores(std::uint8_t cor)
+bool checar_cores(std::uint32_t cor)
 {
     if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERDE  && cor != cores::DESCONHECIDO))
     {
@@ -39,7 +39,7 @@ bool checar_cores(std::uint8_t cor)
 }
 
 // Vetor para armazenar o conhecimento sobre os containers
-std::vector<std::vector<std::uint8_t>> MAPA =
+std::vector<std::vector<std::uint32_t>> MAPA =
     {
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 0
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 1
