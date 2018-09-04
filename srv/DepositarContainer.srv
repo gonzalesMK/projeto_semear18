@@ -1,4 +1,4 @@
-uint8 posicao_origem_do_container
-uint8 dir_ou_esq  # 1 para dir e 0 para esq
+uint32 posicao_origem_do_container
+uint32 dir_ou_esq  # 1 para dir e 0 para esq
 ---
-uint8 code
+uint32 code
