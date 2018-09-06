@@ -6,6 +6,7 @@
 #include <projeto_semear/EscolherContainer.h>
 #include <projeto_semear/GetPose.h>
 #include <projeto_semear/DepositarContainer.h>
+#include <projeto_semear/Strategy.h>
 
 void feedbackCb(const projeto_semear::navigationFeedbackConstPtr &feedback);
 void doneCb(const actionlib::SimpleClientGoalState &state,
@@ -31,17 +32,11 @@ int main(int argc, char **argv)
 
     projeto_semear::DescobrirCor descobrir_container_msg; // mensagem para o serviço de descobrir container
 
-    // Serviço de escolher container
-    ros::ServiceClient escolher_container_srv = nh.serviceClient<projeto_semear::EscolherContainer>("EscolherContainer");
-    escolher_container_srv.waitForExistence();
+    // Serviço da Estratégia
+    ros::ServiceClient estrategia_srv = nh.serviceClient<projeto_semear::Strategy>("Estrategia");
+    estrategia_srv.waitForExistence();
 
-    projeto_semear::EscolherContainer escolher_container_msg;
-
-    // Serviço GPS
-    ros::ServiceClient gps_srv = nh.serviceClient<projeto_semear::GetPose>("gps");
-    gps_srv.waitForExistence();
-
-    projeto_semear::GetPose gps_msg;
+    projeto_semear::Strategy estrategia_msg;
 
     // Serviço de depositar
     ros::ServiceClient depositar_srv = nh.serviceClient<projeto_semear::DepositarContainer>("depositar_container");
@@ -58,8 +53,6 @@ int main(int argc, char **argv)
     navigation_client.waitForResult();
 
     bool fim = false;
-    int proximo_quadrante = -1;
-    int antigo_quadrante = -1;
 
     // Descobrir cor do container
     ROS_INFO("Descobrindo containers");
@@ -67,61 +60,14 @@ int main(int argc, char **argv)
 
     while (!fim && ros::ok())
     {
-        // Escolhendo containers
-        ROS_INFO("ESCOLHER CONTAINER");
-        escolher_container_srv.call(escolher_container_msg);
+        // Decidindo próximo passo
+        ROS_INFO("Decidindo proximo passo");
+        estrategia_srv.call(estrategia_msg);
+        ROS_INFO_STREAM("Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0 - 1) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
 
-        if (escolher_container_msg.response.container_escolhido == 2)
+        while (estrategia_msg.response.container_escolhido == 2)
         {
-            ROS_INFO("Descobrindo containers");
-            descobrir_cor_srv.call(descobrir_container_msg);
-            // Escolhendo containers
-            escolher_container_srv.call(escolher_container_msg);
-        }
-
-        // Caso não haja um container nesta pilha, ir para outra pilha.
-        gps_msg.request.set = false;
-        gps_srv.call(gps_msg);
-        antigo_quadrante = gps_msg.response.pose.location;
-        proximo_quadrante = gps_msg.response.pose.location;
-        while (escolher_container_msg.response.container_escolhido == 2 && ros::ok())
-        {
-            ROS_INFO("Dentro do While nao encontrar container escolhido");
-            gps_msg.request.set = false;
-            gps_srv.call(gps_msg);
-
-            if (gps_msg.response.pose.location == 1) // esquerda
-            {
-                proximo_quadrante = 0;
-                antigo_quadrante = 1;
-            }
-            else if (gps_msg.response.pose.location == 0) // centro
-            {
-                if (proximo_quadrante == -1)
-                {
-                    proximo_quadrante = 1;
-                    antigo_quadrante = 0;
-                }
-                else if (antigo_quadrante == 2)
-                {
-                    proximo_quadrante = 1;
-                    antigo_quadrante = 0;
-                }
-                else if (antigo_quadrante == 1)
-                {
-                    proximo_quadrante = 2;
-                    antigo_quadrante = 0;
-                }
-            }
-            else if (gps_msg.response.pose.location == 2) // direita
-            {
-                proximo_quadrante = 0;
-                antigo_quadrante = 2;
-            }
-
-            // Movendo o Robô para o próximo quadrante
-            ROS_INFO("Procurando em outro quadrante");
-            navigation_msg.goal_pose.location = antigo_quadrante;
+            navigation_msg.goal_pose = estrategia_msg.response.to_go;
             navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
             navigation_client.waitForResult();
 
@@ -129,34 +75,35 @@ int main(int argc, char **argv)
             ROS_INFO("Descobrindo containers");
             descobrir_cor_srv.call(descobrir_container_msg);
 
-            // Escolhendo containers
-            ROS_INFO("ESCOLHENDO CONTAINER");
-            escolher_container_srv.call(escolher_container_msg);
+            // Decidindo próximo passo
+            ROS_INFO("Decidindo proximo passo");
+            estrategia_srv.call(estrategia_msg);
         }
 
         // Alinhar com a pilha escolhida
-        ROS_INFO("Alinhancon com a pilha escolhida");
-        kineControl::alinhar_pilha(robot, escolher_container_msg.response.container_escolhido);
+        ROS_INFO("Alinhar com com a pilha escolhida");
+        kineControl::alinhar_pilha(robot, estrategia_msg.response.container_escolhido);
 
         // Pegar container
         ROS_INFO("Pegando Container");
-        kineControl::pegar_container(robot);
+        kineControl::pegar_container(robot, estrategia_msg.response.container_escolhido);
 
         // Levando o container para doca correta
         ROS_INFO("Indo para Doca Correta");
-        navigation_msg.goal_pose.location = navigation_msg.goal_pose.DOCA_VERDE;
-        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+        navigation_msg.goal_pose = estrategia_msg.response.to_go;
         navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
 
         // Depositando  o container
         ROS_INFO("Depositando Container");
+        depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
+        depositar_msg.request.dir_ou_esq = estrategia_msg.response.container_escolhido;
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima
-        ROS_INFO_STREAM("Voltando para o Quadrante Mais próximo: " <<proximo_quadrante);
-        navigation_msg.goal_pose.location = proximo_quadrante;
-        navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.LESTE;
+        int mais_proximo = estrategia_msg.response.to_go.location == navigation_msg.goal_pose.DOCA_AZUL ? navigation_msg.goal_pose.QUADRANTE_DIREITO : navigation_msg.goal_pose.QUADRANTE_ESQUERDO;
+        ROS_INFO_STREAM("Voltando para o Quadrante mais proximo: " << mais_proximo);
+        navigation_msg.goal_pose.location = mais_proximo;
         navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
     }

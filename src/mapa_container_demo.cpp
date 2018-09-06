@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
             get_client.call(get_srv);
 
-            std::vector<std::uint8_t> vec = get_srv.response.lista;
+            std::vector<std::uint32_t> vec = get_srv.response.lista;
             for (auto i = vec.begin(); i != vec.end(); i++)
             {
                 ROS_INFO_STREAM("Container: " << (int)*i);

@@ -3,6 +3,7 @@
 #include <vector>
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/moveEletroimaAction.h>
+#include <projeto_semear/setEletroimaAction.h>
 #include <projeto_semear/GetContainerInfo.h>
 #include <projeto_semear/SetContainer.h>
 #include <projeto_semear/DescobrirCor.h>
@@ -25,12 +26,16 @@ void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback); 
 void doneCb(const actionlib::SimpleClientGoalState &state,                      // Função executada quando a tarefa termina
             const projeto_semear::moveEletroimaResultConstPtr &result);
 void activeCb();
-
-// Essas duas funções classificam a saída do sensor RGB em suas cores respectivas
+void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback); // Função de feedback do ActionLib
+void doneCb2(const actionlib::SimpleClientGoalState &state,                      // Função executada quando a tarefa termina
+            const projeto_semear::setEletroimaResultConstPtr &result);
+void activeCb();
+// Essas duas funções classificam a saída do sensor. RGB em suas cores respectivas
 void callbackGarraR(const std_msgs::ColorRGBA &msg);
 void callbackGarraL(const std_msgs::ColorRGBA &msg);
 
-typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> Client;
+typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> MoveClient;
+typedef actionlib::SimpleActionClient<projeto_semear::setEletroimaAction> SetClient;
 
 ros::ServiceClient get_client;
 ros::ServiceClient set_client;
@@ -47,16 +52,17 @@ int cor_garra_L, cor_garra_R;
 bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
                   projeto_semear::DescobrirCor::Response &res)
 {
-
+    ROS_INFO("DESCOBRIR COR");
     // Desativa o Eletroiman
     std_msgs::Bool msg;
     msg.data = false;
     enable_eletroima_pub.publish(msg);
 
     // Cria o cliente do eletroima
-    Client client("moveEletroima", true); // true -> don't need ros::spin()
-    client.waitForServer();
-
+    MoveClient move_client("moveEletroima", true); // true -> don't need ros::spin()
+    move_client.waitForServer();
+    SetClient set_eletroima_client("setEletroima", true); // true -> don't need ros::spin()
+    set_eletroima_client.waitForServer();
     // Usar reconhecimento de cor para saber quando os containers começaram
     // A fazer
 
@@ -70,7 +76,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     int esq, dir;
 
     // Converte a posição do robô para os valores das pilhas
-    ROS_INFO_STREAM("Location: " << (int)pose_msg.response.pose.location);
+ //   ROS_INFO_STREAM("Location: " << (int)pose_msg.response.pose.location);
     switch (pose_msg.response.pose.location)
     {
     case projeto_semear::Pose::QUADRANTE_ESQUERDO:
@@ -90,7 +96,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         return false;
     }
 
-    ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
+  //  ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
 
     // Pegar informação das pilhas
     projeto_semear::GetContainerInfo get_esq;
@@ -103,7 +109,13 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     get_client.call(get_dir);
 
     int size_esq = get_esq.response.lista.size();
+    if ( get_esq.response.lista.back() == 0){
+        size_esq = 0;
+    }
     int size_dir = get_dir.response.lista.size();
+    if ( get_dir.response.lista.back() == 0){
+        size_dir = 0;
+    }
 
     int ultimo_container_esq;
     int ultimo_container_dir;
@@ -133,18 +145,15 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     }
 
     // Mover garra para Frente:
-    projeto_semear::moveEletroimaGoal goal;
+    projeto_semear::moveEletroimaGoal move_goal;
+    projeto_semear::setEletroimaGoal set_goal;
 
     ROS_INFO("Alinhando robô");
     kineControl::alinhar_pilha(robot, 2);
-
     ROS_INFO("Centralizando garra");
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = -0.05;
-    goal.deslocamento.linear.z = 0;
-    goal.deslocamento.angular.z = 0;
-    client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-    client.waitForResult(ros::Duration()); /// Espera terminar a movimentação do container
+    set_goal.pose = set_goal.posicao_pegar_container_superior;
+    set_eletroima_client.sendGoal(set_goal, doneCb2, activeCb, feedbackCb2);
+    set_eletroima_client.waitForResult(ros::Duration()); /// Espera terminar a movimentação do container
 
     // Mensagem para atualizar o mapa de containers
     projeto_semear::SetContainer set_msg;
@@ -155,16 +164,18 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         ROS_INFO("Verificando os dois containers com mesmo tamanho");
 
         // Desce até os containers
-        goal.deslocamento.linear.x = 0.0;
-        goal.deslocamento.linear.y = 0;
-        goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
-        goal.deslocamento.angular.z = 0;
+        move_goal.deslocamento.linear.x = 0.0;
+        move_goal.deslocamento.linear.y = 0;
+        move_goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
+        move_goal.deslocamento.angular.z = 0;
+        move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+        move_client.waitForResult(ros::Duration());
         ros::spinOnce(); // atualiza a leitura da garra
 
         // Atualiza o container da esquerda
         set_msg.request.where = esq;
         set_msg.request.color = cor_garra_L;
-
+        ROS_INFO_STREAM(" ESQ: " << esq << " COR: " << cor_garra_L);
         if (cor_garra_L == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da esquerda nao foi identificado");
@@ -187,26 +198,26 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             ROS_INFO("Verificando o container da esquerda");
 
             // Girar garra 90 graus
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = 3.14 / 2;
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0;
+            move_goal.deslocamento.angular.z = 3.14 / 2;
 
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
 
             // Alinhar com esquerda
             kineControl::alinhar_pilha(robot, 0);
 
-            client.waitForResult(ros::Duration());
+            move_client.waitForResult(ros::Duration());
 
             // Desce até o container
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
-            goal.deslocamento.angular.z = 0;
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = -0.04 * (4 - size_esq);
+            move_goal.deslocamento.angular.z = 0;
 
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
 
             // Realiza a leitura
             ros::spinOnce();
@@ -221,44 +232,44 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             set_client.call(set_msg);
 
             // Levanta a garra
-            goal.deslocamento.linear.x = 0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0.04 * (4 - size_esq);
-            goal.deslocamento.angular.z = 0;
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_goal.deslocamento.linear.x = 0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0.04 * (4 - size_esq);
+            move_goal.deslocamento.angular.z = 0;
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
 
             // Ajeita a garra
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = -3.14 / 2;
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0;
+            move_goal.deslocamento.angular.z = -3.14 / 2;
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
         }
 
         if (ultimo_container_dir == get_dir.response.DESCONHECIDO)
         {
             ROS_INFO("Verificando o container da direita");
             // Girar garra 90 graus
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = 3.14 / 2;
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0;
+            move_goal.deslocamento.angular.z = 3.14 / 2;
 
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
 
             // Alinha com o container da direita
             kineControl::alinhar_pilha(robot, 1);
-            client.waitForResult(ros::Duration());
+            move_client.waitForResult(ros::Duration());
 
             // Desce até o container
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = -0.04 * (4 - size_dir);
-            goal.deslocamento.angular.z = 0;
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = -0.04 * (4 - size_dir);
+            move_goal.deslocamento.angular.z = 0;
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
 
             // Realiza a leitura
             ros::spinOnce();
@@ -273,29 +284,22 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             set_client.call(set_msg);
 
             // Levanta a Garra
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0.04 * (4 - size_dir);
-            goal.deslocamento.angular.z = 0;
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0.04 * (4 - size_dir);
+            move_goal.deslocamento.angular.z = 0;
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
 
             // Ajeita a garra
-            goal.deslocamento.linear.x = 0.0;
-            goal.deslocamento.linear.y = 0;
-            goal.deslocamento.linear.z = 0;
-            goal.deslocamento.angular.z = -3.14 / 2;
-            client.sendGoal(goal, doneCb, activeCb, feedbackCb);
-            client.waitForResult(ros::Duration());
+            move_goal.deslocamento.linear.x = 0.0;
+            move_goal.deslocamento.linear.y = 0;
+            move_goal.deslocamento.linear.z = 0;
+            move_goal.deslocamento.angular.z = -3.14 / 2;
+            move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
+            move_client.waitForResult(ros::Duration());
         }
     }
-
-    // Retorna a garra para trás
-    goal.deslocamento.linear.x = 0;
-    goal.deslocamento.linear.y = 0.15;
-    goal.deslocamento.linear.z = 0;
-    goal.deslocamento.angular.z = 0;
-    client.sendGoal(goal, doneCb, activeCb, feedbackCb);
 
     return true;
 }
@@ -311,10 +315,6 @@ int main(int argc, char **argv)
 
     get_client.waitForExistence();
     set_client.waitForExistence();
-
-    // ActionServer para mover o Eletroima
-    Client client("moveEletroima", true); // true -> don't need ros::spin()
-    client.waitForServer();
 
     // Serviço da posição do robô
     pose_client = node.serviceClient<projeto_semear::GetPose>("gps");
@@ -362,7 +362,7 @@ int reconhece_cor(const std_msgs::ColorRGBA &msg)
     dist.push_back(sqrt(pow(msg.r, 2) + pow(msg.g, 2) + pow(msg.b, 2)));                   // Distância até o preto
 
     int argMin = std::min_element(dist.begin(), dist.end()) - dist.begin(); // Retorna a posição do menor elemento
-
+    
     if (argMin == 0)
     {
         return projeto_semear::SetContainer::Request::VERMELHO;
@@ -383,6 +383,7 @@ int reconhece_cor(const std_msgs::ColorRGBA &msg)
 void callbackGarraR(const std_msgs::ColorRGBA &msg)
 {
     cor_garra_R = reconhece_cor(msg);
+
 }
 void callbackGarraL(const std_msgs::ColorRGBA &msg)
 {

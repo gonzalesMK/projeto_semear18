@@ -1,4 +1,4 @@
 projeto_semear/Pose initial_pose
 projeto_semear/Pose goal_pose
 ---
-uint8[] path
+uint32[] path

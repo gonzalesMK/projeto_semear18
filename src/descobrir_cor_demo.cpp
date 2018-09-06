@@ -49,7 +49,6 @@ int main(int argc, char **argv)
 
     ROS_INFO("DESCOBRINDO COR");
     descobrir_cor_srv.call(descobrir_container_msg);
-
     move_srv.request.where = 2;
     move_client.call(move_srv);
 

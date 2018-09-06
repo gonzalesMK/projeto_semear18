@@ -1,5 +1,5 @@
 # cores para os containers
-uint8 RED = 0
-uint8 GREEN = 1 
-uint8 BLUE= 2
-uint8 cor
+uint32 RED = 0
+uint32 GREEN = 1 
+uint32 BLUE= 2
+uint32 cor

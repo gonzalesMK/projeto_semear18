@@ -54,14 +54,14 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     get_srv.request.where =  esq;
     get_client.call(get_srv);
 
-    std::vector<std::uint8_t> vec = get_srv.response.lista;
-    std::uint8_t cor_esquerda = vec.back(); // O último container é o primeiro da pilha
+    std::vector<std::uint32_t> vec = get_srv.response.lista;
+    std::uint32_t cor_esquerda = vec.back(); // O último container é o primeiro da pilha
 
     get_srv.request.where = dir;
     get_client.call(get_srv);
 
     vec = get_srv.response.lista; 
-    std::uint8_t cor_direita = vec.back(); // O último container é o primeiro da pilha
+    std::uint32_t cor_direita = vec.back(); // O último container é o primeiro da pilha
 
     enum ESCOLHIDO{
             ESQUERDA = 0,
