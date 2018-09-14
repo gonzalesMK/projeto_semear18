@@ -105,10 +105,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             res.cor = AZUL;
             res.pilha = 0;
         }
-        else
+        else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
         {
             res.container_escolhido = NENHUM;
             res.cor = NENHUMA;
+        }
+        else
+        {
+            res.container_escolhido = NENHUM;
+            res.cor = DESCONHECIDO;
         }
     }
 
@@ -139,10 +144,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             res.cor = VERDE;
             res.pilha = 5;
         }
-        else
+        else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
         {
             res.container_escolhido = NENHUM;
             res.cor = NENHUMA;
+        }
+        else
+        {
+            res.container_escolhido = NENHUM;
+            res.cor = DESCONHECIDO;
         }
     }
 
@@ -171,10 +181,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         res.cor = VERDE;
         res.pilha = 3;
     }
-    else
+    else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
     {
         res.container_escolhido = NENHUM;
         res.cor = NENHUMA;
+    }
+    else
+    {
+        res.container_escolhido = NENHUM;
+        res.cor = DESCONHECIDO;
     }
 
 }

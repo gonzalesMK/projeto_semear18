@@ -122,7 +122,10 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     std::uint32_t Qdir_dir = vec5.back();
 
     //abaixo daqui é a estratégia
-
+    if (cor == DESCONHECIDO)
+    {
+        response.container_escolhido = 3; //tem que reconhecer as cores
+    }
     if (cor == VERDE)
     {
         res.to_go.location = DOCA_VERDE;
@@ -164,6 +167,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_ESQUERDO;
         }
     }
+
     res.container_escolhido = retorno;
     res.cor = cor;
     res.pilha = posicao;
