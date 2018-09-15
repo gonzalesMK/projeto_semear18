@@ -52,6 +52,8 @@ kineControl::robot::robot()
     lineSensorBR_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorBR", 1, boost::bind(callback, _1, boost::ref(colorBR_)));
     lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
 
+    FrontalSensor_ = nh_.subscribe<std_msgs::Float32>("/image_converter/FrontalSensor", 1, boost::bind(callback, _1, boost::ref(colorFr_)));
+
     ColorSensorR0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR0", 1, boost::bind(callback, _1, boost::ref(colorR0_)));
     ColorSensorR1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR1", 1, boost::bind(callback, _1, boost::ref(colorR1_)));
     ColorSensorR2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR2", 1, boost::bind(callback, _1, boost::ref(colorR2_)));
@@ -74,7 +76,7 @@ kineControl::robot::robot()
     
     if (nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59.0))
     {
-      ROS_INFO_STREAM("Got param" << kineControl::MAIOR_QUE_PRETO);
+      ROS_INFO_STREAM("Got param PRETO: " << kineControl::MAIOR_QUE_PRETO);
     }
     else
     {
@@ -83,7 +85,7 @@ kineControl::robot::robot()
 
     if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
     {
-      ROS_INFO_STREAM("Got param" << kineControl::MAIOR_QUE_VERDE);
+      ROS_INFO_STREAM("Got param VERDE: " << kineControl::MAIOR_QUE_VERDE);
     }
     else
     {
@@ -734,4 +736,9 @@ kineControl::color kineControl::robot::get_colorL3()
 {
     ros::spinOnce();
     return this->colorL3_;
+}
+kineControl::color kineControl::robot::get_colorFr()
+{
+    ros::spinOnce();
+    return this->colorFr_;
 }

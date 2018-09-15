@@ -25,6 +25,8 @@ ros::Publisher pubFL;
 ros::Publisher pubGarraR;
 ros::Publisher pubGarraL;
 
+ros::Publisher pubFr;
+
 ros::Publisher pubR0;
 ros::Publisher pubR1;
 ros::Publisher pubR2;
@@ -50,6 +52,8 @@ void callbackL1(const sensor_msgs::ImageConstPtr &msg);
 void callbackL2(const sensor_msgs::ImageConstPtr &msg);
 void callbackL3(const sensor_msgs::ImageConstPtr &msg);
 
+void callbackFr(const sensor_msgs::ImageConstPtr &msg);
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "converColorSensor");
@@ -72,7 +76,7 @@ int main(int argc, char **argv)
     ros::Subscriber subL2 = n.subscribe("/AMR/ColorSensorL2", 1000, callbackL2);
     ros::Subscriber subL3 = n.subscribe("/AMR/ColorSensorL3", 1000, callbackL3);
 
-    
+    ros::Subscriber subFr = n.subscribe("/AMR/FrontalSensor", 1000, callbackFr);
     
 
     pubBL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBL", 1);
@@ -82,6 +86,7 @@ int main(int argc, char **argv)
     pubGarraR = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraR", 1);
     pubGarraL = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraL", 1);
     
+    pubFr = n.advertise<std_msgs::Float32>("/image_converter/FrontalSensor", 1);
 
     pubR0 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR0", 1);
     pubR1 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR1", 1);
@@ -182,6 +187,14 @@ void callbackR2(const sensor_msgs::ImageConstPtr &msg)
 }
 
 void callbackR3(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubL3.publish(message);
+}
+
+void callbackFr(const sensor_msgs::ImageConstPtr &msg)
 {
     std_msgs::Float32 message;
     message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
