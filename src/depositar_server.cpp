@@ -104,9 +104,12 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
 
   int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
 
+<<<<<<< HEAD
+=======
   if(vec.back() == 0 ){
     code = 0;
   }
+>>>>>>> estrategia
   ROS_INFO_STREAM("DEPOSITAR CONTAINER: Valor do code:" << code);
 
   /*Code == 0: nenhum container depositado

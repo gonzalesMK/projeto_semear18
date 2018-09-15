@@ -8,6 +8,9 @@
 #include <projeto_semear/DepositarContainer.h>
 #include <projeto_semear/Strategy.h>
 
+int tentativas = 0;
+bool mudar_de_lugar = 0;
+
 void feedbackCb(const projeto_semear::navigationFeedbackConstPtr &feedback);
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::navigationResultConstPtr &result);
@@ -65,8 +68,32 @@ int main(int argc, char **argv)
         estrategia_srv.call(estrategia_msg);
         ROS_INFO_STREAM("Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0 - 1) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
 
-        while (estrategia_msg.response.container_escolhido == 2)
+        while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar = FALSE)
         {
+                if(tentativas < 3)
+                {
+                        // Descobrir cor do container
+                        ROS_INFO("Descobrindo containers");
+                        descobrir_cor_srv.call(descobrir_container_msg);
+
+                        // Decidindo próximo passo
+                        ROS_INFO("Decidindo proximo passo");
+                        estrategia_srv.call(estrategia_msg);
+
+                        tentativas = tentativas+1;
+                }
+
+                else
+                {
+                        tentativas = 0;
+                        mudar_de_lugar = TRUE;
+                }
+
+        }
+
+        while (estrategia_msg.response.container_escolhido == 2 || mudar_de_lugar == TRUE)
+        {
+            mudar_de_lugar == FALSE;
             navigation_msg.goal_pose = estrategia_msg.response.to_go;
             navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
             navigation_client.waitForResult();
