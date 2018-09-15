@@ -1,0 +1,6 @@
+<launch>
+
+	<param name ="MAIOR_QUE_PRETO" value="60"/>
+    <param name ="MAIOR_QUE_VERDE" value="300"/>
+
+</launch>

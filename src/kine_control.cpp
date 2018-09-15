@@ -68,6 +68,24 @@ kineControl::robot::robot()
         ROS_INFO("Waiting 4 Topics");
         update(0.5);
     }
+    
+    if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 59.0))
+    {
+      ROS_INFO("Got param");
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'MAIOR_QUE_PRETO'");
+    }
+
+    if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
+    {
+      ROS_INFO("Got param");
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'MAIOR_QUE_VERDE'");
+    }
 }
 
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)

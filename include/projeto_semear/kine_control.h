@@ -35,8 +35,8 @@
 namespace kineControl
 {
 
-const double MAIOR_QUE_PRETO = 60;  // Constante para marcar o valor do preto
-const double MAIOR_QUE_VERDE = 300; // Constate para marcar o valor do verde
+double MAIOR_QUE_PRETO;  // Constante para marcar o valor do preto
+double MAIOR_QUE_VERDE; // Constate para marcar o valor do verde
 const double VEL_ANG = 0.1;         // Constante para marcar a velocidade angular
 
 const double PI = 3.141592653589793238463;
