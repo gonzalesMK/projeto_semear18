@@ -114,7 +114,7 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         }
         else
         {
-            res.container_escolhido = NENHUM;
+            res.container_escolhido = DESCONHECIDO;
             res.cor = DESCONHECIDA;
         }
     }
@@ -190,7 +190,7 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     }
     else
     {
-        res.container_escolhido = NENHUM;
+        res.container_escolhido = DESCONHECIDO;
         res.cor = DESCONHECIDA;
     }
 
