@@ -19,6 +19,7 @@ const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX
 
 void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
 {
+    //ROS_INFO_STREAM("PRETO:" << kineControl::MAIOR_QUE_PRETO << "data: " << msg->data);
     if (msg->data > kineControl::MAIOR_QUE_VERDE)
     {
         color = kineControl::color::BRANCO;
@@ -27,8 +28,10 @@ void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
     {
         color = kineControl::color::AZUL_VERDE;
     }
-    else
-        color = kineControl::color::PRETO;
+    else{
+        
+        color = kineControl::color::PRETO; 
+    }
 }
 
 void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
@@ -69,9 +72,9 @@ kineControl::robot::robot()
         update(0.5);
     }
     
-    if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 59.0))
+    if (nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59.0))
     {
-      ROS_INFO("Got param");
+      ROS_INFO_STREAM("Got param" << kineControl::MAIOR_QUE_PRETO);
     }
     else
     {
@@ -80,7 +83,7 @@ kineControl::robot::robot()
 
     if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
     {
-      ROS_INFO("Got param");
+      ROS_INFO_STREAM("Got param" << kineControl::MAIOR_QUE_VERDE);
     }
     else
     {
@@ -348,7 +351,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
     int code = 0;
     ros::Time begin = ros::Time::now();
     ros::spinOnce();
-
+    
     while ((robot.colorBR_ != PRETO || robot.colorBL_ != PRETO) && ros::ok())
     {
         velocidade.linear.x = 0;
@@ -365,7 +368,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
             code = 1;
         else if (robot.colorBL_ == PRETO && robot.colorBR_ != PRETO)
             code = 2;
-        // ROS_INFO_STREAM("Case: " << code);
+        //ROS_INFO_STREAM("Case: " << code);
         switch (code)
         {
         case 0:
