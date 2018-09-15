@@ -87,7 +87,6 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     */
     get_container_msg.request.where = 0;
     get_container_srv.call(get_container_msg);
-<<<<<<< HEAD
 
     std::vector<std::uint32_t> vec0 = get_container_msg.response.lista;
     std::uint32_t Qesq_esq = vec0.back();
@@ -127,44 +126,6 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     {
         res.container_escolhido = 3; //tem que reconhecer as cores
     }
-=======
-
-    std::vector<std::uint32_t> vec0 = get_container_msg.response.lista;
-    std::uint32_t Qesq_esq = vec0.back();
-
-    get_container_msg.request.where = 1;
-    get_container_srv.call(get_container_msg);
-
-    std::vector<std::uint32_t> vec1 = get_container_msg.response.lista;
-    std::uint32_t Qesq_dir = vec1.back();
-
-    get_container_msg.request.where = 2;
-    get_container_srv.call(get_container_msg);
-
-    std::vector<std::uint32_t> vec2 = get_container_msg.response.lista;
-    std::uint32_t Qcen_esq = vec2.back();
-
-    get_container_msg.request.where = 3;
-    get_container_srv.call(get_container_msg);
-
-    std::vector<std::uint32_t> vec3 = get_container_msg.response.lista;
-    std::uint32_t Qcen_dir = vec3.back();
-
-    get_container_msg.request.where = 4;
-    get_container_srv.call(get_container_msg);
-
-    std::vector<std::uint32_t> vec4 = get_container_msg.response.lista;
-    std::uint32_t Qdir_esq = vec4.back();
-
-    get_container_msg.request.where = 5;
-    get_container_srv.call(get_container_msg);
-
-    std::vector<std::uint32_t> vec5 = get_container_msg.response.lista;
-    std::uint32_t Qdir_dir = vec5.back();
-
-    //abaixo daqui é a estratégia
-
->>>>>>> estrategia2
     if (cor == VERDE)
     {
         res.to_go.location = DOCA_VERDE;
@@ -206,10 +167,6 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_ESQUERDO;
         }
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> estrategia2
     res.container_escolhido = retorno;
     res.cor = cor;
     res.pilha = posicao;
