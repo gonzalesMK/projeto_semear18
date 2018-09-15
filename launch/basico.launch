@@ -2,6 +2,9 @@
 	<master auto="start"/>
 	<param name ="/use_sim_time" value="true"/>
 
+	<param name ="MAIOR_QUE_PRETO" value="60"/>
+    <param name ="MAIOR_QUE_VERDE" value="300"/>
+
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" output="screen"/>
 
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
