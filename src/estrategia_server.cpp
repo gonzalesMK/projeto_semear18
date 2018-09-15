@@ -134,7 +134,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     {
         res.to_go.location = DOCA_AZUL;
     }
-    else if (posicao == 0 && retorno == 2)
+    else if (posicao == 0 && (retorno == 2 || retorno ==3))
     {
         if (Qesq_esq != 0 || Qesq_dir != 0)
         {
@@ -145,7 +145,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_DIREITO;
         }
     }
-    else if (posicao == 2 && retorno == 2)
+    else if (posicao == 2 && (retorno == 2 || retorno ==3))
     {
         if (Qcen_esq != 0 || Qcen_dir != 0)
         {
@@ -156,7 +156,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
             res.to_go.location = QUADRANTE_DIREITO;
         }
     }
-    else if (posicao == 1 && retorno == 2)
+    else if (posicao == 1 && (retorno == 2 || retorno ==3))
     {
         if (Qcen_esq != 0 || Qcen_dir != 0)
         {
