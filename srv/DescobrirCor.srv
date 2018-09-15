@@ -1,3 +1,3 @@
 ---
-uint8 cor_esq
-uint8 cor_dir
+uint32 cor_esq
+uint32 cor_dir

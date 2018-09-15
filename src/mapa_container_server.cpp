@@ -10,7 +10,8 @@ enum cores
     AZUL = 13,
     VERDE = 12,
     VERMELHO = 14,
-    DESCONHECIDO = 255
+    DESCONHECIDO = 255,
+    VAZIO = 0
 };
 
 // Função para checar se o número enviado para a posição da pilha está entre 0 e 14
@@ -26,20 +27,19 @@ bool checar_limites(int inteiro)
 }
 
 // Função para checar se a cor enviada é VERMELHO, AZUL, VERDE ou DESCONHECIDO
-bool checar_cores(std::uint8_t cor)
+bool checar_cores(std::uint32_t cor)
 {
-    if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERDE  && cor != cores::DESCONHECIDO))
+    if (!(cor != cores::VERMELHO && cor != cores::AZUL && cor != cores::VERDE && cor != cores::DESCONHECIDO))
     {
         return true;
     }
-    ROS_ERROR_STREAM("Essa cor nao existe ! : " << (int) cor);
-
+    ROS_ERROR_STREAM("Essa cor nao existe ! : " << (int)cor);
 
     return false;
 }
 
 // Vetor para armazenar o conhecimento sobre os containers
-std::vector<std::vector<std::uint8_t>> MAPA =
+std::vector<std::vector<std::uint32_t>> MAPA =
     {
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 0
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 1
@@ -53,9 +53,9 @@ std::vector<std::vector<std::uint8_t>> MAPA =
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 9
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 10
         {cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO, cores::DESCONHECIDO}, // 11
-        {},                                                                                   // 12 - Doca
-        {},                                                                                   // 13
-        {},                                                                                   // 14
+        {cores::VAZIO},                                                                       // 12 - Doca
+        {cores::VAZIO},                                                                       // 13
+        {cores::VAZIO},                                                                       // 14
 };
 
 /* Serviço para pegar  informações sobre a pilha do container:
@@ -118,11 +118,27 @@ bool moveContainer(projeto_semear::MoveContainer::Request &req,
         ROS_ERROR("Cuidado!! tentando mover um container de cor desconhecida, identifique o container!!");
         return false;
     }
+    else if (cor == cores::VAZIO)
+    {
+        ROS_ERROR("Cuidado!! tentando mover um container vazio, identifique o container!!");
+    }
     else
     {
-        MAPA[cor].push_back(cor);
+        if (MAPA[cor].back() == cores::VAZIO) // caso a pilha esteja vazia, substituir vazio pela cor
+        {
+            MAPA[cor].back() = cor;
+        }
+        else // caso contrário, só adicionar mais um container
+        {
+            MAPA[cor].push_back(cor);
+        }
     }
+
     MAPA[req.where].pop_back();
+    if (MAPA[req.where].size() == 0)
+    {
+        MAPA[req.where].push_back(cores::VAZIO);
+    }
 
     return true;
 }

@@ -14,10 +14,10 @@
  *         projeto_semear/Pose initial_pose
  *         projeto_semear/Pose goal_pose
  *         ---
- *         uint8[] path
+ *         uint32[] path
  * 
  *  As entradas são a posição inicial e a final. Apenas a localização importa, não a orientação.
- *  A saída é um vetor<uint8> começando com a posição Inicial -> Vertice2 -> ... -> posição final
+ *  A saída é um vetor<uint32> começando com a posição Inicial -> Vertice2 -> ... -> posição final
  * 
  * Nome do serviço : pathPlanning
  * */
@@ -42,7 +42,7 @@ Allowed Movements:
  * Doca Central  5 | 1 | 0 | 0 | 0 | 0 | - | 0 |
  * Trem          6 | 0 | 0 | 1 | 0 | 0 | 0 | - |
 */
-const std::forward_list<std::forward_list<std::uint8_t>> GRAPH =
+const std::forward_list<std::forward_list<std::uint32_t>> GRAPH =
     {{0, 1, 1, 0, 0, 1, 0},
      {1, 0, 0, 1, 0, 0, 0},
      {1, 0, 0, 0, 1, 0, 1},
@@ -52,29 +52,29 @@ const std::forward_list<std::forward_list<std::uint8_t>> GRAPH =
      {0, 0, 1, 0, 0, 0, 0}};
 
 const int N_VERTICES = 7;     // Number of vertices in the GRAPH                 
-const std::uint8_t INFINITY_ = N_VERTICES + 10; // A value big enough to be considered INFINITY_
+const std::uint32_t INFINITY_ = N_VERTICES + 10; // A value big enough to be considered INFINITY_
 
 // Algoritmo para Gerar o caminho entre 2 pontos
-std::vector<std::uint8_t> dijkstra(std::uint8_t vertice_alvo, std::uint8_t vertice_inicio);
+std::vector<std::uint32_t> dijkstra(std::uint32_t vertice_alvo, std::uint32_t vertice_inicio);
 // Código que inicializa as variáveis necessárias, evitando repetição de contas
 void initialize_dijkstra();
 
 // Class to represent the vertices in the Map Graph. Each vertice is a possible pose.
 class Vertice
 {
-    std::uint8_t number;
+    std::uint32_t number;
 
   public:
   // Distance b
     int distance;
-    Vertice(std::uint8_t vertice_number, std::uint8_t _distance)
+    Vertice(std::uint32_t vertice_number, std::uint32_t _distance)
     {
         number = vertice_number;
         distance = _distance;
     }
     Vertice(){};
-    std::uint8_t getDistance() const { return distance; }
-    std::uint8_t getNumber() const { return number; }
+    std::uint32_t getDistance() const { return distance; }
+    std::uint32_t getNumber() const { return number; }
 };
 std::vector<Vertice> vertices;
 std::vector<std::vector<Vertice *>> adjacent_list(N_VERTICES);//adjacent_list[v] = Vetor com as conexões de V
@@ -105,7 +105,7 @@ bool path_plannning(projeto_semear::PathPlanning::Request &req,
 
     // Get PATH
     if( robot_pose.location == goal_pose.location){
-        res.path = std::vector<std::uint8_t>(0, -1);
+        res.path = std::vector<std::uint32_t>(0, -1);
         return true;
     }
     res.path = dijkstra(goal_pose.location, robot_pose.location);
@@ -132,17 +132,17 @@ int main(int argc, char **argv)
 void initialize_dijkstra(){
 
     // Create vertices
-    for (std::uint8_t i = 0; i < N_VERTICES; i++)
+    for (std::uint32_t i = 0; i < N_VERTICES; i++)
     {
         vertices.push_back(Vertice(i, -1));
     }
 
     // Convert connection Graph to Adjacent List
-    std::uint8_t i = 0;
+    std::uint32_t i = 0;
     for (auto links_list : GRAPH)
     {
-        std::uint8_t j = 0;
-        for (std::uint8_t &v : links_list)
+        std::uint32_t j = 0;
+        for (std::uint32_t &v : links_list)
         {
             if (v == 1)
                 adjacent_list[i].push_back(&vertices[j]);
@@ -153,10 +153,10 @@ void initialize_dijkstra(){
     }
     
 }
-std::vector<std::uint8_t> dijkstra(std::uint8_t vertice_alvo, std::uint8_t vertice_inicio)
+std::vector<std::uint32_t> dijkstra(std::uint32_t vertice_alvo, std::uint32_t vertice_inicio)
 {
     
-    std::vector<std::uint8_t> path(N_VERTICES, -1);               // path[v] = Vetor com o caminho de V até o alvo
+    std::vector<std::uint32_t> path(N_VERTICES, -1);               // path[v] = Vetor com o caminho de V até o alvo
 
     // Initialize vertices
     for (auto it = vertices.begin(); it != vertices.end() ; it++)
@@ -195,7 +195,7 @@ std::vector<std::uint8_t> dijkstra(std::uint8_t vertice_alvo, std::uint8_t verti
 
                 if ((*it)->getNumber() == vertice_alvo)
                 {
-                    std::vector<std::uint8_t> final_path;
+                    std::vector<std::uint32_t> final_path;
                     final_path.push_back((*it)->getNumber());
 
                     while (final_path.back() != vertice_inicio)
@@ -212,5 +212,5 @@ std::vector<std::uint8_t> dijkstra(std::uint8_t vertice_alvo, std::uint8_t verti
         }
     }
 
-    return std::vector<std::uint8_t>(1, -1);
+    return std::vector<std::uint32_t>(1, -1);
 }

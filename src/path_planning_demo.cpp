@@ -10,7 +10,7 @@
 const int N_PLACES = 7 ; // number of places in the map == number of lines in the Graph
 
 // Function to format the path to the screen
-void print_path(const std::vector<std::uint8_t> path);
+void print_path(const std::vector<std::uint32_t> path);
 
 int main(int argc, char **argv)
 {
@@ -52,12 +52,12 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void print_path(const std::vector<std::uint8_t> path)
+void print_path(const std::vector<std::uint32_t> path)
 {
   std::ostringstream foo; 
   for (auto it = path.begin(); it != path.end(); it++)
   {
-    foo << (int) (*it) << " ";
+    foo << (*it) << " ";
   }
   ROS_INFO_STREAM(foo.str());
 }
