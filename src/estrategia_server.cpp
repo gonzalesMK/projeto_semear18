@@ -124,7 +124,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     //abaixo daqui é a estratégia
     if (cor == DESCONHECIDO)
     {
-        response.container_escolhido = 3; //tem que reconhecer as cores
+        res.container_escolhido = 3; //tem que reconhecer as cores
     }
     if (cor == VERDE)
     {
