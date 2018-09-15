@@ -68,7 +68,7 @@ int main(int argc, char **argv)
         estrategia_srv.call(estrategia_msg);
         ROS_INFO_STREAM("Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0 - 1) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
 
-        while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar = FALSE)
+        while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar = false)
         {
                 if(tentativas < 3)
                 {
@@ -86,14 +86,14 @@ int main(int argc, char **argv)
                 else
                 {
                         tentativas = 0;
-                        mudar_de_lugar = TRUE;
+                        mudar_de_lugar = true;
                 }
 
         }
 
-        while (estrategia_msg.response.container_escolhido == 2 || mudar_de_lugar == TRUE)
+        while (estrategia_msg.response.container_escolhido == 2 || mudar_de_lugar == true)
         {
-            mudar_de_lugar == FALSE;
+            mudar_de_lugar == false;
             navigation_msg.goal_pose = estrategia_msg.response.to_go;
             navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
             navigation_client.waitForResult();
