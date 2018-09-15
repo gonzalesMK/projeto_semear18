@@ -86,11 +86,7 @@ int main(int argc, char **argv)
 
         // Pegar container
         ROS_INFO("Pegando Container");
-<<<<<<< HEAD
-        kineControl::pegar_container(robot, escolher_container_msg.response.container_escolhido);
-=======
         kineControl::pegar_container(robot, estrategia_msg.response.container_escolhido);
->>>>>>> estrategia
 
         // Levando o container para doca correta
         ROS_INFO("Indo para Doca Correta");
@@ -100,13 +96,8 @@ int main(int argc, char **argv)
 
         // Depositando  o container
         ROS_INFO("Depositando Container");
-<<<<<<< HEAD
-        depositar_msg.request.posicao_origem_do_container = proximo_quadrante;
-        depositar_msg.request.dir_ou_esq = escolher_container_msg.response.container_escolhido;
-=======
         depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
         depositar_msg.request.dir_ou_esq = estrategia_msg.response.container_escolhido;
->>>>>>> estrategia
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima

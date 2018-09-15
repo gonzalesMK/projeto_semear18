@@ -61,7 +61,6 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   setClient set_eletro_client("setEletroima", true);
   move_eletro_client.waitForServer();
   set_eletro_client.waitForServer();
-<<<<<<< HEAD
 
   projeto_semear::moveEletroimaGoal move_goal;
   projeto_semear::setEletroimaGoal set_goal;
@@ -71,17 +70,6 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   set_eletro_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
   set_eletro_client.waitForResult();
 
-=======
-
-  projeto_semear::moveEletroimaGoal move_goal;
-  projeto_semear::setEletroimaGoal set_goal;
-
-  // Centraliza a garra
-  set_goal.pose = set_goal.posicao_inicial_rotacionada;
-  set_eletro_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
-  set_eletro_client.waitForResult();
-
->>>>>>> estrategia
   // Pegar a localização do robô
   ros::ServiceClient pose_client = node.serviceClient<projeto_semear::GetPose>("gps");
   projeto_semear::GetPose srv;
@@ -116,12 +104,9 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
 
   int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
 
-<<<<<<< HEAD
-=======
   if(vec.back() == 0 ){
     code = 0;
   }
->>>>>>> estrategia
   ROS_INFO_STREAM("DEPOSITAR CONTAINER: Valor do code:" << code);
 
   /*Code == 0: nenhum container depositado

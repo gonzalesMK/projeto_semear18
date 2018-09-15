@@ -172,30 +172,18 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -1.4999e-1;
         final_pose_msg.linear.z = +1.0816e-1;
-<<<<<<< HEAD
-        final_pose_msg.angular.x = .0;
-        final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = .0;
-=======
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = boost::math::constants::pi<double>();
->>>>>>> estrategia
     }
     else if (goal->pose == goal->posicao_pegar_container_superior)
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -0.2;
         final_pose_msg.linear.z = +1.0816e-1;
-<<<<<<< HEAD
-        final_pose_msg.angular.x = .0;
-        final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = .0;
-=======
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = boost::math::constants::pi<double>();
->>>>>>> estrategia
     }
     else if (goal->pose == goal->posicao_inicial_rotacionada)
     {
@@ -213,11 +201,7 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         final_pose_msg.linear.z = +2.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-<<<<<<< HEAD
-        final_pose_msg.angular.z = .0;
-=======
         final_pose_msg.angular.z = boost::math::constants::pi<double>();
->>>>>>> estrategia
     }
     else if (goal->pose == goal->posicao_segurar_container_rotacionado)
     {
