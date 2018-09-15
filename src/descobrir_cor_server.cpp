@@ -52,7 +52,7 @@ int cor_garra_L, cor_garra_R;
 bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
                   projeto_semear::DescobrirCor::Response &res)
 {
-
+    ROS_INFO("DESCOBRIR COR");
     // Desativa o Eletroiman
     std_msgs::Bool msg;
     msg.data = false;
@@ -109,7 +109,13 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     get_client.call(get_dir);
 
     int size_esq = get_esq.response.lista.size();
+    if ( get_esq.response.lista.back() == 0){
+        size_esq = 0;
+    }
     int size_dir = get_dir.response.lista.size();
+    if ( get_dir.response.lista.back() == 0){
+        size_dir = 0;
+    }
 
     int ultimo_container_esq;
     int ultimo_container_dir;
@@ -169,7 +175,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Atualiza o container da esquerda
         set_msg.request.where = esq;
         set_msg.request.color = cor_garra_L;
-
+        ROS_INFO_STREAM(" ESQ: " << esq << " COR: " << cor_garra_L);
         if (cor_garra_L == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da esquerda nao foi identificado");
@@ -356,7 +362,7 @@ int reconhece_cor(const std_msgs::ColorRGBA &msg)
     dist.push_back(sqrt(pow(msg.r, 2) + pow(msg.g, 2) + pow(msg.b, 2)));                   // Distância até o preto
 
     int argMin = std::min_element(dist.begin(), dist.end()) - dist.begin(); // Retorna a posição do menor elemento
-
+    
     if (argMin == 0)
     {
         return projeto_semear::SetContainer::Request::VERMELHO;
@@ -377,6 +383,7 @@ int reconhece_cor(const std_msgs::ColorRGBA &msg)
 void callbackGarraR(const std_msgs::ColorRGBA &msg)
 {
     cor_garra_R = reconhece_cor(msg);
+
 }
 void callbackGarraL(const std_msgs::ColorRGBA &msg)
 {
