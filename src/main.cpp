@@ -97,7 +97,6 @@ int main(int argc, char **argv)
         // Depositando  o container
         ROS_INFO("Depositando Container");
         depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
-        depositar_msg.request.dir_ou_esq = estrategia_msg.response.container_escolhido;
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima
