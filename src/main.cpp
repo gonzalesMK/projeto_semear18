@@ -14,65 +14,6 @@ void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::navigationResultConstPtr &result);
 void activeCb();
 
-// Overload of << for the Pose
-std::ostream &operator<<(std::ostream &os, const projeto_semear::Pose &pose)
-{
-    os << "\t(";
-    switch (pose.location)
-    {
-    case 0:
-        os << "QUAD_CENTRAL";
-        break;
-    case 1:
-        os << "QUAD_ESQ";
-        break;
-    case 2:
-        os << "QUAD_DIR";
-        break;
-    case 3:
-        os << "DOCA_VERDE";
-        break;
-    case 4:
-        os << "DOCA_AZUL";
-        break;
-    case 5:
-        os << "DOCA_CENTRAL";
-        break;
-    case 6:
-        os << "TREM  ";
-        break;
-    case 255:
-        os << "ERROR";
-        break;
-    default:
-        os << "UNKNOW";
-    }
-
-    os << ",\t ";
-    switch (pose.orientation)
-    {
-    case 0:
-        os << "ORIENTATION_TREM";
-        break;
-    case 1:
-        os << "ORIENTATION_INICIO";
-        break;
-    case 2:
-        os << "ORIENTATION_AZUL";
-        break;
-    case 3:
-        os << "ORIENTATION_VERDE";
-        break;
-    case 255:
-        os << "ERROR";
-        break;
-    default:
-        os << "UNKOW";
-    }
-
-    os << ")";
-    return os;
-}
 
 int main(int argc, char **argv)
 {
@@ -124,7 +65,7 @@ int main(int argc, char **argv)
         // Decidindo próximo passo
         ROS_INFO("MAIN - Decidindo proximo passo");
         estrategia_srv.call(estrategia_msg);
-        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0 - 1) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
+        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0-1-2) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
 
         while (estrategia_msg.response.container_escolhido == 2)
         {
@@ -162,8 +103,8 @@ int main(int argc, char **argv)
 
         // Voltando para doca mais próxima
         int mais_proximo = estrategia_msg.response.to_go.location == navigation_msg.goal_pose.DOCA_AZUL ? navigation_msg.goal_pose.QUADRANTE_DIREITO : navigation_msg.goal_pose.QUADRANTE_ESQUERDO;
-        ROS_INFO_STREAM("MAIN - Voltando para o Quadrante mais proximo: " << mais_proximo);
         navigation_msg.goal_pose.location = mais_proximo;
+        ROS_INFO_STREAM("MAIN - Voltando para o Quadrante mais proximo: " << navigation_msg.goal_pose);
         navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
     }
