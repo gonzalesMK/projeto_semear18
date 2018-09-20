@@ -137,23 +137,7 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   pub.publish(msg);
 
   // Atualiza que o container foi depositado
-  int pose;
-  switch (req.posicao_origem_do_container)
-  {
-  case projeto_semear::Pose::QUADRANTE_ESQUERDO:
-    pose = 0;
-    break;
-  case projeto_semear::Pose::QUADRANTE_CENTRAL:
-    pose = 2;
-    break;
-  case projeto_semear::Pose::QUADRANTE_DIREITO:
-    pose = 4;
-    break;
-  default:
-    ROS_ERROR(" Localizacao do robo pode estar errada! Nenhuma foi escolhida");
-    return false;
-  }
-  move_container_srv.request.where = pose + req.dir_ou_esq;
+  move_container_srv.request.where = req.posicao_origem_do_container;
   move_container_client.call(move_container_srv);
 
   set_goal.pose = set_goal.posicao_inicial_rotacionada;

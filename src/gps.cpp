@@ -89,8 +89,8 @@ bool gps(projeto_semear::GetPose::Request &req,
 {
     req.set ? g_pose = req.pose : res.pose = g_pose;
 
-    //if (req.set)
-        //ROS_INFO_STREAM("Set New Pose: " << g_pose);
+    if (req.set)
+       ROS_INFO_STREAM("GPS - set(): " << g_pose);
 
     return true;
 }

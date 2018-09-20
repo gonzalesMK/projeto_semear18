@@ -69,6 +69,8 @@ class robot
     color colorFR_ = BRANCO;
     color colorBR_ = BRANCO;
 
+    color colorFr_ = BRANCO;
+
     color colorR0_ = BRANCO;
     color colorR1_ = BRANCO;
     color colorR2_ = BRANCO;
@@ -100,6 +102,8 @@ class robot
     ros::Subscriber ColorSensorL2_;
     ros::Subscriber ColorSensorL3_;
 
+    ros::Subscriber FrontalSensor_;
+
     robot();
 
     //! Set the velocity of the robot.
@@ -130,6 +134,8 @@ class robot
     color get_colorL1();
     color get_colorL2();
     color get_colorL3();
+
+    color get_colorFr();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha

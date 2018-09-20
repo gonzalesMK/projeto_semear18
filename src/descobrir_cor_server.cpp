@@ -148,9 +148,9 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     projeto_semear::moveEletroimaGoal move_goal;
     projeto_semear::setEletroimaGoal set_goal;
 
-    ROS_INFO("Alinhando robô");
+    //ROS_INFO("Alinhando robô");
     kineControl::alinhar_pilha(robot, 2);
-    ROS_INFO("Centralizando garra");
+    //ROS_INFO("Centralizando garra");
     set_goal.pose = set_goal.posicao_pegar_container_superior;
     set_eletroima_client.sendGoal(set_goal, doneCb2, activeCb, feedbackCb2);
     set_eletroima_client.waitForResult(ros::Duration()); /// Espera terminar a movimentação do container
@@ -161,7 +161,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     // Dividir nos casos: quando a pilha tiver o mesmo tamanho, é possivel ler os dois containers de uma vez. Caso contrário, irá ler o da esquerda e o da direita separadamente
     if (size_esq == size_dir)
     {
-        ROS_INFO("Verificando os dois containers com mesmo tamanho");
+        ROS_INFO("DESCOBRIR_COR - Verificando os dois containers com mesmo tamanho");
 
         // Desce até os containers
         move_goal.deslocamento.linear.x = 0.0;
@@ -195,7 +195,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     {
         if (ultimo_container_esq == get_esq.response.DESCONHECIDO)
         {
-            ROS_INFO("Verificando o container da esquerda");
+            ROS_INFO("DESCOBRIR_COR - Verificando o container da esquerda");
 
             // Girar garra 90 graus
             move_goal.deslocamento.linear.x = 0.0;
@@ -250,7 +250,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
 
         if (ultimo_container_dir == get_dir.response.DESCONHECIDO)
         {
-            ROS_INFO("Verificando o container da direita");
+            ROS_INFO("DESCOBRIR_COR - Verificando o container da direita");
             // Girar garra 90 graus
             move_goal.deslocamento.linear.x = 0.0;
             move_goal.deslocamento.linear.y = 0;
@@ -343,13 +343,13 @@ void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::moveEletroimaResultConstPtr &result)
 {
-    ROS_INFO_STREAM("Finished in state" << state.toString().c_str());
+    //ROS_INFO_STREAM("Finished in state" << state.toString().c_str());
 }
 
 // Called once when the goal becomes active
 void activeCb()
 {
-    ROS_INFO("Goal just went active");
+    //ROS_INFO("Goal just went active");
 }
 
 int reconhece_cor(const std_msgs::ColorRGBA &msg)

@@ -7,6 +7,7 @@
 #include <projeto_semear/GetPose.h>
 #include <projeto_semear/DepositarContainer.h>
 #include <projeto_semear/Strategy.h>
+#include <projeto_semear/Pose.h>
 
 int tentativas = 0;
 bool mudar_de_lugar = 0;
@@ -15,6 +16,7 @@ void feedbackCb(const projeto_semear::navigationFeedbackConstPtr &feedback);
 void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::navigationResultConstPtr &result);
 void activeCb();
+
 
 int main(int argc, char **argv)
 {
@@ -48,7 +50,7 @@ int main(int argc, char **argv)
     projeto_semear::DepositarContainer depositar_msg;
 
     // Indo para linha Preta
-    ROS_INFO("Indo para linha preta!");
+    ROS_INFO("MAIN - Indo para linha preta!");
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.QUADRANTE_CENTRAL;
     navigation_msg.goal_pose.orientation = navigation_msg.goal_pose.TREM;
 
@@ -58,15 +60,15 @@ int main(int argc, char **argv)
     bool fim = false;
 
     // Descobrir cor do container
-    ROS_INFO("Descobrindo containers");
+    ROS_INFO("MAIN - Descobrindo containers");
     descobrir_cor_srv.call(descobrir_container_msg);
 
     while (!fim && ros::ok())
     {
         // Decidindo próximo passo
-        ROS_INFO("Decidindo proximo passo");
+        ROS_INFO("MAIN - Decidindo proximo passo");
         estrategia_srv.call(estrategia_msg);
-        ROS_INFO_STREAM("Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0 - 1) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
+        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0-1-2) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
 
         while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar = false)
         {
@@ -99,38 +101,37 @@ int main(int argc, char **argv)
             navigation_client.waitForResult();
 
             // Descobrir cor do container
-            ROS_INFO("Descobrindo containers");
+            ROS_INFO("MAIN - Descobrindo containers");
             descobrir_cor_srv.call(descobrir_container_msg);
 
             // Decidindo próximo passo
-            ROS_INFO("Decidindo proximo passo");
+            ROS_INFO("MAIN - Decidindo proximo passo");
             estrategia_srv.call(estrategia_msg);
         }
 
         // Alinhar com a pilha escolhida
-        ROS_INFO("Alinhar com com a pilha escolhida");
+        ROS_INFO("MAIN - Alinhar com com a pilha escolhida");
         kineControl::alinhar_pilha(robot, estrategia_msg.response.container_escolhido);
 
         // Pegar container
-        ROS_INFO("Pegando Container");
+        ROS_INFO("MAIN - Pegando Container");
         kineControl::pegar_container(robot, estrategia_msg.response.container_escolhido);
 
         // Levando o container para doca correta
-        ROS_INFO("Indo para Doca Correta");
+        ROS_INFO("MAIN - Indo para Doca Correta");
         navigation_msg.goal_pose = estrategia_msg.response.to_go;
         navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
 
         // Depositando  o container
-        ROS_INFO("Depositando Container");
+        ROS_INFO("MAIN - Depositando Container");
         depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
-        depositar_msg.request.dir_ou_esq = estrategia_msg.response.container_escolhido;
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima
         int mais_proximo = estrategia_msg.response.to_go.location == navigation_msg.goal_pose.DOCA_AZUL ? navigation_msg.goal_pose.QUADRANTE_DIREITO : navigation_msg.goal_pose.QUADRANTE_ESQUERDO;
-        ROS_INFO_STREAM("Voltando para o Quadrante mais proximo: " << mais_proximo);
         navigation_msg.goal_pose.location = mais_proximo;
+        ROS_INFO_STREAM("MAIN - Voltando para o Quadrante mais proximo: " << navigation_msg.goal_pose);
         navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
         navigation_client.waitForResult();
     }

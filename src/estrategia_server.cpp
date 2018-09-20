@@ -62,7 +62,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     projeto_semear::EscolherContainer escolher_container_msg;
     int cor, posicao, retorno;
 
-    escolher_container_msg.request.Posicao = gps_msg.response.pose;
+    escolher_container_msg.request.Posicao = gps_msg.response.pose;    
     escolher_container_srv.call(escolher_container_msg);
 
     cor = escolher_container_msg.response.cor;
