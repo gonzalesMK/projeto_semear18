@@ -74,20 +74,12 @@ kineControl::robot::robot()
         update(0.5);
     }
     
-    if (nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59.0))
-    {
-      ROS_INFO_STREAM("Got param PRETO: " << kineControl::MAIOR_QUE_PRETO);
-    }
-    else
+    if (!nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59.0))
     {
       ROS_ERROR("Failed to get param 'MAIOR_QUE_PRETO'");
     }
 
-    if (nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
-    {
-      ROS_INFO_STREAM("Got param VERDE: " << kineControl::MAIOR_QUE_VERDE);
-    }
-    else
+    if (!nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
     {
       ROS_ERROR("Failed to get param 'MAIOR_QUE_VERDE'");
     }
@@ -621,7 +613,7 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     projeto_semear::moveEletroimaGoal move_goal;
     move_goal.deslocamento.linear.x = 0.0;
     move_goal.deslocamento.linear.y = 0;
-    move_goal.deslocamento.linear.z = - 0.045 * (4 - altura);
+    move_goal.deslocamento.linear.z =  0.045 * (4 - altura);
     move_goal.deslocamento.angular.z = 0;
     move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
     move_client.waitForResult(ros::Duration());
