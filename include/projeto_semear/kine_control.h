@@ -160,6 +160,7 @@ void descobrir_cor(kineControl::robot &robot);
 void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void alinhar_pilha(kineControl::robot &robot, int dir);
 void alinhar_esquerda(kineControl::robot &robot);
+void alinhar_depositar_esquerda(kineControl::robot &robot);
 } // namespace kineControl
 
 // Overload of << for the Pose

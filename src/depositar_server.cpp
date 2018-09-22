@@ -120,6 +120,8 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   if (code != 0)
     kineControl::alinhar_containerdepositado(motor);
 
+  if( code == 0)
+    kineControl::alinhar_depositar_esquerda(motor);
   move_goal.deslocamento.angular.z = 0;
   move_goal.deslocamento.linear.x = 0;
   move_goal.deslocamento.linear.y = 0;

@@ -206,7 +206,7 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
     ros::Duration time(0.05);
 
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
-    while ((robot.colorFR_ == BRANCO || robot.colorFL_ == BRANCO) && ros::ok())
+    while ((robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO) || (robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO) && ros::ok())
     {
         code = 0;
         velocidade.linear.x = 0;
@@ -248,6 +248,33 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
+{
+     kineControl::alinhar(robot);
+
+    ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
+
+    geometry_msgs::Twist velocidade;
+    ros::Rate rate(10);
+    ros::spinOnce();
+
+    while (robot.colorFF_ != AZUL_VERDE)
+    {
+        // Andar uma distância predefinida
+        velocidade.linear.x = ((int)(robot.colorFL_ != BRANCO ) + (int)(robot.colorFR_ != BRANCO) - (int)(robot.colorBL_  == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_X;
+        velocidade.angular.z = (-(int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
+        velocidade.linear.y = -VEL_Y;
+        robot.setVelocity(velocidade);
+        rate.sleep();
+        ros::spinOnce();
+    }
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+   
+}
 void kineControl::esquerda(kineControl::robot &robot)
 {
 
@@ -315,6 +342,13 @@ void kineControl::ir_quadrante(kineControl::robot &robot)
 
     ROS_INFO_STREAM("KINECONTROL - ir_quadrante");
     geometry_msgs::Twist velocidade;
+
+    // Ir para trás
+    velocidade.linear.x = -0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(1).sleep();
 
     // Girar 90 Graus
     velocidade.linear.x = 0;
@@ -709,7 +743,6 @@ void kineControl::alinhar_esquerda(kineControl::robot &robot)
 
     ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
 
-   
     geometry_msgs::Twist velocidade;
     ros::Rate rate(10);
     ros::spinOnce();
