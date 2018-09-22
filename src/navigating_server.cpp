@@ -120,7 +120,7 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
             break;
         case (42):
             kineControl::ir_quadrante(robot);
-            kineControl::alinhar(robot);
+            kineControl::alinhar_esquerda(robot);
             break;
         case (50):
             kineControl::linha_preta(robot);

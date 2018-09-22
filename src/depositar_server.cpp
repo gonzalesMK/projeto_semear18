@@ -116,24 +116,17 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
 
+  kineControl::alinhar_depositar_esquerda(motor);
   // Alinhar com o container de baixo
   if (code != 0)
     kineControl::alinhar_containerdepositado(motor);
 
-  if( code == 0)
-    kineControl::alinhar_depositar_esquerda(motor);
   move_goal.deslocamento.angular.z = 0;
   move_goal.deslocamento.linear.x = 0;
   move_goal.deslocamento.linear.y = 0;
-  move_goal.deslocamento.linear.z = -0.137 + (code * 0.04); //0,2 chute da altura do container
+  move_goal.deslocamento.linear.z = -0.137 + (code * 0.042); //0,2 chute da altura do container
   move_eletro_client.sendGoal(move_goal, &doneCb, &activeCb, &feedbackCb);
   move_eletro_client.waitForResult(ros::Duration());
-
-  //andar uma distância determinada para fica no meio do container já depositado
-  //goal.deslocamento.angular.z = 1;
-  //goal.deslocamento.linear.z = 0;
-  //client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  //client.waitForResult(ros::Duration());
 
   // Desligando o Eletroima
   msg.data = false;

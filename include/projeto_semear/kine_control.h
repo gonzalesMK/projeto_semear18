@@ -35,11 +35,12 @@
 namespace kineControl
 {
 
-double MAIOR_QUE_PRETO;  // Constante para marcar o valor do preto
-double MAIOR_QUE_VERDE; // Constate para marcar o valor do verde
-double TEMPO_MEIA_VOLTA;
-double TEMPO_ALINHAR_ESQUERDA;
-double TEMPO_DIREITA_ESQUERDA;
+double MAIOR_QUE_PRETO;           // Constante para marcar o valor do preto
+double MAIOR_QUE_VERDE;           // Constate para marcar o valor do verde
+double TEMPO_MEIA_VOLTA;          // Tempo para o robô girar 90º Graus
+double TEMPO_ALINHAR_ESQUERDA;    // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
+double TEMPO_DIREITA_ESQUERDA;    // Tempo para andar durante a transição esquerda-direita
+double PRECISAO_DIST_ALINHAR_PILHA;   // Precisão quando alinha lateralmente com os containers
 double VEL_Y;
 double VEL_Z;
 double VEL_X;
@@ -151,7 +152,7 @@ class robot
 void linha_preta(kineControl::robot &robot);
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
-void alinhar(kineControl::robot &robot);
+void alinhar_frontal(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
 void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
@@ -161,6 +162,7 @@ void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void alinhar_pilha(kineControl::robot &robot, int dir);
 void alinhar_esquerda(kineControl::robot &robot);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
+void alinhar_traseiro(kineControl::robot &robot);
 } // namespace kineControl
 
 // Overload of << for the Pose
