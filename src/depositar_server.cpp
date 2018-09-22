@@ -96,7 +96,8 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   srv.request.set = false;
 
   // Informando a localizacao da pilha onde o robo se encontra
-  get_srv.request.where = localizacao;
+  get_srv.request.where = req.cor;
+  ROS_INFO_STREAM("DEPOSITAR CONTAINER - Posicao do robo: " << get_srv.request.where);
   get_client.call(get_srv);
 
   // Pegando o vetor que contem os containers depositados
@@ -106,12 +107,16 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
 
   if(vec.back() == 0 ){
     code = 0;
+  } else{
+    ROS_INFO_STREAM("DEPOSITAR CONTAINER - Ultimo container tem código: " << vec.back());
   }
-  ROS_INFO_STREAM("DEPOSITAR CONTAINER: Valor do code:" << code);
+
+  ROS_INFO_STREAM("DEPOSITAR CONTAINER - Valor do code:" << code);
 
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/
 
+  kineControl::alinhar_depositar_esquerda(motor);
   // Alinhar com o container de baixo
   if (code != 0)
     kineControl::alinhar_containerdepositado(motor);
@@ -119,15 +124,9 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   move_goal.deslocamento.angular.z = 0;
   move_goal.deslocamento.linear.x = 0;
   move_goal.deslocamento.linear.y = 0;
-  move_goal.deslocamento.linear.z = -0.137 + (code * 0.04); //0,2 chute da altura do container
+  move_goal.deslocamento.linear.z = -0.137 + (code * 0.042); //0,2 chute da altura do container
   move_eletro_client.sendGoal(move_goal, &doneCb, &activeCb, &feedbackCb);
   move_eletro_client.waitForResult(ros::Duration());
-
-  //andar uma distância determinada para fica no meio do container já depositado
-  //goal.deslocamento.angular.z = 1;
-  //goal.deslocamento.linear.z = 0;
-  //client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
-  //client.waitForResult(ros::Duration());
 
   // Desligando o Eletroima
   msg.data = false;

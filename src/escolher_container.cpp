@@ -66,7 +66,9 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     enum ESCOLHIDO{
             ESQUERDA = 0,
             DIREITA = 1,
-            NENHUM = 2
+            NENHUM = 2, //pq só tem vermelho
+            DESCONHECIDO = 3 //não pega nenhum pq não sabe qual a cor
+            
     };
 
     enum cores
@@ -75,7 +77,7 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     VERDE = 12,
     VERMELHO = 14,
     NENHUMA = 254,
-    DESCONHECIDO = 255
+    DESCONHECIDA = 255
     };
 
 
@@ -112,8 +114,8 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         }
         else
         {
-            res.container_escolhido = NENHUM;
-            res.cor = DESCONHECIDO;
+            res.container_escolhido = DESCONHECIDO;
+            res.cor = DESCONHECIDA;
         }
     }
 
@@ -151,8 +153,8 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         }
         else
         {
-            res.container_escolhido = NENHUM;
-            res.cor = DESCONHECIDO;
+            res.container_escolhido = DESCONHECIDO;
+            res.cor = DESCONHECIDA;
         }
     }
 
@@ -188,8 +190,8 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     }
     else
     {
-        res.container_escolhido = NENHUM;
-        res.cor = DESCONHECIDO;
+        res.container_escolhido = DESCONHECIDO;
+        res.cor = DESCONHECIDA;
     }
 
 }

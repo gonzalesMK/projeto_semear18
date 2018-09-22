@@ -1,3 +1,4 @@
 uint32 posicao_origem_do_container
+uint32 cor
 ---
 uint32 code

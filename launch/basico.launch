@@ -4,26 +4,32 @@
 
 	<param name ="MAIOR_QUE_PRETO" value="60"/>
     <param name ="MAIOR_QUE_VERDE" value="300"/>
+	<param name ="TEMPO_MEIA_VOLTA" value="3"/>
+	<param name ="TEMPO_DIREITA_ESQUERDA" value="2.3"/>
+	<param name ="VEL_Y" value="0.15"/>
+	<param name ="VEL_Z" value="-0.2"/>
+	<param name ="VEL_X" value="0.015"/>
+	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
+	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
+	
 
-	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" output="screen"/>
+	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
 
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
 
-	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output="screen"/>
+	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" />
 
-	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output="screen"/>
+	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output='screen' />
 
 	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
 
 	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
 	
-	<node name="mapa" pkg="projeto_semear" type="mapa_container_server" respawn="false" output="screen"/>
-	
-	<!-- <node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/> -->
+	<node name="mapa" pkg="projeto_semear" type="mapa_container_server" respawn="false" />
 	
 	<node name="estrategia" pkg="projeto_semear" type="estrategia_server" respawn="false" output="screen"/>
 
-	<node name="escolher_container" pkg="projeto_semear" type="escolher_container" respawn="false" output="screen"/>
+	<node name="escolher_container" pkg="projeto_semear" type="escolher_container" respawn="false" />
 
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
