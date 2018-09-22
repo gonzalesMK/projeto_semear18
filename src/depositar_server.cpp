@@ -96,7 +96,8 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
   srv.request.set = false;
 
   // Informando a localizacao da pilha onde o robo se encontra
-  get_srv.request.where = localizacao;
+  get_srv.request.where = req.cor;
+  ROS_INFO_STREAM("DEPOSITAR CONTAINER - Posicao do robo: " << get_srv.request.where);
   get_client.call(get_srv);
 
   // Pegando o vetor que contem os containers depositados
@@ -106,8 +107,11 @@ bool depositar_container(projeto_semear::DepositarContainer::Request &req,
 
   if(vec.back() == 0 ){
     code = 0;
+  } else{
+    ROS_INFO_STREAM("DEPOSITAR CONTAINER - Ultimo container tem código: " << vec.back());
   }
-  ROS_INFO_STREAM("DEPOSITAR CONTAINER: Valor do code:" << code);
+
+  ROS_INFO_STREAM("DEPOSITAR CONTAINER - Valor do code:" << code);
 
   /*Code == 0: nenhum container depositado
     Code != 0: já existe um ou mais containers na pilha*/

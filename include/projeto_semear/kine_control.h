@@ -37,6 +37,12 @@ namespace kineControl
 
 double MAIOR_QUE_PRETO;  // Constante para marcar o valor do preto
 double MAIOR_QUE_VERDE; // Constate para marcar o valor do verde
+double TEMPO_MEIA_VOLTA;
+double TEMPO_ALINHAR_ESQUERDA;
+double TEMPO_DIREITA_ESQUERDA;
+double VEL_Y;
+double VEL_Z;
+double VEL_X;
 const double VEL_ANG = 0.1;         // Constante para marcar a velocidade angular
 
 const double PI = 3.141592653589793238463;
@@ -69,7 +75,7 @@ class robot
     color colorFR_ = BRANCO;
     color colorBR_ = BRANCO;
 
-    color colorFr_ = BRANCO;
+    color colorFF_ = BRANCO;
 
     color colorR0_ = BRANCO;
     color colorR1_ = BRANCO;
@@ -102,7 +108,7 @@ class robot
     ros::Subscriber ColorSensorL2_;
     ros::Subscriber ColorSensorL3_;
 
-    ros::Subscriber FrontalSensor_;
+    ros::Subscriber frontalSensor_;
 
     robot();
 
@@ -135,7 +141,7 @@ class robot
     color get_colorL2();
     color get_colorL3();
 
-    color get_colorFr();
+    color get_colorFF();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
@@ -153,7 +159,7 @@ void alinhar_containerdepositado(kineControl::robot &robot);
 void descobrir_cor(kineControl::robot &robot);
 void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void alinhar_pilha(kineControl::robot &robot, int dir);
-
+void alinhar_esquerda(kineControl::robot &robot);
 } // namespace kineControl
 
 // Overload of << for the Pose

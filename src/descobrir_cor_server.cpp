@@ -175,7 +175,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Atualiza o container da esquerda
         set_msg.request.where = esq;
         set_msg.request.color = cor_garra_L;
-        ROS_INFO_STREAM(" ESQ: " << esq << " COR: " << cor_garra_L);
+        ROS_INFO_STREAM("DESCOBRIR_COR - ESQ: " << esq << " COR: " << cor_garra_L);
         if (cor_garra_L == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da esquerda nao foi identificado");
@@ -185,6 +185,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Atualiza o container da direita
         set_msg.request.where = dir;
         set_msg.request.color = cor_garra_R;
+        ROS_INFO_STREAM("DESCOBRIR_COR - DIR: " << dir << " COR: " << cor_garra_R);
         if (cor_garra_R == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da direita nao foi identificado");

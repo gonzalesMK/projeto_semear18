@@ -67,7 +67,10 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
 
     if (path.empty())
     {
-        ROS_INFO("Empty path");
+        ROS_INFO("NAVIGATION - Cuidado ! Empty path");
+        projeto_semear::navigationResult result;
+        result.succeed = true ;
+        as->setSucceeded(result);
         return;
     }
     for (auto it = path.begin(); it != --path.end(); it++)
@@ -89,6 +92,7 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
         {
         case (01):
             kineControl::esquerda(robot);
+            kineControl::alinhar_esquerda(robot);
             break;
         case (02):
             kineControl::direita(robot);
@@ -112,9 +116,11 @@ void execute(const projeto_semear::navigationGoalConstPtr &goal, Server *as, kin
             break;
         case (31):
             kineControl::ir_quadrante(robot);
+            kineControl::alinhar_esquerda(robot);
             break;
         case (42):
             kineControl::ir_quadrante(robot);
+            kineControl::alinhar(robot);
             break;
         case (50):
             kineControl::linha_preta(robot);

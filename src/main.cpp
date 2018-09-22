@@ -17,7 +17,6 @@ void doneCb(const actionlib::SimpleClientGoalState &state,
             const projeto_semear::navigationResultConstPtr &result);
 void activeCb();
 
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "main");
@@ -68,34 +67,32 @@ int main(int argc, char **argv)
         // Decidindo próximo passo
         ROS_INFO("MAIN - Decidindo proximo passo");
         estrategia_srv.call(estrategia_msg);
-        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0-1-2) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go);
+        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0-1-2) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go << "mudar de lugar: " << mudar_de_lugar);
 
         while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar == false)
         {
-                if(tentativas < 3)
-                {
-                        // Descobrir cor do container
-                        ROS_INFO("MAIN - Descobrindo containers");
-                        descobrir_cor_srv.call(descobrir_container_msg);
+            if (tentativas < 3)
+            {
+                // Descobrir cor do container
+                ROS_INFO("MAIN - Descobrindo containers");
+                descobrir_cor_srv.call(descobrir_container_msg);
 
-                        // Decidindo próximo passo
-                        ROS_INFO("MAIN - Decidindo proximo passo");
-                        estrategia_srv.call(estrategia_msg);
+                // Decidindo próximo passo
+                ROS_INFO("MAIN - Decidindo proximo passo");
+                estrategia_srv.call(estrategia_msg);
+                tentativas = tentativas + 1;
+            }
 
-                        tentativas = tentativas+1;
-                }
-
-                else
-                {
-                        tentativas = 0;
-                        mudar_de_lugar = true;
-                }
-
+            else
+            {
+                tentativas = 0;
+                mudar_de_lugar = true;
+            }
         }
 
         while (estrategia_msg.response.container_escolhido == 2 || mudar_de_lugar == true)
         {
-            mudar_de_lugar == false;
+            mudar_de_lugar = false;
             navigation_msg.goal_pose = estrategia_msg.response.to_go;
             navigation_client.sendGoal(navigation_msg, &doneCb, &activeCb, &feedbackCb);
             navigation_client.waitForResult();
@@ -126,6 +123,7 @@ int main(int argc, char **argv)
         // Depositando  o container
         ROS_INFO("MAIN - Depositando Container");
         depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
+        depositar_msg.request.cor = estrategia_msg.response.cor;
         depositar_srv.call(depositar_msg);
 
         // Voltando para doca mais próxima

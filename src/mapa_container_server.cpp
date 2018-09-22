@@ -105,14 +105,19 @@ bool setContainer(projeto_semear::SetContainer::Request &req,
 */
 bool moveContainer(projeto_semear::MoveContainer::Request &req,
                    projeto_semear::MoveContainer::Response &res)
-{
+{   
 
+    
     if (!checar_limites(req.where))
     {
         return false;
     }
-    unsigned char cor = MAPA[req.where].back();
+    unsigned int cor = MAPA[req.where].back();
 
+    ROS_INFO_STREAM( "MAPA_DE_CONTAINERS - moveContainer - color: " << cor);
+    ROS_INFO_STREAM( "MAPA_DE_CONTAINERS - moveContainer - where: " << req.where);
+    
+    
     if (cor == cores::DESCONHECIDO)
     {
         ROS_ERROR("Cuidado!! tentando mover um container de cor desconhecida, identifique o container!!");
