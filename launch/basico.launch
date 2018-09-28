@@ -14,7 +14,7 @@
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
 	
 
-	<!--<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
+	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
 
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
 
@@ -34,7 +34,7 @@
 
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
-	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/> -->
+	<!--<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/> -->
 
 
 </launch>   
