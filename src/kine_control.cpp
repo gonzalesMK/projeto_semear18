@@ -205,7 +205,7 @@ void kineControl::alinhar_frontal(kineControl::robot &robot)
 
 void kineControl::alinhar_traseiro(kineControl::robot &robot)
 {
-    ROS_INFO("KINECONTROL - alinhar_frontal() - a linha preta esta atras");
+    ROS_INFO("KINECONTROL - alinha_traseiro() - a linha preta esta na frente");
     geometry_msgs::Twist velocidade;
     int code = 0;
     ros::Rate rate(10);
@@ -218,8 +218,8 @@ void kineControl::alinhar_traseiro(kineControl::robot &robot)
     while ((robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO) && ros::ok())
     {
         velocidade.linear.y = 0;
-        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO) + off_set) * VEL_X;
-        velocidade.angular.z = ((int)(robot.colorFL_ == PRETO) - (int)(robot.colorFR_ == PRETO) + (int)(robot.colorBL_ == PRETO) - (int)(robot.colorBR_ == PRETO)) * VEL_Z;
+        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO) + off_set) * VEL_X;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
         robot.setVelocity(velocidade);
         rate.sleep();
         ros::spinOnce();
@@ -443,7 +443,7 @@ void kineControl::direita(kineControl::robot &robot)
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
-    //kineControl::alinhar_traseiro(robot);
+    kineControl::alinhar_traseiro(robot);
 }
 
 void kineControl::linha_preta(kineControl::robot &robot)
