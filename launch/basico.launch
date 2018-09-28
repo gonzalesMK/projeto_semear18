@@ -5,7 +5,8 @@
 	<param name ="MAIOR_QUE_PRETO" value="60"/>
     <param name ="MAIOR_QUE_VERDE" value="300"/>
 	<param name ="TEMPO_MEIA_VOLTA" value="3"/>
-	<param name ="TEMPO_DIREITA_ESQUERDA" value="2.3"/>
+	<param name ="TEMPO_DIREITA_ESQUERDA" value="1.9"/>
+	<param name = "TEMPO_DIREITA" value = "0.4"/>
 	<param name ="VEL_Y" value="0.15"/>
 	<param name ="VEL_Z" value="-0.2"/>
 	<param name ="VEL_X" value="0.015"/>
@@ -33,7 +34,7 @@
 
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
-	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>
+	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/> 
 
 
 </launch>   

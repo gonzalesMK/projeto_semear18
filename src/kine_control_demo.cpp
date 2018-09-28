@@ -8,10 +8,15 @@ int main(int argc, char **argv)
 
     kineControl::robot motor;
 
+    kineControl::esquerda(motor);
+    //kineControl::alinhar_direita(motor);
+    kineControl::direita(motor);
+    kineControl::direita(motor);
+
     //** Como usar o motor para mudar a velocidade :
 
     // Parâmetro de entrada do motor
-    geometry_msgs::Twist velocidade;
+    /*geometry_msgs::Twist velocidade;
     velocidade.linear.x = 1;
     velocidade.linear.y = 1;
     velocidade.angular.z = 1;
@@ -23,7 +28,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         ROS_INFO_STREAM(" COLOR IN BR: " << motor.get_colorBL());
-    }
+    }*/
     
     return 0;
 }
