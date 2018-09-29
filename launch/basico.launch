@@ -7,10 +7,11 @@
 	<param name ="TEMPO_MEIA_VOLTA" value="3"/>
 	<param name ="TEMPO_DIREITA_ESQUERDA" value="2.3"/>
 	<param name ="VEL_Y" value="0.15"/>
-	<param name ="VEL_Z" value="-0.2"/>
+	<param name ="VEL_Z" value="-.2"/>
 	<param name ="VEL_X" value="0.015"/>
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
+	<param name ="FREQUENCIA_ROS" value="25"/>
 	
 
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
