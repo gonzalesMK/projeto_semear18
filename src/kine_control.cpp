@@ -15,7 +15,6 @@ const double LX = 0.06099;        // Comprimento do eixo X
 const double LY = 0.0991225;      // Comprimento do eixo Y
 const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
 
-
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback) {}
 void doneCb(const actionlib::SimpleClientGoalState &state, const projeto_semear::moveEletroimaResultConstPtr &result) {}
 void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback) {}
@@ -230,25 +229,25 @@ void kineControl::alinhar_traseiro(kineControl::robot &robot)
     ros::spinOnce();
 
     double off_set = 0;
-    bool alinhado = !(robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO || robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO);
+    bool alinhado = !(robot.colorBR_ != BRANCO || robot.colorBL_ != BRANCO || robot.colorFR_ == BRANCO || robot.colorFL_ == BRANCO);
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
     while (!alinhado && ros::ok())
     {
         velocidade.linear.y = 0;
-        velocidade.linear.x = ((int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) - (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO) + off_set) * VEL_X;
-        velocidade.angular.z = -((int)(robot.colorFL_ != BRANCO) - (int)(robot.colorFR_ != BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
+        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO) + off_set) * VEL_X;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) + (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
 
         robot.setVelocity(velocidade);
         rate.sleep();
 
         ros::spinOnce();
 
-        alinhado = !(robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO || robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO);
+        alinhado = !(robot.colorBR_ != BRANCO || robot.colorBL_ != BRANCO || robot.colorFR_ == BRANCO || robot.colorFL_ == BRANCO);
         //ROS_INFO_STREAM(" X: " << velocidade.linear.x << " Z: " << velocidade.angular.z << "Alinhado:" << alinhado);
         if (!alinhado && velocidade.linear.x == 0 && velocidade.angular.z == 0)
         {
             ROS_ERROR(" O Robo travou, ligando ofsset");
-            off_set = 2;
+            off_set = -2;
         }
         else
         {
@@ -285,7 +284,7 @@ void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
 {
     kineControl::alinhar_traseiro(robot);
 
-    ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
+    ROS_INFO_STREAM("KINECONTROL - alinhar_depositar_esquerda() ");
 
     geometry_msgs::Twist velocidade;
     ros::Rate rate(FREQUENCIA_ROS);
@@ -321,9 +320,9 @@ void kineControl::esquerda(kineControl::robot &robot)
     {
         // Andar uma distância predefinida
         ros::spinOnce();
-        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * VEL_X;
+        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO)) * VEL_X;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) + (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
         velocidade.linear.y = -VEL_Y;
-        velocidade.angular.z = 0;
         robot.setVelocity(velocidade);
         now = ros::Time::now();
         rate.sleep();
@@ -350,9 +349,10 @@ void kineControl::direita(kineControl::robot &robot)
     {
         // Andar uma distância predefinida
         ros::spinOnce();
-        velocidade.linear.x = (-(int)(robot.colorFL_ != PRETO) - (int)(robot.colorFR_ != PRETO) + (int)(robot.colorBL_ != PRETO) + (int)(robot.colorBR_ != PRETO)) * VEL_X;
+        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO)) * VEL_X;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) + (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
         velocidade.linear.y = VEL_Y;
-        velocidade.angular.z = 0;
+
         robot.setVelocity(velocidade);
         now = ros::Time::now();
         rate.sleep();
@@ -732,6 +732,8 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     set_goal.pose = set_goal.posicao_segurar_container_rotacionado;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
+
+    kineControl::alinhar_frontal(robot);
 }
 
 // Concerning is not properly working yet, need to improve the math
@@ -776,7 +778,7 @@ bool kineControl::robot::concerning(const wheel w, double modulo_vel)
 
 void kineControl::alinhar_esquerda(kineControl::robot &robot)
 {
-    kineControl::alinhar_frontal(robot);
+    kineControl::alinhar_traseiro(robot);
 
     ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
 
@@ -787,8 +789,8 @@ void kineControl::alinhar_esquerda(kineControl::robot &robot)
     while (robot.colorFF_ != PRETO)
     {
         // Andar uma distância predefinida
-        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * VEL_X;
-        velocidade.angular.z = ((int)(robot.colorFL_ == PRETO) - (int)(robot.colorFR_ == PRETO) + (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO)) * VEL_Z;
+        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO)) * VEL_X;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) + (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
         velocidade.linear.y = -VEL_Y;
         robot.setVelocity(velocidade);
         rate.sleep();
@@ -834,7 +836,7 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
     {
         // Andar uma distância predefinida
         velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO)) * VEL_X;
-        velocidade.angular.z = (-(int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) + (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
+        velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) + (int)(robot.colorBR_ != BRANCO)) * VEL_Z;
         velocidade.linear.y = VEL_Y;
         robot.setVelocity(velocidade);
         rate.sleep();
@@ -865,7 +867,6 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);*/
 }
-
 
 kineControl::color kineControl::robot::get_colorFL()
 {
