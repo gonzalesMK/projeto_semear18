@@ -230,18 +230,17 @@ void kineControl::alinhar_traseiro(kineControl::robot &robot)
     while (!alinhado && ros::ok())
     {
         velocidade.linear.y = 0;
-
         velocidade.linear.x = ((int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) - (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO) + off_set) * VEL_X;
         velocidade.angular.z = -((int)(robot.colorFL_ != BRANCO) - (int)(robot.colorFR_ != BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
-        //        velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO) + off_set) * VEL_X;
-        //       velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
+        //velocidade.linear.x = ((int)(robot.colorFL_ == BRANCO) + (int)(robot.colorFR_ == BRANCO) - (int)(robot.colorBL_ != BRANCO) - (int)(robot.colorBR_ != BRANCO) + off_set) * VEL_X;
+        //velocidade.angular.z = ((int)(robot.colorFL_ == BRANCO) - (int)(robot.colorFR_ == BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
         robot.setVelocity(velocidade);
         rate.sleep();
 
         ros::spinOnce();
 
         alinhado = !(robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO || robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO);
-        ROS_INFO_STREAM(" X: " << velocidade.linear.x << " Z: " << velocidade.angular.z << "Alinhado:" << alinhado);
+        //ROS_INFO_STREAM(" X: " << velocidade.linear.x << " Z: " << velocidade.angular.z << "Alinhado:" << alinhado);
         if (!alinhado && velocidade.linear.x == 0 && velocidade.angular.z == 0)
         {
             ROS_ERROR(" O Robo travou, ligando ofsset");
