@@ -45,6 +45,7 @@ double VEL_Y;
 double VEL_Z;
 double VEL_X;
 const double VEL_ANG = 0.1;         // Constante para marcar a velocidade angular
+double FREQUENCIA_ROS;
 
 const double PI = 3.141592653589793238463;
 

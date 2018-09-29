@@ -40,6 +40,8 @@ void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
     variable = msg->data;
 }
 
+// Construtor do robô
+// Aqui são feitas as criações dos tópicos de leitura dos sensores e os parâmetros são lidos
 kineControl::robot::robot()
 {
     FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFRSpeed", 1);
@@ -117,6 +119,13 @@ kineControl::robot::robot()
     {
         ROS_ERROR("Failed to get param 'PRECISAO_DIST_ALINHAR_PILHA'");
     }
+
+
+    if (!nh_.param("FREQUENCIA_ROS", FREQUENCIA_ROS, 10.0))
+    {
+        ROS_ERROR("Failed to get param 'FREQUENCIA_ROS'");
+    }
+
 }
 
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
@@ -146,12 +155,14 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BL_Motor_.publish(Wbl);
 }
 
+// Função para alinhar os sensores de baixo do robô. Os dois sensores da frente deverão ficar sobre a linha preta ou azul, equanto os de trás devem
+// ficar fora da linha. 
 void kineControl::alinhar_frontal(kineControl::robot &robot)
 {
     ROS_INFO("KINECONTROL - alinhar_frontal() - a linha preta esta atras");
     geometry_msgs::Twist velocidade;
     int code = 0;
-    ros::Duration time(0.05);
+    ros::Duration time(1/FREQUENCIA_ROS);
     ros::spinOnce();
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
     while ((robot.colorFR_ == BRANCO || robot.colorFL_ == BRANCO) && ros::ok())
@@ -199,28 +210,32 @@ void kineControl::alinhar_frontal(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+// Função para alinhar os sensores de baixo do robô. Os dois sensores de trás deverão ficar sobre a linha preta ou azul, equanto os da frente devem
+// ficar fora da linha. 
 void kineControl::alinhar_traseiro(kineControl::robot &robot)
 {
-    ROS_INFO("KINECONTROL - alinhar_frontal() - a linha preta esta atras");
+    ROS_INFO("KINECONTROL - alinhar_traseiro() - a linha preta esta atras");
     geometry_msgs::Twist velocidade;
     int code = 0;
-    ros::Rate rate(10);
+    ros::Rate rate( FREQUENCIA_ROS);
     
     ros::spinOnce();
 
     double off_set = 0;
-    bool alinhado = (robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO);
+    bool alinhado = !(robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO || robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO );
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
-    while ((robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO) && ros::ok())
+    while ( !alinhado && ros::ok())
     {
         velocidade.linear.y = 0;
-        velocidade.linear.x = ((int)(robot.colorFL_ == PRETO) + (int)(robot.colorFR_ == PRETO) - (int)(robot.colorBL_ != PRETO) - (int)(robot.colorBR_ != PRETO) + off_set) * VEL_X;
-        velocidade.angular.z = ((int)(robot.colorFL_ == PRETO) - (int)(robot.colorFR_ == PRETO) + (int)(robot.colorBL_ == PRETO) - (int)(robot.colorBR_ == PRETO)) * VEL_Z;
+        velocidade.linear.x = ((int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) - (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO) + off_set) * VEL_X;
+        velocidade.angular.z = -((int)(robot.colorFL_ != BRANCO) - (int)(robot.colorFR_ != BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
         robot.setVelocity(velocidade);
         rate.sleep();
-        ros::spinOnce();
-        alinhado = (robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO);
 
+        ros::spinOnce();
+
+        alinhado = !(robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO || robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO );
+        ROS_INFO_STREAM(" X: " << velocidade.linear.x <<  " Z: "  << velocidade.angular.z << "Alinhado:" << alinhado );
         if (!alinhado && velocidade.linear.x == 0 && velocidade.angular.z == 0)
         {
             ROS_ERROR(" O Robo travou, ligando ofsset");
@@ -246,45 +261,11 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 
     int code = 0;
     ros::spinOnce();
-    ros::Duration time(0.05);
+    ros::Duration time(1 / FREQUENCIA_ROS);
 
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
-    while ((robot.colorBR_ == BRANCO || robot.colorBL_ == BRANCO) || (robot.colorFR_ != BRANCO || robot.colorFL_ != BRANCO) && ros::ok())
-    {
-        code = 0;
-        velocidade.linear.x = 0;
-        velocidade.linear.y = 0;
-        velocidade.angular.z = 0;
+    alinhar_traseiro(robot);
 
-        // Caso 0: todos os sensores no branco. Supõe-se que o robô ultrapassou o alinhamento necessário. Garantir isso no resto do código
-        // Caso 3: Caso o sensor FrontRight esteja marcando verde, mas o FrontLeft não -> girar positivo
-        // Caso 4: Caso o sensor FrontLeft esteja marcando verde, mas o  FrontRight não -> girar negativo
-        // ROS_INFO_STREAM("\nFL " << colorFL << "FR " << colorFR << "\nBL " << colorBL << "BR " << colorBR);
-
-        if (robot.colorFL_ == BRANCO && robot.colorFR_ == BRANCO)
-            code = 0;
-        else if (robot.colorFL_ == BRANCO && robot.colorFR_ != BRANCO)
-            code = 1;
-        else if (robot.colorFL_ != BRANCO && robot.colorFR_ == BRANCO)
-            code = 2;
-
-        switch (code)
-        {
-        case 0:
-            velocidade.linear.x = 0.05;
-            break;
-        case 1:
-            velocidade.angular.z = -VEL_ANG;
-            break;
-        case 2:
-            velocidade.angular.z = VEL_ANG;
-            break;
-        }
-
-        robot.setVelocity(velocidade);
-        ros::spinOnce();
-        time.sleep();
-    }
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
@@ -298,7 +279,7 @@ void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
     ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
 
     geometry_msgs::Twist velocidade;
-    ros::Rate rate(10);
+    ros::Rate rate(FREQUENCIA_ROS);
     ros::spinOnce();
 
     while (robot.colorFF_ != AZUL_VERDE)
@@ -327,7 +308,7 @@ void kineControl::esquerda(kineControl::robot &robot)
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
     geometry_msgs::Twist velocidade;
-    ros::Rate rate(10);
+    ros::Rate rate(FREQUENCIA_ROS);
     while (now - begin < ros::Duration(TEMPO_DIREITA_ESQUERDA))
     {
         // Andar uma distância predefinida
@@ -358,7 +339,7 @@ void kineControl::ir_doca(kineControl::robot &robot)
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
     robot.setVelocity(velocidade);
-    ros::Duration(1).sleep();
+    ros::Duration(2).sleep();
 
     // Girar 90 Graus
     velocidade.linear.x = 0;
@@ -422,7 +403,7 @@ void kineControl::direita(kineControl::robot &robot)
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
     geometry_msgs::Twist velocidade;
-    ros::Rate rate(10);
+    ros::Rate rate(FREQUENCIA_ROS);
     while (now - begin < ros::Duration(TEMPO_DIREITA_ESQUERDA))
     {
         // Andar uma distância predefinida
@@ -504,7 +485,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir)
     ROS_INFO("KINECONTROL - alinhar_pilha");
     ros::spinOnce();
     robot.lateral_distance_;
-    ros::Rate rate(10);
+    ros::Rate rate(FREQUENCIA_ROS);
     geometry_msgs::Twist velocidade;
 
     // Alinhar para frente
@@ -580,7 +561,7 @@ void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
     ROS_INFO("KINECONTROL - alinhar_containerdepositado");
     geometry_msgs::Twist velocidade;
     int code = 0;
-    ros::Duration time(0.05);
+    ros::Duration time(1/FREQUENCIA_ROS);
     ros::spinOnce();
 
     // condição de não alinhamento: o robo não detecta azul ou verde
@@ -794,7 +775,7 @@ void kineControl::alinhar_esquerda(kineControl::robot &robot)
     ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
 
     geometry_msgs::Twist velocidade;
-    ros::Rate rate(10);
+    ros::Rate rate(FREQUENCIA_ROS);
     ros::spinOnce();
 
     while (robot.colorFF_ != PRETO)
