@@ -35,7 +35,7 @@
 
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
-	<!-- <node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/> -->
+	<!--  <node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>  - -->
 
 
 </launch>   

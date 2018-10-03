@@ -154,7 +154,8 @@ class robot
 void linha_preta(kineControl::robot &robot);
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
-void alinhar_frontal(kineControl::robot &robot);
+void alinhar_para_frente(kineControl::robot &robot);
+void alinhar_para_tras(kineControl::robot &robot);
 void ir_doca(kineControl::robot &robot);
 void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
@@ -164,8 +165,8 @@ void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void alinhar_pilha(kineControl::robot &robot, int dir);
 void alinhar_esquerda(kineControl::robot &robot);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
-void alinhar_traseiro(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);
+void alinhar_adiantado(kineControl::robot &robot);
 } // namespace kineControl
 
 // Overload of << for the Pose
