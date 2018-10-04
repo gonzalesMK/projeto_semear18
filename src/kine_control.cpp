@@ -301,7 +301,7 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - alinhar_depositar_esquerda() ");
-    kineControl::alinhar_frente(robot);
+    kineControl::alinhar_atras(robot);
 
     geometry_msgs::Twist velocidade;
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
