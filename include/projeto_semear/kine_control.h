@@ -161,8 +161,8 @@ class robot
 void linha_preta(kineControl::robot &robot);
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
-void alinhar_para_frente(kineControl::robot &robot);
-void alinhar_para_tras(kineControl::robot &robot);
+void alinhar_atras(kineControl::robot &robot);
+void alinhar_frente(kineControl::robot &robot, int initial_erro = -5);
 void ir_doca(kineControl::robot &robot);
 void ir_quadrante(kineControl::robot &robot);
 void alinhar_doca(kineControl::robot &robot);
@@ -175,12 +175,13 @@ void alinhar_depositar_esquerda(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);
 void alinhar_adiantado(kineControl::robot &robot);
 
-int erro_sensores_esquerda_com_branco(kineControl::robot &robot, int temp_erro = 0);
-int erro_sensores_direita_com_branco(kineControl::robot &robot, int temp_erro = 0);
-
 int erro_sensores_esquerda_com_preto(kineControl::robot &robot, int temp_erro = 0);
 int erro_sensores_direita_com_preto(kineControl::robot &robot, int temp_erro = 0);
 
+int erro_sensores_D0D1(kineControl::robot &robot, int temp_erro);
+int erro_sensores_D2D3(kineControl::robot &robot, int temp_erro);
+int erro_sensores_E0E1(kineControl::robot &robot, int temp_erro);
+int erro_sensores_E2E3(kineControl::robot &robot, int temp_erro);
 } // namespace kineControl
 
 // Overload of << for the Pose

@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     kineControl::robot robot;
-    //kineControl::linha_preta(motor);
+    kineControl::linha_preta(robot);
     // kineControl::alinhar_para_tras(motor);
     int erro1=0, erro2=0;
   /*
@@ -20,9 +20,9 @@ int main(int argc, char **argv)
     //    kineControl::esquerda(motor);
     //kineControl::alinhar_direita(motor);
     //kineControl::direita(motor);
-    //kineControl::direita(motor);
+    kineControl::alinhar_esquerda(robot);
     //kineControl::alinhar_para_tras(robot);
-    kineControl::alinhar_direita(robot);
+    //kineControl::alinhar_para_frente(robot);
 
     //** Como usar o motor para mudar a velocidade :
 
