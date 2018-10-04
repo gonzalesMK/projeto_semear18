@@ -35,18 +35,19 @@
 namespace kineControl
 {
 
-double MAIOR_QUE_PRETO;           // Constante para marcar o valor do preto
-double MAIOR_QUE_VERDE;           // Constate para marcar o valor do verde
-double TEMPO_MEIA_VOLTA;          // Tempo para o robô girar 90º Graus
-double TEMPO_ALINHAR_ESQUERDA;    // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
+double MAIOR_QUE_PRETO;             // Constante para marcar o valor do preto
+double MAIOR_QUE_VERDE;             // Constate para marcar o valor do verde
+double TEMPO_MEIA_VOLTA;            // Tempo para o robô girar 90º Graus
+double TEMPO_ALINHAR_ESQUERDA;      // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
 double TEMPO_TRANSICAO_ESQUERDA;    // Tempo para andar durante a transição esquerda-direita
-double PRECISAO_DIST_ALINHAR_PILHA;   // Precisão quando alinha lateralmente com os containers
+double PRECISAO_DIST_ALINHAR_PILHA; // Precisão quando alinha lateralmente com os containers
 double TEMPO_DIREITA;
 double VEL_Y;
 double VEL_Z;
 double VEL_X;
-const double VEL_ANG = 0.1;         // Constante para marcar a velocidade angular
-double FREQUENCIA_ROS;
+double Kp; // Constante para controle Proporcional
+const double VEL_ANG = 0.1; // Constante para marcar a velocidade angular
+double FREQUENCIA_PARA_ALINHAR;
 
 const double PI = 3.141592653589793238463;
 
@@ -73,10 +74,15 @@ class robot
     ros::NodeHandle nh_;
 
   public:
-    color colorFL_ = BRANCO;
-    color colorBL_ = BRANCO;
-    color colorFR_ = BRANCO;
-    color colorBR_ = BRANCO;
+    color colorE0_ = BRANCO;
+    color colorE1_ = BRANCO;
+    color colorE2_ = BRANCO;
+    color colorE3_ = BRANCO;
+
+    color colorD0_ = BRANCO;
+    color colorD1_ = BRANCO;
+    color colorD2_ = BRANCO;
+    color colorD3_ = BRANCO;
 
     color colorFF_ = BRANCO;
 
@@ -96,10 +102,16 @@ class robot
     ros::Publisher BR_Motor_;
     ros::Publisher BL_Motor_;
 
-    ros::Subscriber lineSensorFL_;
-    ros::Subscriber lineSensorFR_;
-    ros::Subscriber lineSensorBL_;
-    ros::Subscriber lineSensorBR_;
+    ros::Subscriber lineSensorE0_;
+    ros::Subscriber lineSensorE1_;
+    ros::Subscriber lineSensorE2_;
+    ros::Subscriber lineSensorE3_;
+
+    ros::Subscriber lineSensorD0_;
+    ros::Subscriber lineSensorD1_;
+    ros::Subscriber lineSensorD2_;
+    ros::Subscriber lineSensorD3_;
+
     ros::Subscriber lateralSensor_;
 
     ros::Subscriber ColorSensorR0_;
@@ -117,7 +129,7 @@ class robot
 
     //! Set the velocity of the robot.
     bool setVelocity(const geometry_msgs::Twist &vel);
-
+    bool setVelocityPID(float velL, float velR, geometry_msgs::Twist* vel = 0 );
     // Quando o robô gira em torno de uma de suas rodas - Ainda não funciona
     bool concerning(const wheel w, double modulo_vel);
 
@@ -130,11 +142,6 @@ class robot
     }
 
     // Funções que chama o ros::spinOnce e devolve o valor da variável
-    color get_colorFL();
-    color get_colorBL();
-    color get_colorFR();
-    color get_colorBR();
-
     color get_colorR0();
     color get_colorR1();
     color get_colorR2();
@@ -167,6 +174,13 @@ void alinhar_esquerda(kineControl::robot &robot);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);
 void alinhar_adiantado(kineControl::robot &robot);
+
+int erro_sensores_esquerda_com_branco(kineControl::robot &robot, int temp_erro = 0);
+int erro_sensores_direita_com_branco(kineControl::robot &robot, int temp_erro = 0);
+
+int erro_sensores_esquerda_com_preto(kineControl::robot &robot, int temp_erro = 0);
+int erro_sensores_direita_com_preto(kineControl::robot &robot, int temp_erro = 0);
+
 } // namespace kineControl
 
 // Overload of << for the Pose

@@ -12,16 +12,26 @@
 using namespace cv;
 using namespace std;
 
-
 /** Esse código é responsável por converter os sensores divulgados por ROS para um valor em
  * float para que seja mais facilmente utilizado.
  * 
  * Especificamente, os sensores enviam um pixel RGB, que é transformado em uma escala de cinza
  * */
+ros::Publisher pubE0;
+ros::Publisher pubE1;
+ros::Publisher pubE2;
+ros::Publisher pubE3;
+
+ros::Publisher pubD0;
+ros::Publisher pubD1;
+ros::Publisher pubD2;
+ros::Publisher pubD3;
+
 ros::Publisher pubBR;
 ros::Publisher pubFR;
 ros::Publisher pubBL;
 ros::Publisher pubFL;
+
 ros::Publisher pubGarraR;
 ros::Publisher pubGarraL;
 
@@ -36,10 +46,6 @@ ros::Publisher pubL1;
 ros::Publisher pubL2;
 ros::Publisher pubL3;
 
-void callbackBR(const sensor_msgs::ImageConstPtr &msg);
-void callbackBL(const sensor_msgs::ImageConstPtr &msg);
-void callbackFR(const sensor_msgs::ImageConstPtr &msg);
-void callbackFL(const sensor_msgs::ImageConstPtr &msg);
 void callbackGarraR(const sensor_msgs::ImageConstPtr &msg);
 void callbackGarraL(const sensor_msgs::ImageConstPtr &msg);
 
@@ -47,10 +53,22 @@ void callbackR0(const sensor_msgs::ImageConstPtr &msg);
 void callbackR1(const sensor_msgs::ImageConstPtr &msg);
 void callbackR2(const sensor_msgs::ImageConstPtr &msg);
 void callbackR3(const sensor_msgs::ImageConstPtr &msg);
+
 void callbackL0(const sensor_msgs::ImageConstPtr &msg);
 void callbackL1(const sensor_msgs::ImageConstPtr &msg);
 void callbackL2(const sensor_msgs::ImageConstPtr &msg);
 void callbackL3(const sensor_msgs::ImageConstPtr &msg);
+
+void callbackE0(const sensor_msgs::ImageConstPtr &msg);
+void callbackE1(const sensor_msgs::ImageConstPtr &msg);
+void callbackE2(const sensor_msgs::ImageConstPtr &msg);
+void callbackE3(const sensor_msgs::ImageConstPtr &msg);
+
+void callbackD0(const sensor_msgs::ImageConstPtr &msg);
+void callbackD1(const sensor_msgs::ImageConstPtr &msg);
+void callbackD2(const sensor_msgs::ImageConstPtr &msg);
+void callbackD3(const sensor_msgs::ImageConstPtr &msg);
+
 
 void callbackFr(const sensor_msgs::ImageConstPtr &msg);
 
@@ -60,38 +78,42 @@ int main(int argc, char **argv)
 
     ros::NodeHandle n;
 
-    ros::Subscriber subBL = n.subscribe("/AMR/lineSensorBL", 1000, callbackBL);
-    ros::Subscriber subBR = n.subscribe("/AMR/lineSensorBR", 1000, callbackBR);
-    ros::Subscriber subFR = n.subscribe("/AMR/lineSensorFR", 1000, callbackFR);
-    ros::Subscriber subFL = n.subscribe("/AMR/lineSensorFL", 1000, callbackFL);
+    ros::Subscriber subE0 = n.subscribe("/AMR/lineSensorL0", 1000, callbackE0);
+    ros::Subscriber subE1 = n.subscribe("/AMR/lineSensorL1", 1000, callbackE1);
+    ros::Subscriber subE2 = n.subscribe("/AMR/lineSensorL2", 1000, callbackE2);
+    ros::Subscriber subE3 = n.subscribe("/AMR/lineSensorL3", 1000, callbackE3);
+
+    ros::Subscriber subD0 = n.subscribe("/AMR/lineSensorD0", 1000, callbackD0);
+    ros::Subscriber subD1 = n.subscribe("/AMR/lineSensorD1", 1000, callbackD1);
+    ros::Subscriber subD2 = n.subscribe("/AMR/lineSensorD2", 1000, callbackD2);
+    ros::Subscriber subD3 = n.subscribe("/AMR/lineSensorD3", 1000, callbackD3);
+
     ros::Subscriber subGarraR = n.subscribe("/AMR/ColorSensorGarraR", 1000, callbackGarraR);
     ros::Subscriber subGarraL = n.subscribe("/AMR/ColorSensorGarraL", 1000, callbackGarraL);
 
     ros::Subscriber subR0 = n.subscribe("/AMR/ColorSensorR0", 1000, callbackR0);
-    ros::Subscriber subR1 = n.subscribe("/AMR/ColorSensorR1", 1000, callbackR1);
-    ros::Subscriber subR2 = n.subscribe("/AMR/ColorSensorR2", 1000, callbackR2);
-    ros::Subscriber subR3 = n.subscribe("/AMR/ColorSensorR3", 1000, callbackR3);
     ros::Subscriber subL0 = n.subscribe("/AMR/ColorSensorL0", 1000, callbackL0);
-    ros::Subscriber subL1 = n.subscribe("/AMR/ColorSensorL1", 1000, callbackL1);
-    ros::Subscriber subL2 = n.subscribe("/AMR/ColorSensorL2", 1000, callbackL2);
-    ros::Subscriber subL3 = n.subscribe("/AMR/ColorSensorL3", 1000, callbackL3);
 
     ros::Subscriber subFr = n.subscribe("/AMR/frontalSensor_esq0", 1000, callbackFr);
-    
 
-    pubBL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBL", 1);
-    pubBR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBR", 1);
-    pubFR = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFR", 1);
-    pubFL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorFL", 1);
+    pubE0 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE0", 1);
+    pubE1 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE1", 1);
+    pubE2 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE2", 1);
+    pubE3 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE3", 1);
+    pubD0 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorD0", 1);
+    pubD1 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorD1", 1);
+    pubD2 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorD2", 1);
+    pubD3 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorD3", 1);
+
     pubGarraR = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraR", 1);
     pubGarraL = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraL", 1);
-    
+
     pubFr = n.advertise<std_msgs::Float32>("/image_converter/frontalSensor", 1);
 
     pubR0 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR0", 1);
     pubR1 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR1", 1);
     pubR2 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR2", 1);
-    pubR3 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR3", 1);   
+    pubR3 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR3", 1);
     pubL0 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorL0", 1);
     pubL1 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorL1", 1);
     pubL2 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorL2", 1);
@@ -99,35 +121,6 @@ int main(int argc, char **argv)
     ros::spin();
 
     return 0;
-}
-
-void callbackBR(const sensor_msgs::ImageConstPtr &msg)
-{
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
-
-    pubBR.publish(message);
-}
-void callbackBL(const sensor_msgs::ImageConstPtr &msg)
-{
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
-
-    pubBL.publish(message);
-}
-void callbackFR(const sensor_msgs::ImageConstPtr &msg)
-{
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
-
-    pubFR.publish(message);
-}
-void callbackFL(const sensor_msgs::ImageConstPtr &msg)
-{
-    std_msgs::Float32 message;
-    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
-
-    pubFL.publish(message);
 }
 
 void callbackL0(const sensor_msgs::ImageConstPtr &msg)
@@ -194,6 +187,70 @@ void callbackR3(const sensor_msgs::ImageConstPtr &msg)
     pubL3.publish(message);
 }
 
+void callbackE0(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubE0.publish(message);
+}
+
+void callbackE1(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubE1.publish(message);
+}
+
+void callbackE2(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubE2.publish(message);
+}
+
+void callbackE3(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubE3.publish(message);
+}
+
+void callbackD0(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubD0.publish(message);
+}
+
+void callbackD1(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubD1.publish(message);
+}
+
+void callbackD2(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubD2.publish(message);
+}
+
+void callbackD3(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubD3.publish(message);
+}
+
 void callbackFr(const sensor_msgs::ImageConstPtr &msg)
 {
     std_msgs::Float32 message;
@@ -211,6 +268,7 @@ void callbackGarraR(const sensor_msgs::ImageConstPtr &msg)
 
     pubGarraR.publish(message);
 }
+
 void callbackGarraL(const sensor_msgs::ImageConstPtr &msg)
 {
     std_msgs::ColorRGBA message;
@@ -220,3 +278,4 @@ void callbackGarraL(const sensor_msgs::ImageConstPtr &msg)
 
     pubGarraL.publish(message);
 }
+

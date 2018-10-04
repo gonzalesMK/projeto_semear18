@@ -203,3 +203,12 @@ target_link_libraries(main
   motor_library
 )
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
+add_executable(pid_demo src/pid_demo.cpp)
+target_link_libraries(pid_demo
+  ${catkin_LIBRARIES}
+  motor_library
+)
+add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
