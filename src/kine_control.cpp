@@ -261,7 +261,6 @@ void kineControl::alinhar_atras(kineControl::robot &robot)
     {
         erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
         erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
-//        ROS_INFO_STREAM("1: " << erro1 << " 2: " << erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -285,9 +284,7 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 
     geometry_msgs::Twist velocidade;
 
-    int code = 0;
     ros::spinOnce();
-    ros::Duration time(1 / FREQUENCIA_PARA_ALINHAR);
 
     // condição de não alinhamento: o robo deve ter ultrapassado a linha preta
     alinhar_atras(robot);
@@ -301,23 +298,35 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - alinhar_depositar_esquerda() ");
+    
     kineControl::alinhar_atras(robot);
 
     geometry_msgs::Twist velocidade;
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    rate.sleep();
+    
+    int erro1=0, erro2=0;
+    double velE=0, velD=0;
+    
     ros::spinOnce();
-    /*
-    while (robot.colorFF_ != AZUL_VERDE)
+    while (robot.colorFF_ == AZUL_VERDE)
     {
         // Andar uma distância predefinida
-        velocidade.linear.x = ((int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) - (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_X;
-        velocidade.angular.z = (-(int)(robot.colorFL_ != BRANCO) + (int)(robot.colorFR_ != BRANCO) + (int)(robot.colorBL_ == BRANCO) - (int)(robot.colorBR_ == BRANCO)) * VEL_Z;
+        velocidade.linear.x = 0 ;
+        velocidade.angular.z = 0 ;
         velocidade.linear.y = -VEL_Y;
-        robot.setVelocity(velocidade);
+        
+        erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
+        erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
+
+        velE = -erro1 * Kp;
+        velD = -erro2 * Kp;
+
+        robot.setVelocityPID(velE, velD, &velocidade);
+
         rate.sleep();
-        ros::spinOnce();
     }
-*/
+
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
@@ -494,9 +503,8 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
 void kineControl::ir_doca(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - ir_doca()");
-    
-    kineControl::alinhar_frente(robot);
 
+    kineControl::alinhar_frente(robot);
 
     geometry_msgs::Twist velocidade;
 
@@ -514,7 +522,7 @@ void kineControl::ir_doca(kineControl::robot &robot)
     robot.setVelocity(velocidade);
     ros::Duration(3).sleep();
 
-    // Andar para frente 
+    // Andar para frente
     velocidade.linear.x = 0.1;
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
@@ -560,7 +568,7 @@ void kineControl::linha_preta(kineControl::robot &robot)
     double VelE, VelD;
     int erro1 = -5, erro2 = -5;
 
-    while ( (erro1 != 0 || erro2 != 0) && ros::ok())
+    while ((erro1 != 0 || erro2 != 0) && ros::ok())
     {
         erro1 = kineControl::erro_sensores_esquerda_com_preto(robot, erro1);
         erro2 = kineControl::erro_sensores_direita_com_preto(robot, erro2);
@@ -661,13 +669,14 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     double velE, velD;
     int erro1 = -5, erro2 = -5;
     ros::spinOnce();
-    while (!(robot.colorD1_ != BRANCO && robot.colorE1_ != BRANCO) && ros::ok())
+
+    while ((erro1 != 0 || erro2 != 0) && ros::ok())
     {
         erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
         erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
-        
-        velE = -(erro1) * Kp;
-        velD = -(erro2) * Kp;
+
+        velE = -(erro1)*Kp;
+        velD = -(erro2)*Kp;
 
         robot.setVelocityPID(velE, velD);
 
@@ -724,8 +733,8 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
         erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
         erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
 
-        velE = -(erro1) * Kp;
-        velD = -(erro2) * Kp;
+        velE = -(erro1)*Kp;
+        velD = -(erro2)*Kp;
 
         robot.setVelocityPID(velE, velD, &velocidade);
 
@@ -738,7 +747,8 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     ros::spinOnce();
     erro1 = 0;
     erro2 = 0;
-    while (!(robot.colorD1_ != BRANCO && robot.colorE1_ != BRANCO) && ros::ok())
+    ROS_INFO("KINECONTROL - alinhar_pilha");
+    while ((erro1 != 0 || erro2 != 0) && ros::ok())
     {
         erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
         erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
@@ -1031,7 +1041,6 @@ int kineControl::erro_sensores_direita_com_preto(kineControl::robot &robot, int 
     // Caso chegue aqui ?!
     return temp_erro;
 }
-
 
 kineControl::color kineControl::robot::get_colorR0()
 {
