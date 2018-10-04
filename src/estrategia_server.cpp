@@ -68,6 +68,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     cor = escolher_container_msg.response.cor;
     retorno = escolher_container_msg.response.container_escolhido;
     posicao = escolher_container_msg.response.pilha;
+    res.container_esq_esta_vazio = escolher_container_msg.response.container_esq_esta_vazio;
 
     enum cores
     {
@@ -137,7 +138,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     }
     else if (posicao == 0 && (retorno == 2 || retorno ==3))
     {
-        if (Qesq_esq != 0 || Qesq_dir != 0)
+        if (Qesq_esq != 0 || Qesq_dir != 0) // incluir di
         {
             res.to_go.location = QUADRANTE_ESQUERDO;
         }
@@ -171,6 +172,7 @@ bool estrategia(projeto_semear::Strategy::Request &req,
     res.container_escolhido = retorno;
     res.cor = cor;
     res.pilha = posicao;
+
 }
 
 int main(int argc, char **argv)

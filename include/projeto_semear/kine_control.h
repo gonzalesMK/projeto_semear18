@@ -162,7 +162,7 @@ void alinhar_doca(kineControl::robot &robot);
 void alinhar_containerdepositado(kineControl::robot &robot);
 void descobrir_cor(kineControl::robot &robot);
 void pegar_container(kineControl::robot &robot, char lado_escolhido);
-void alinhar_pilha(kineControl::robot &robot, int dir);
+void alinhar_pilha(kineControl::robot &robot, int dir, bool container_esq_esta_vazio = false);
 void alinhar_esquerda(kineControl::robot &robot);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);

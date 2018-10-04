@@ -8,3 +8,4 @@ projeto_semear/Pose to_go
 uint32 container_escolhido  # 0=esquerda, 1 = direita, 2 = só tem vermelho aqui, 3 = desconhecido
 uint32 cor                  # 13=azul, 12=verde, 14=vermelho 255=desconhecido //mudar aqui para a .msg
 uint32 pilha                # Posição da pilha que pegou
+bool container_esq_esta_vazio  # Retorna True se não tiver container na esquerda

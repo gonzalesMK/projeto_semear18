@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     ros::Subscriber subL2 = n.subscribe("/AMR/ColorSensorL2", 1000, callbackL2);
     ros::Subscriber subL3 = n.subscribe("/AMR/ColorSensorL3", 1000, callbackL3);
 
-    ros::Subscriber subFr = n.subscribe("/AMR/frontalSensor", 1000, callbackFr);
+    ros::Subscriber subFr = n.subscribe("/AMR/frontalSensor_esq0", 1000, callbackFr);
     
 
     pubBL = n.advertise<std_msgs::Float32>("/image_converter/lineSensorBL", 1);

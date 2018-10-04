@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
         // Alinhar com a pilha escolhida
         ROS_INFO("MAIN - Alinhar com com a pilha escolhida");
-        kineControl::alinhar_pilha(robot, estrategia_msg.response.container_escolhido);
+        kineControl::alinhar_pilha(robot, estrategia_msg.response.container_escolhido, estrategia_msg.response.container_esq_esta_vazio);
 
         // Pegar container
         ROS_INFO("MAIN - Pegando Container");

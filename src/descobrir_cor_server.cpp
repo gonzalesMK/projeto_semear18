@@ -76,7 +76,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     int esq, dir;
 
     // Converte a posição do robô para os valores das pilhas
- //   ROS_INFO_STREAM("Location: " << (int)pose_msg.response.pose.location);
+    //   ROS_INFO_STREAM("Location: " << (int)pose_msg.response.pose.location);
     switch (pose_msg.response.pose.location)
     {
     case projeto_semear::Pose::QUADRANTE_ESQUERDO:
@@ -96,7 +96,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         return false;
     }
 
-  //  ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
+    //  ROS_INFO_STREAM("Esq: " << esq << " Dir: " << dir);
 
     // Pegar informação das pilhas
     projeto_semear::GetContainerInfo get_esq;
@@ -119,14 +119,16 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
 
     int ultimo_container_esq;
     int ultimo_container_dir;
-
+    bool container_esq_esta_vazio = false;
     if (size_esq > 0)
     {
         ultimo_container_esq = get_esq.response.lista.back();
+        
     }
     else
     {
         ultimo_container_esq = -1;
+        container_esq_esta_vazio = true;
     }
 
     if (size_dir > 0)
@@ -149,7 +151,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     projeto_semear::setEletroimaGoal set_goal;
 
     //ROS_INFO("Alinhando robô");
-    kineControl::alinhar_pilha(robot, 2);
+    kineControl::alinhar_pilha(robot, 2, container_esq_esta_vazio);
     //ROS_INFO("Centralizando garra");
     set_goal.pose = set_goal.posicao_pegar_container_superior;
     set_eletroima_client.sendGoal(set_goal, doneCb2, activeCb, feedbackCb2);
@@ -161,7 +163,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     // Dividir nos casos: quando a pilha tiver o mesmo tamanho, é possivel ler os dois containers de uma vez. Caso contrário, irá ler o da esquerda e o da direita separadamente
     if (size_esq == size_dir)
     {
-        ROS_INFO("DESCOBRIR_COR - Verificando os dois containers com mesmo tamanho");
+        //ROS_INFO("DESCOBRIR_COR - Verificando os dois containers com mesmo tamanho");
 
         // Desce até os containers
         move_goal.deslocamento.linear.x = 0.0;
@@ -175,7 +177,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Atualiza o container da esquerda
         set_msg.request.where = esq;
         set_msg.request.color = cor_garra_L;
-        ROS_INFO_STREAM("DESCOBRIR_COR - ESQ: " << esq << " COR: " << cor_garra_L);
+       // ROS_INFO_STREAM("DESCOBRIR_COR - ESQ: " << esq << " COR: " << cor_garra_L);
         if (cor_garra_L == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da esquerda nao foi identificado");
@@ -185,7 +187,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
         // Atualiza o container da direita
         set_msg.request.where = dir;
         set_msg.request.color = cor_garra_R;
-        ROS_INFO_STREAM("DESCOBRIR_COR - DIR: " << dir << " COR: " << cor_garra_R);
+        //ROS_INFO_STREAM("DESCOBRIR_COR - DIR: " << dir << " COR: " << cor_garra_R);
         if (cor_garra_R == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da direita nao foi identificado");
@@ -196,7 +198,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     {
         if (ultimo_container_esq == get_esq.response.DESCONHECIDO)
         {
-            ROS_INFO("DESCOBRIR_COR - Verificando o container da esquerda");
+          //  ROS_INFO("DESCOBRIR_COR - Verificando o container da esquerda");
 
             // Girar garra 90 graus
             move_goal.deslocamento.linear.x = 0.0;
@@ -207,7 +209,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
 
             // Alinhar com esquerda
-            kineControl::alinhar_pilha(robot, 0);
+            kineControl::alinhar_pilha(robot, 0, container_esq_esta_vazio);
 
             move_client.waitForResult(ros::Duration());
 
@@ -251,7 +253,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
 
         if (ultimo_container_dir == get_dir.response.DESCONHECIDO)
         {
-            ROS_INFO("DESCOBRIR_COR - Verificando o container da direita");
+           // ROS_INFO("DESCOBRIR_COR - Verificando o container da direita");
             // Girar garra 90 graus
             move_goal.deslocamento.linear.x = 0.0;
             move_goal.deslocamento.linear.y = 0;
@@ -261,7 +263,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
             move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
 
             // Alinha com o container da direita
-            kineControl::alinhar_pilha(robot, 1);
+            kineControl::alinhar_pilha(robot, 1, container_esq_esta_vazio);
             move_client.waitForResult(ros::Duration());
 
             // Desce até o container

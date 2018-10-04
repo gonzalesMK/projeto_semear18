@@ -57,6 +57,8 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     std::vector<std::uint32_t> vec = get_srv.response.lista;
     std::uint32_t cor_esquerda = vec.back(); // O último container é o primeiro da pilha
 
+    res.container_esq_esta_vazio = cor_esquerda == 0;
+
     get_srv.request.where = dir;
     get_client.call(get_srv);
 
