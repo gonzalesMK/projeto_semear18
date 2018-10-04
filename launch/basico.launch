@@ -7,7 +7,7 @@
 	<param name ="TEMPO_MEIA_VOLTA" value="3"/>
 	<param name ="TEMPO_TRANSICAO_ESQUERDA" value="1"/>
 	<param name ="TEMPO_DIREITA" value = "0.4"/>
-	<param name ="VEL_Y" value="0.3"/>
+	<param name ="VEL_Y" value="0.15"/>
 	<param name ="VEL_Z" value=".25"/>
 	<param name ="VEL_X_ALINHAR" value="0.015"/>
 	<param name ="VEL_X" value="0.015"/>
