@@ -65,7 +65,8 @@ kineControl::robot::robot()
 
     lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
 
-    frontalSensor_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensor", 1, boost::bind(callback, _1, boost::ref(colorFF_)));
+    frontalSensorEsq_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorEsq", 1, boost::bind(callback, _1, boost::ref(colorFE_)));
+    frontalSensorDir_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorDir", 1, boost::bind(callback, _1, boost::ref(colorFD_)));
 
     ColorSensorR0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR0", 1, boost::bind(callback, _1, boost::ref(colorR0_)));
     ColorSensorR1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR1", 1, boost::bind(callback, _1, boost::ref(colorR1_)));
@@ -309,7 +310,7 @@ void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
     double velE=0, velD=0;
     
     ros::spinOnce();
-    while (robot.colorFF_ == AZUL_VERDE)
+    while (robot.colorFE_ == AZUL_VERDE)
     {
         // Andar uma distância predefinida
         velocidade.linear.x = 0 ;
@@ -379,7 +380,7 @@ void kineControl::direita(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - direita() ");
 
-    kineControl::alinhar_direita(robot);
+    kineControl::alinhar_esquerda(robot, - 1);
 
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
     rate.sleep();
@@ -391,6 +392,8 @@ void kineControl::direita(kineControl::robot &robot)
 
     int erro1 = 0, erro2 = 0;
     double velE, velD;
+
+    
     while (now - begin < ros::Duration(TEMPO_DIREITA))
     {
         // Movimentar lateralmente
@@ -418,7 +421,8 @@ void kineControl::direita(kineControl::robot &robot)
 }
 
 // Função para detectar as linhas pretas durante as transições para ESQUERDA
-void kineControl::alinhar_esquerda(kineControl::robot &robot)
+// dir_esq -> 1 para ir para esquerda e -1 para ir para direita
+void kineControl::alinhar_esquerda(kineControl::robot &robot, int dir_esq)
 {
 
     ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
@@ -430,10 +434,10 @@ void kineControl::alinhar_esquerda(kineControl::robot &robot)
     int erro1 = 0, erro2 = 0;
     double velE, velD;
 
-    while (robot.colorFF_ != PRETO)
+    while (robot.colorFE_ != PRETO)
     {
         // Movimentar lateralmente
-        velocidade.linear.y = -VEL_Y;
+        velocidade.linear.y = -VEL_Y * dir_esq;
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
@@ -475,7 +479,7 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
     int erro1 = 0, erro2 = 0;
     double velE, velD;
     ros::spinOnce();
-    while (robot.colorFF_ != PRETO)
+    while (robot.colorFD_ != PRETO)
     {
         // Movimentar lateralmente
         velocidade.linear.y = VEL_Y;
@@ -831,7 +835,6 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     move_client.waitForServer();
     set_client.waitForServer();
 
-    //ROS_INFO_STREAM("KINECONTROL - pegar_container() - Centralizar garra no container superior da posicao: " << (int) lado);
 
     set_goal.pose = set_goal.posicao_pegar_container_superior;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
@@ -845,12 +848,10 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     double altura = get_container_info_msg.response.lista.size();
 
     // Ligar o Eletroimã:
-    //ROS_INFO_STREAM("PEGAR CONTAINER - Ligando o eletroima");
     msg.data = true;
     pub.publish(msg);
 
     // Girar a guarra 90º
-    //ROS_INFO_STREAM("PEGAR CONTAINER - Descendo Garra, altura: " << altura);
     projeto_semear::moveEletroimaGoal move_goal;
     move_goal.deslocamento.linear.x = 0.0;
     move_goal.deslocamento.linear.y = 0;
@@ -1040,50 +1041,4 @@ int kineControl::erro_sensores_direita_com_preto(kineControl::robot &robot, int 
 
     // Caso chegue aqui ?!
     return temp_erro;
-}
-
-kineControl::color kineControl::robot::get_colorR0()
-{
-    ros::spinOnce();
-    return this->colorR0_;
-}
-kineControl::color kineControl::robot::get_colorR1()
-{
-    ros::spinOnce();
-    return this->colorR1_;
-}
-kineControl::color kineControl::robot::get_colorR2()
-{
-    ros::spinOnce();
-    return this->colorR2_;
-}
-kineControl::color kineControl::robot::get_colorR3()
-{
-    ros::spinOnce();
-    return this->colorR3_;
-}
-kineControl::color kineControl::robot::get_colorL0()
-{
-    ros::spinOnce();
-    return this->colorL0_;
-}
-kineControl::color kineControl::robot::get_colorL1()
-{
-    ros::spinOnce();
-    return this->colorL1_;
-}
-kineControl::color kineControl::robot::get_colorL2()
-{
-    ros::spinOnce();
-    return this->colorL2_;
-}
-kineControl::color kineControl::robot::get_colorL3()
-{
-    ros::spinOnce();
-    return this->colorL3_;
-}
-kineControl::color kineControl::robot::get_colorFF()
-{
-    ros::spinOnce();
-    return this->colorFF_;
 }

@@ -94,7 +94,7 @@ bool setContainer(projeto_semear::SetContainer::Request &req,
         return false;
     }
 
-    MAPA[req.where].back() = req.color;
+    MAPA[req.where][req.altura] = req.color;
     return true;
 }
 

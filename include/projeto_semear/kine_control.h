@@ -84,7 +84,8 @@ class robot
     color colorD2_ = BRANCO;
     color colorD3_ = BRANCO;
 
-    color colorFF_ = BRANCO;
+    color colorFE_ = BRANCO;
+    color colorFD_ = BRANCO;
 
     color colorR0_ = BRANCO;
     color colorR1_ = BRANCO;
@@ -123,7 +124,8 @@ class robot
     ros::Subscriber ColorSensorL2_;
     ros::Subscriber ColorSensorL3_;
 
-    ros::Subscriber frontalSensor_;
+    ros::Subscriber frontalSensorEsq_;
+    ros::Subscriber frontalSensorDir_;
 
     robot();
 
@@ -141,17 +143,6 @@ class robot
             ros::Duration(periodo).sleep();
     }
 
-    // Funções que chama o ros::spinOnce e devolve o valor da variável
-    color get_colorR0();
-    color get_colorR1();
-    color get_colorR2();
-    color get_colorR3();
-    color get_colorL0();
-    color get_colorL1();
-    color get_colorL2();
-    color get_colorL3();
-
-    color get_colorFF();
 };
 
 // Função para mudar o quadrante do robô - Deve funcionar como seguidor de linha
@@ -170,7 +161,7 @@ void alinhar_containerdepositado(kineControl::robot &robot);
 void descobrir_cor(kineControl::robot &robot);
 void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void alinhar_pilha(kineControl::robot &robot, int dir, bool container_esq_esta_vazio = false);
-void alinhar_esquerda(kineControl::robot &robot);
+void alinhar_esquerda(kineControl::robot &robot, int dir_esq = 1);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);
 void alinhar_adiantado(kineControl::robot &robot);

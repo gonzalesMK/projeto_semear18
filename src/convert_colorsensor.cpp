@@ -35,7 +35,8 @@ ros::Publisher pubFL;
 ros::Publisher pubGarraR;
 ros::Publisher pubGarraL;
 
-ros::Publisher pubFr;
+ros::Publisher pubFE;
+ros::Publisher pubFD;
 
 ros::Publisher pubR0;
 ros::Publisher pubR1;
@@ -70,7 +71,8 @@ void callbackD2(const sensor_msgs::ImageConstPtr &msg);
 void callbackD3(const sensor_msgs::ImageConstPtr &msg);
 
 
-void callbackFr(const sensor_msgs::ImageConstPtr &msg);
+void callbackFE(const sensor_msgs::ImageConstPtr &msg);
+void callbackFD(const sensor_msgs::ImageConstPtr &msg);
 
 int main(int argc, char **argv)
 {
@@ -94,7 +96,8 @@ int main(int argc, char **argv)
     ros::Subscriber subR0 = n.subscribe("/AMR/ColorSensorR0", 1000, callbackR0);
     ros::Subscriber subL0 = n.subscribe("/AMR/ColorSensorL0", 1000, callbackL0);
 
-    ros::Subscriber subFr = n.subscribe("/AMR/frontalSensor_esq0", 1000, callbackFr);
+    ros::Subscriber subFE = n.subscribe("/AMR/frontalSensor_esq0", 1000, callbackFE);
+    ros::Subscriber subFD = n.subscribe("/AMR/frontalSensor_dir0", 1000, callbackFD);
 
     pubE0 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE0", 1);
     pubE1 = n.advertise<std_msgs::Float32>("/image_converter/lineSensorE1", 1);
@@ -108,7 +111,8 @@ int main(int argc, char **argv)
     pubGarraR = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraR", 1);
     pubGarraL = n.advertise<std_msgs::ColorRGBA>("/image_converter/sensorGarraL", 1);
 
-    pubFr = n.advertise<std_msgs::Float32>("/image_converter/frontalSensor", 1);
+    pubFE = n.advertise<std_msgs::Float32>("/image_converter/frontalSensorEsq", 1);
+    pubFD = n.advertise<std_msgs::Float32>("/image_converter/frontalSensorDir", 1);
 
     pubR0 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR0", 1);
     pubR1 = n.advertise<std_msgs::Float32>("/image_converter/ColorSensorR1", 1);
@@ -251,12 +255,20 @@ void callbackD3(const sensor_msgs::ImageConstPtr &msg)
     pubD3.publish(message);
 }
 
-void callbackFr(const sensor_msgs::ImageConstPtr &msg)
+void callbackFE(const sensor_msgs::ImageConstPtr &msg)
 {
     std_msgs::Float32 message;
     message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
 
-    pubFr.publish(message);
+    pubFE.publish(message);
+}
+
+void callbackFD(const sensor_msgs::ImageConstPtr &msg)
+{
+    std_msgs::Float32 message;
+    message.data = sqrt(pow(msg->data[0], 2) + pow(msg->data[1], 2) + pow(msg->data[2], 2));
+
+    pubFD.publish(message);
 }
 
 void callbackGarraR(const sensor_msgs::ImageConstPtr &msg)

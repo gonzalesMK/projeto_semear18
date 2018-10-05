@@ -1,5 +1,6 @@
 uint32 color  
 uint32 where   # Colocar o número da figura
+uint32 altura  # 0 é o mais baixo
 uint32 AZUL=13
 uint32 VERDE=12
 uint32 VERMELHO=14

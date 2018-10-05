@@ -180,7 +180,7 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -0.2;
-        final_pose_msg.linear.z = +1.0816e-1;
+        final_pose_msg.linear.z = +1.0e-1;
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
         final_pose_msg.angular.z = boost::math::constants::pi<double>();

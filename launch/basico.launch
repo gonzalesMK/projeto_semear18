@@ -40,9 +40,9 @@
 
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
-  	
+  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
 	<!--- 
-	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
+	
 	<node name="controller" pkg="pid" type="controller" ns="PIDL">
        		<param name="Kp" value=".60" />
        		<param name="Ki" value="0.0" />
