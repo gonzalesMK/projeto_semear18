@@ -133,6 +133,26 @@ kineControl::robot::robot()
     {
         ROS_ERROR("Failed to get param 'TEMPO_DIREITA'");
     }
+        if (!nh_.param("DIAMETRO", DIAMETRO, 0.099060))
+    {
+        ROS_ERROR("Failed to get param 'DIAMETRO'");
+    }
+
+    if (!nh_.param("LX", LX, 0.06099))
+    {
+        ROS_ERROR("Failed to get param 'LX'");
+    }
+
+    if (!nh_.param("LY", LY, 0.0991225))
+    {
+        ROS_ERROR("Failed to get param 'LY'");
+    }
+
+    if (!nh_.param("LDIAG", LDIAG, 0.116383204))
+    {
+        ROS_ERROR("Failed to get param 'LDIAG'");
+    }
+
 }
 
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)

@@ -16,6 +16,11 @@
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
 	<param name ="FREQUENCIA_ROS" value="25"/>
 	
+	<param name ="DIAMETRO" value="0.099060"/>
+	<param name ="LX" value="0.06099"/>
+	<param name ="LY" value="0.0991225"/>
+	<param name ="LDIAG" value="0.116383204"/>
+
 
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
 

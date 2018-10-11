@@ -35,6 +35,11 @@
 namespace kineControl
 {
 
+double DIAMETRO; // Diametro da RODA
+double LX;        // Comprimento do eixo X
+double LY;      // Comprimento do eixo Y
+double LDIAG; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
+
 double MAIOR_QUE_PRETO;           // Constante para marcar o valor do preto
 double MAIOR_QUE_VERDE;           // Constate para marcar o valor do verde
 double TEMPO_MEIA_VOLTA;          // Tempo para o robô girar 90º Graus
