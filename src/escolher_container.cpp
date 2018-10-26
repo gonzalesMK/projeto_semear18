@@ -26,6 +26,12 @@ projeto_semear::Pose pose;
 
 ros::ServiceClient get_client;
 ros::ServiceClient pose_client;
+int empilhamento_verde = 0;
+int empilhamento_azul = 0;
+int empilhamento_maximo = 5;
+bool verde_cheio = 0;
+bool azul_cheio = 0;
+
 
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
@@ -65,6 +71,38 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     vec = get_srv.response.lista; 
     std::uint32_t cor_direita = vec.back(); // O último container é o primeiro da pilha
 
+    //a partir daqui é para definir se tá cheio ou não algum
+
+    get_srv.request.where = 12;
+    get_client.call(get_srv);
+
+    std::vector<std::uint32_t> vec2 = get_srv.response.lista;
+    std::uint32_t empilhamento_verde = sizeof(vec2);
+
+    if(empilhamento_verde >= empilhamento_maximo)
+    {
+        verde_cheio = 1;
+    }
+    else
+    {
+        verde_cheio = 0;
+    }
+
+    get_srv.request.where = 13;
+    get_client.call(get_srv);
+
+    std::vector<std::uint32_t> vec3 = get_srv.response.lista;
+    std::uint32_t empilhamento_azul = sizeof(vec3);
+
+    if(empilhamento_azul >= empilhamento_maximo)
+    {
+        azul_cheio = 1;
+    }
+    else
+    {
+        azul_cheio = 0;
+    }
+
     enum ESCOLHIDO{
             ESQUERDA = 0,
             DIREITA = 1,
@@ -82,118 +120,212 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     DESCONHECIDA = 255
     };
 
-
-    if(req.Posicao.location == 1) //esquerda
+    if(verde_cheio == 0 && azul_cheio == 0)
     {
-        if(cor_esquerda == VERDE)
+        if(req.Posicao.location == 1) //esquerda
         {
-            res.container_escolhido = ESQUERDA;
-            res.cor = VERDE;
-            res.pilha = 0;
+            if(cor_esquerda == VERDE)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = VERDE;
+                res.pilha = 0;
+            }
+            else if(cor_direita == VERDE)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = VERDE;
+                res.pilha = 1;
+            }
+            else if(cor_direita == AZUL)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = AZUL;
+                res.pilha = 1;
+            }
+            else if(cor_esquerda == AZUL)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = AZUL;
+                res.pilha = 0;
+            }
+            else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
+            {
+                res.container_escolhido = NENHUM;
+                res.cor = NENHUMA;
+            }
+            else
+            {
+                res.container_escolhido = DESCONHECIDO;
+                res.cor = DESCONHECIDA;
+            }
         }
-        else if(cor_direita == VERDE)
+
+
+        else if(req.Posicao.location == 2) //direita
         {
-            res.container_escolhido = DIREITA;
-            res.cor = VERDE;
-            res.pilha = 1;
+            if(cor_direita == AZUL)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = AZUL;
+                res.pilha = 5;
+            }
+            else if(cor_esquerda == AZUL)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = AZUL;
+                res.pilha = 4;
+            }
+            else if(cor_esquerda == VERDE)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = VERDE;
+                res.pilha = 4;
+            }
+            else if(cor_direita == VERDE)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = VERDE;
+                res.pilha = 5;
+            }
+            else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
+            {
+                res.container_escolhido = NENHUM;
+                res.cor = NENHUMA;
+            }
+            else
+            {
+                res.container_escolhido = DESCONHECIDO;
+                res.cor = DESCONHECIDA;
+            }
         }
-        else if(cor_direita == AZUL)
+
+        else if(req.Posicao.location == 0)//meio
         {
-            res.container_escolhido = DIREITA;
-            res.cor = AZUL;
-            res.pilha = 1;
-        }
-        else if(cor_esquerda == AZUL)
-        {
-            res.container_escolhido = ESQUERDA;
-            res.cor = AZUL;
-            res.pilha = 0;
-        }
-        else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
-        {
-            res.container_escolhido = NENHUM;
-            res.cor = NENHUMA;
-        }
-        else
-        {
-            res.container_escolhido = DESCONHECIDO;
-            res.cor = DESCONHECIDA;
+            if (cor_esquerda == VERDE)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = VERDE;
+                res.pilha = 2;
+            } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
+            else if (cor_direita == AZUL)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = AZUL;
+                res.pilha = 3;
+            } //caso o da direita seja azul, ja pega ele
+            else if (cor_esquerda == AZUL)
+            {
+                res.container_escolhido = ESQUERDA;
+                res.cor = AZUL;
+                res.pilha = 2;
+            }
+            else if (cor_direita == VERDE)
+            {
+                res.container_escolhido = DIREITA;
+                res.cor = VERDE;
+                res.pilha = 3;
+            }
+            else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
+            {
+                res.container_escolhido = NENHUM;
+                res.cor = NENHUMA;
+            }
+            else
+            {
+                res.container_escolhido = DESCONHECIDO;
+                res.cor = DESCONHECIDA;
+            }
         }
     }
 
-
-    else if(req.Posicao.location == 2) //direita
+    else if(verde_cheio == 1)//verde ta cheio, ignora os verdes agora, independente da posição, só tem que pegar o azul
     {
         if(cor_direita == AZUL)
         {
             res.container_escolhido = DIREITA;
             res.cor = AZUL;
-            res.pilha = 5;
+            if(req.Posicao.location == 0)
+            {
+                res.pilha = 3;
+            }
+            else if(req.Posicao.location == 1)
+            {
+                res.pilha = 1;
+            }
+            else
+            {
+                res.pilha = 5;
+            }
         }
+
         else if(cor_esquerda == AZUL)
         {
             res.container_escolhido = ESQUERDA;
             res.cor = AZUL;
-            res.pilha = 4;
+            if(req.Posicao.location == 0)
+            {
+                res.pilha = 2;
+            }
+            else if(req.Posicao.location == 1)
+            {
+                res.pilha = 0;
+            }
+            else
+            {
+                res.pilha = 4;
+            }
         }
-        else if(cor_esquerda == VERDE)
-        {
-            res.container_escolhido = ESQUERDA;
-            res.cor = VERDE;
-            res.pilha = 4;
-        }
-        else if(cor_direita == VERDE)
-        {
-            res.container_escolhido = DIREITA;
-            res.cor = VERDE;
-            res.pilha = 5;
-        }
-        else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
+
+        else
         {
             res.container_escolhido = NENHUM;
             res.cor = NENHUMA;
         }
-        else
-        {
-            res.container_escolhido = DESCONHECIDO;
-            res.cor = DESCONHECIDA;
-        }
     }
 
-                                         //meio
-    else if (cor_esquerda == VERDE)
+    else //azul ta cheio, ignora os azuis agora
     {
-        res.container_escolhido = ESQUERDA;
-        res.cor = VERDE;
-        res.pilha = 2;
-    } //caso o da esquerda seja verde, ja pega ele , por facilidade pois a doca verde esta na esquerda
-    else if (cor_direita == AZUL)
-    {
-        res.container_escolhido = DIREITA;
-        res.cor = AZUL;
-        res.pilha = 3;
-    } //caso o da direita seja azul, ja pega ele
-    else if (cor_esquerda == AZUL)
-    {
-        res.container_escolhido = ESQUERDA;
-        res.cor = AZUL;
-        res.pilha = 2;
-    }
-    else if (cor_direita == VERDE)
-    {
-        res.container_escolhido = DIREITA;
-        res.cor = VERDE;
-        res.pilha = 3;
-    }
-    else if (cor_direita == VERMELHO && cor_esquerda == VERMELHO)
-    {
-        res.container_escolhido = NENHUM;
-        res.cor = NENHUMA;
-    }
-    else
-    {
-        res.container_escolhido = DESCONHECIDO;
-        res.cor = DESCONHECIDA;
+        if(cor_direita == VERDE)
+        {
+            res.container_escolhido = DIREITA;
+            res.cor = VERDE;
+            if(req.Posicao.location == 0)
+            {
+                res.pilha = 3;
+            }
+            else if(req.Posicao.location == 1)
+            {
+                res.pilha = 1;
+            }
+            else
+            {
+                res.pilha = 5;
+            }
+        }
+
+        else if(cor_esquerda == VERDE)
+        {
+            res.container_escolhido = ESQUERDA;
+            res.cor = VERDE;
+            if(req.Posicao.location == 0)
+            {
+                res.pilha = 2;
+            }
+            else if(req.Posicao.location == 1)
+            {
+                res.pilha = 0;
+            }
+            else
+            {
+                res.pilha = 4;
+            }
+        }
+
+        else
+        {
+            res.container_escolhido = NENHUM;
+            res.cor = NENHUMA;
+        }
     }
 
 }
