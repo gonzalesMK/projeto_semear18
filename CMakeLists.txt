@@ -27,6 +27,11 @@ add_message_files(
   FILES
   Colors.msg
   Pose.msg
+  Vel.msg
+  ArduinoRGB.msg
+  Enable_Placa_Elevadores.msg
+  Infra_Placa_Elevadores.msg
+  Vel_Elevadores.msg
 )
 
 # Generate services in the 'srv' folder
@@ -212,3 +217,9 @@ target_link_libraries(pid_demo
 )
 add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+
+add_executable(interface_arduino src/interface_arduino.cpp)
+target_link_libraries(interface_arduino
+  ${catkin_LIBRARIES}
+)
+add_dependencies(interface_arduino ${${PROJECT_NAME}_EXPORTED_TARGETS})

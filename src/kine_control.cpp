@@ -48,10 +48,10 @@ void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
 // Aqui são feitas as criações dos tópicos de leitura dos sensores e os parâmetros são lidos
 kineControl::robot::robot()
 {
-    FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFRSpeed", 1);
-    FL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorFLSpeed", 1);
-    BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBRSpeed", 1);
-    BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBLSpeed", 1);
+    FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/FR_PID/setpoint", 1);
+    FL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/FL_PID/setpoint", 1);
+    BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/BR_PID/setpoint", 1);
+    BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/BL_PID/setpoint", 1);
 
     lineSensorE0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE0", 1, boost::bind(callback, _1, boost::ref(colorE0_)));
     lineSensorE1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE1", 1, boost::bind(callback, _1, boost::ref(colorE1_)));
@@ -147,6 +147,9 @@ kineControl::robot::robot()
     }
 }
 
+
+/* Essa função envia a velocidade para os tópicos dos PIDs,
+  ** a saída da velocidade deve ser em RAD/s **/
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
 {
     // Ângulo XY do vetor velocidade
@@ -162,10 +165,10 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     std_msgs::Float32 Wbr;
 
     // Modelo omnidirecional da base
-    Wfl.data = ((w_module)*sin(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // !!!
-    Wfr.data = ((w_module)*cos(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // !!!
-    Wbl.data = ((w_module)*cos(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // !!!
-    Wbr.data = ((w_module)*sin(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // !!!
+    Wfl.data = ((w_module)*sin(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // Rad/s
+    Wfr.data = ((w_module)*cos(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // Rad/s
+    Wbl.data = ((w_module)*cos(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // Rad/s
+    Wbr.data = ((w_module)*sin(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // Rad/s
 
     // Publicação para o motor
     FR_Motor_.publish(Wfr);
@@ -174,6 +177,10 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BL_Motor_.publish(Wbl);
 }
 
+/* Essa função envia a velocidade para os tópicos dos PIDs, a diferença é que ela usa um controle mais fácil de ser interfaceado com 
+ * as funções de seguir linha
+ * 
+  ** a saída da velocidade deve ser em RAD/s **/
 bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::Twist *vel)
 {
     std_msgs::Float32 Wfl;
@@ -181,7 +188,7 @@ bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::T
     std_msgs::Float32 Wbl;
     std_msgs::Float32 Wbr;
 
-    // Modelo omnidirecional da base
+    // Modelo simples da base
     Wfl.data = velL;
     Wfr.data = velR;
     Wbl.data = velL;
@@ -197,10 +204,10 @@ bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::T
         double conversao_angular = (LDIAG) / (DIAMETRO); // Converte o Rad/s em metros/s depois em Rad/s para as rodas
 
         // Modelo omnidirecional da base
-        Wfl.data += ((w_module)*sin(PI / 4 + theta) + (vel->angular.z) * conversao_angular) * PI; // !!!
-        Wfr.data += ((w_module)*cos(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // !!!
-        Wbl.data += ((w_module)*cos(PI / 4 + theta) + (vel->angular.z) * conversao_angular) * PI; // !!!
-        Wbr.data += ((w_module)*sin(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // !!!
+        Wfl.data += ((w_module)*sin(PI / 4 + theta) + (vel->angular.z) * conversao_angular) * PI; // Rad/s
+        Wfr.data += ((w_module)*cos(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // Rad/s
+        Wbl.data += ((w_module)*cos(PI / 4 + theta) + (vel->angular.z) * conversao_angular) * PI; // Rad/s
+        Wbr.data += ((w_module)*sin(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // Rad/s
     }
 
     // Publicação para o motor
@@ -504,6 +511,12 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
     robot.setVelocity(velocidade);
 }
 
+// Faz o robô girar 90 graus utilizando o encoder
+/*
+void kineControl::girar90graus(kineControl::robot &robot){
+
+}
+*/
 void kineControl::ir_doca(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - ir_doca()");
@@ -777,11 +790,18 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     // Espera-se que o código já saiba se deve pegar o container da direita ou da esquerda
     ros::NodeHandle nh;
 
+    // Conectando com o enable do Eletroima
     ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
-    ros::ServiceClient pose_client = nh.serviceClient<projeto_semear::GetPose>("gps");
-    ros::ServiceClient get_client = nh.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
+
+    // Conectando com as interfaces de mover o eletroima
     MoveClient move_client("moveEletroima", true); // true -> don't need ros::spin()
     SetClient set_client("setEletroima", true);    // true -> don't need ros::spin()
+
+    // Conectando com o GPS
+    ros::ServiceClient pose_client = nh.serviceClient<projeto_semear::GetPose>("gps");
+
+    // Conectando com o getContainerInfo
+    ros::ServiceClient get_client = nh.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
 
     ROS_INFO_STREAM("KINECONTROL - pegar_container");
 
@@ -860,58 +880,20 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     move_client.sendGoal(move_goal, doneCb, activeCb, feedbackCb);
     move_client.waitForResult(ros::Duration());
 
-    //ROS_INFO_STREAM("PEGAR CONTAINER - Erguer Container");
+    // Erguendo container
     set_goal.pose = set_goal.posicao_segurar_container;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
 
-    //ROS_INFO_STREAM("PEGAR CONTAINER - Rotacionar Container em cima");
+    // Deixando o container perpendicular à posição inicial
     set_goal.pose = set_goal.posicao_segurar_container_rotacionado;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
 
+    // Alinha novamente com a linha preta
     kineControl::alinhar_frente(robot, 5);
 }
 
-// Concerning is not properly working yet, need to improve the math
-// Concerning é quando o robô gira em torno de uma das suas rodas.
-bool kineControl::robot::concerning(const wheel w, double modulo_vel)
-{
-    std_msgs::Float32 Wfl;
-    std_msgs::Float32 Wfr;
-    std_msgs::Float32 Wbl;
-    std_msgs::Float32 Wbr;
-    modulo_vel = modulo_vel / DIAMETRO * PI;
-
-    switch (w)
-    {
-    case kineControl::FL:
-        Wfl.data = 0;
-        Wfr.data = -modulo_vel;
-        Wbl.data = 0;
-        Wbr.data = -modulo_vel;
-    case kineControl::BL:
-        Wfl.data = 0;
-        Wfr.data = modulo_vel;
-        Wbl.data = 0;
-        Wbr.data = modulo_vel;
-    case kineControl::FR:
-        Wfl.data = -modulo_vel;
-        Wfr.data = 0;
-        Wbl.data = -modulo_vel;
-        Wbr.data = 0;
-    case kineControl::BR:
-        Wfl.data = modulo_vel;
-        Wfr.data = 0;
-        Wbl.data = modulo_vel;
-        Wbr.data = 0;
-    }
-    // Publicação para o motor
-    FR_Motor_.publish(Wfr);
-    FL_Motor_.publish(Wfl);
-    BR_Motor_.publish(Wbr);
-    BL_Motor_.publish(Wbl);
-}
 
 // Posicionamento ideal dos 3 sensores:    S1<--15mm-->S2<--15mm-->S3
 // Erro positivo -> o robô precisa ir para trás

@@ -12,12 +12,15 @@
 	<param name ="VEL_X_ALINHAR" value="0.015"/>
 	<param name ="VEL_X" value="0.015"/>
 
-
 	<param name ="Kp" value="2.0"/>
 	
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
+	
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
+	
 	<param name ="FREQUENCIA_PARA_ALINHAR" value="40"/>
+	
+	<param name ="FREQUENCIA_ARDUINO_MOTORES" value="20"/>
 	
 
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
@@ -41,6 +44,49 @@
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
   	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
+
+	<node name="FR_PID" pkg="pid" type="controller" ns="AMR/FR_PID" >
+      <param name="Kp" value="5.0" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.1" />
+      <param name="upper_limit" value="25.5" />
+      <param name="lower_limit" value="-25.5" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+
+	<node name="BL_PID" pkg="pid" type="controller" ns="AMR/BL_PID" >
+      <param name="Kp" value="5.0" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.1" />
+      <param name="upper_limit" value="25.5" />
+      <param name="lower_limit" value="-25.5" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+	<node name="FL_PID" pkg="pid" type="controller" ns="AMR/FL_PID" >
+      <param name="Kp" value="5.0" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.1" />
+      <param name="upper_limit" value="25.5" />
+      <param name="lower_limit" value="-25.5" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+	<node name="BR_PID" pkg="pid" type="controller" ns="AMR/BR_PID" >
+      <param name="Kp" value="5.0" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.1" />
+      <param name="upper_limit" value="25.5" />
+      <param name="lower_limit" value="-25.5" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+
 	<!--- 
 	
 	<node name="controller" pkg="pid" type="controller" ns="PIDL">
@@ -70,3 +116,4 @@
     -->
 
 </launch>   
+
