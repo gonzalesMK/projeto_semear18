@@ -5,6 +5,7 @@
 #include <projeto_semear/GetContainerInfo.h>
 #include <vector>
 #include <projeto_semear/GetPose.h>
+#include <projeto_semear/MoveContainer.h>
 #include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
 #include <stdlib.h>
@@ -911,6 +912,105 @@ bool kineControl::robot::concerning(const wheel w, double modulo_vel)
     FL_Motor_.publish(Wfl);
     BR_Motor_.publish(Wbr);
     BL_Motor_.publish(Wbl);
+}
+
+void kineControl::depositar_container(kineControl::robot &robot, uint32_t cor, uint32_t posicao_origem_do_container)
+{
+
+    ros::NodeHandle nh;
+
+    ros::Publisher pub = nh.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
+    MoveClient move_eletro_client("moveEletroima", true); // true -> don't need ros::spin()
+    SetClient set_eletro_client("setEletroima", true);    // true -> don't need ros::spin()
+
+    ROS_INFO_STREAM("KINECONTROL - depositar_container");
+
+
+    std_msgs::Bool msg;
+    msg.data = true;
+    pub.publish(msg);
+
+    move_eletro_client.waitForServer();
+    set_eletro_client.waitForServer();
+
+    projeto_semear::moveEletroimaGoal move_goal;
+    projeto_semear::setEletroimaGoal set_goal;
+
+    // Centraliza a garra
+    set_goal.pose = set_goal.posicao_inicial_rotacionada;
+    set_eletro_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
+    set_eletro_client.waitForResult();
+
+    // Pegar a localização do robô
+    ros::ServiceClient pose_client = nh.serviceClient<projeto_semear::GetPose>("gps");
+    projeto_semear::GetPose srv;
+    pose_client.call(srv);
+    int localizacao_aux = (std::uint32_t)srv.response.pose.location;
+
+    // Transformando a localização_aux para localização correta
+    int localizacao;
+    switch (localizacao_aux)
+    {
+    case 3:
+        localizacao = 12;
+
+    case 4:
+        localizacao = 13;
+    }
+
+    // Utilizando o servico de mapa_container
+    ros::ServiceClient get_client = nh.serviceClient<projeto_semear::GetContainerInfo>("getContainerInfo");
+    ros::ServiceClient move_container_client = nh.serviceClient<projeto_semear::MoveContainer>("moveContainer");
+
+    projeto_semear::GetContainerInfo get_srv;
+    projeto_semear::MoveContainer move_container_srv;
+    srv.request.set = false;
+
+    // Informando a localizacao da pilha onde o robo se encontra
+    get_srv.request.where = cor;
+    ROS_INFO_STREAM("DEPOSITAR CONTAINER - Posicao do robo: " << get_srv.request.where);
+    get_client.call(get_srv);
+
+    // Pegando o vetor que contem os containers depositados
+    std::vector<std::uint32_t> vec = get_srv.response.lista;
+
+    int code = vec.size(); //variável que guarda quantos containers têm em uma pilha
+
+    if(vec.back() == 0 ){
+        code = 0;
+    } else{
+        ROS_INFO_STREAM("DEPOSITAR CONTAINER - Ultimo container tem código: " << vec.back());
+    }
+
+    ROS_INFO_STREAM("DEPOSITAR CONTAINER - Valor do code:" << code);
+
+    /*Code == 0: nenhum container depositado
+        Code != 0: já existe um ou mais containers na pilha*/
+
+    kineControl::alinhar_depositar_esquerda(robot);
+    // Alinhar com o container de baixo
+    if (code != 0)
+        kineControl::alinhar_containerdepositado(robot);
+
+    move_goal.deslocamento.angular.z = 0;
+    move_goal.deslocamento.linear.x = 0;
+    move_goal.deslocamento.linear.y = 0;
+    move_goal.deslocamento.linear.z = -0.137 + (code * 0.042); //0,2 chute da altura do container
+    move_eletro_client.sendGoal(move_goal, &doneCb, &activeCb, &feedbackCb);
+    move_eletro_client.waitForResult(ros::Duration());
+
+    // Desligando o Eletroima
+    msg.data = false;
+    pub.publish(msg);
+
+    // Atualiza que o container foi depositado
+    move_container_srv.request.where = posicao_origem_do_container;
+    move_container_client.call(move_container_srv);
+
+    set_goal.pose = set_goal.posicao_inicial_rotacionada;
+    set_eletro_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
+    set_eletro_client.waitForResult();
+
 }
 
 // Posicionamento ideal dos 3 sensores:    S1<--15mm-->S2<--15mm-->S3

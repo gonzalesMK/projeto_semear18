@@ -122,9 +122,10 @@ int main(int argc, char **argv)
 
         // Depositando  o container
         ROS_INFO("MAIN - Depositando Container");
-        depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
+        kineControl::depositar_container(robot, estrategia_msg.response.cor, estrategia_msg.response.pilha);
+        /*depositar_msg.request.posicao_origem_do_container = estrategia_msg.response.pilha;
         depositar_msg.request.cor = estrategia_msg.response.cor;
-        depositar_srv.call(depositar_msg);
+        depositar_srv.call(depositar_msg);*/
 
         // Voltando para doca mais próxima
         int mais_proximo = estrategia_msg.response.to_go.location == navigation_msg.goal_pose.DOCA_AZUL ? navigation_msg.goal_pose.QUADRANTE_DIREITO : navigation_msg.goal_pose.QUADRANTE_ESQUERDO;
