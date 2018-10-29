@@ -85,7 +85,7 @@ void encoder_BL_chB_cb();
 // Set up the ros node, publishers and subscribers
 ros::NodeHandle nh;
 ros::Publisher pub_output_vel("/AMR/arduinoVel", &output_vel);
-ros::Subscriber<projeto_semear::Vel> sub_cmd_vel("/AMR/cmdVel", &cmd_vel_callback);
+ros::Subscriber<projeto_semear::Vel> sub_cmd_vel("/AMR/InputVelBase", &cmd_vel_callback);
 
 void setup()
 {

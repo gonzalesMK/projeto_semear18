@@ -6,7 +6,6 @@
 #include <projeto_semear/Infra_Placa_Elevadores.h>
 #include <projeto_semear/Enable_Placa_Elevadores.h>
 
-
 #include <PinChangeInterrupt.h>
 #include <PinChangeInterruptBoards.h>
 #include <PinChangeInterruptSettings.h>
@@ -74,7 +73,7 @@
 const double AnglePerCount = 2 * pi / 6600;
 
 /* Motor related global variables: */
-volatile long tick_V= 0.0,
+volatile long tick_V = 0.0,
               tick_H = 0.0;
 
 long _Prev_V_Ticks = 0.0,
@@ -123,7 +122,7 @@ void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg ); // E
 
 /* Subscribers */
 ros::Subscriber<projeto_semear::Vel_Elevadores> sub_cmd_vel("/AMR/arduinoElevadoresInputVel", &cmd_vel_callback); // Subscribe to input velocity
-ros::Subscriber<projeto_semear::Enable_Placa_Elevadores> sub_enables("/AMR/cmdVel", &enable_callback); // Subscrive to enable topic
+ros::Subscriber<projeto_semear::Enable_Placa_Elevadores> sub_enables("/AMR/enableElevadores", &enable_callback); // Subscrive to enable topic
 
 /* Callback for interruptions from encoder */
 void encoder_V_chA_cb();
@@ -196,17 +195,21 @@ void loop()
     uint16_t clear, red, green, blue;
 
     tcs.getRawData(&red, &green, &blue, &clear);
+    rgb.red = red;
+    rgb.green = green;
+    rgb.blue = blue;
 
-    /* send a MESSAGE TO ROS WITH RGB !!!!!!!!! */
+    pub_rgb.publish(rgb);
 
   }
 
   if ( enable_infra) {
-    /* send a MESSAGE TO ROS WITH INFRAS !!!!!!!!*/
     infras.infraFR = analogRead(infra_FR);
     infras.infraFL = analogRead(infra_FL);
     infras.infraBR = analogRead(infra_BR);
     infras.infraBL = analogRead(infra_BL);
+
+    pub_infras.publish(infras);
   }
 
   if ( enable_rele) {
@@ -217,8 +220,9 @@ void loop()
     digitalWrite( releL, LOW);
   }
 
-  if ( enable_servo) {
+  if (enable_servo) {
     digitalWrite( servo, servo_pwm);
+    enable_servo = 0;
   }
 
   if ( enable_motor) {
@@ -270,7 +274,9 @@ void loop()
     _Prev_H_Ticks = tick_H;
   }
 
-  delay( dt * 1000 - (millis() - start_time) );
+  if ( !enable_rgb) {
+    delay( dt * 1000 - (millis() - start_time) );
+  }
   nh.spinOnce();
 
 }

@@ -221,8 +221,8 @@ int main(int argc, char **argv)
     enable_eletroima_pub = node.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
 
     // Leitura dos sensores da Garra
-    subGarraR = node.subscribe("/image_converter/sensorGarraR", 1000, callbackGarraR);
-    subGarraL = node.subscribe("/image_converter/sensorGarraL", 1000, callbackGarraL);
+    subGarraR = node.subscribe("/AMR/sensorGarraR", 1000, callbackGarraR);
+    subGarraL = node.subscribe("/AMR/sensorGarraL", 1000, callbackGarraL);
 
     // Cria o serviço
     ros::ServiceServer service = node.advertiseService("descobrir_cor", descobrirCor);

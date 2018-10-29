@@ -7,39 +7,30 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     kineControl::robot robot;
-    kineControl::linha_preta(robot);
-    // kineControl::alinhar_para_tras(motor);
-    int erro1=0, erro2=0;
-  /*
-    while (ros::ok())
-    {
-         erro1 = kineControl::erro_sensores_esquerda_com_branco(robot, erro1);
-        erro2 = kineControl::erro_sensores_direita_com_branco(robot, erro2);
-        ROS_INFO_STREAM("ERRO ESQUERDA: " << erro1  << " ERRO DIREITA: " << erro2);
-    }*/
-    //    kineControl::esquerda(motor);
-    //kineControl::alinhar_direita(motor);
-    //kineControl::direita(motor);
-    kineControl::alinhar_esquerda(robot);
-    //kineControl::alinhar_para_tras(robot);
-    //kineControl::alinhar_para_frente(robot);
 
-    //** Como usar o motor para mudar a velocidade :
+    geometry_msgs::Twist velocidade;
 
-    // Parâmetro de entrada do motor
-    /*geometry_msgs::Twist velocidade;
-    velocidade.linear.x = 1;
-    velocidade.linear.y = 1;
-    velocidade.angular.z = 1;
+    
+    // Ir para trás
+    velocidade.linear.x = -0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(0.5).sleep();
+/*
+    // Girar 90 Graus
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 3.14 / 3;
+    robot.setVelocity(velocidade);
+    ros::Duration(3).sleep();
 
-    motor.setVelocity(velocidade);
-    ROS_INFO_STREAM(" COLOR IN BR: ");
-
-    //** Como usar o motor para ler o sensor 
-    while (ros::ok())
-    {
-        ROS_INFO_STREAM(" COLOR IN BR: " << motor.get_colorBL());
-    }*/
+    // Andar para frente
+    velocidade.linear.x = 0.1;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+*/
 
     return 0;
 }

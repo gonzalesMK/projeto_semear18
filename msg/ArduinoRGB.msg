@@ -1,5 +1,5 @@
-float32 red
-float32 green
-float32 blue
+uint16 red
+uint16 green
+uint16 blue
 
 

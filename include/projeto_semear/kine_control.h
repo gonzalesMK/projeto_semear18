@@ -28,15 +28,15 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
 #include <math.h>
-#include <std_msgs/Float32.h>
+#include <std_msgs/Float64.h>
 #include <projeto_semear/Pose.h>
 #include <stdlib.h>
 
 namespace kineControl
 {
 
-double MAIOR_QUE_PRETO;             // Constante para marcar o valor do preto
-double MAIOR_QUE_VERDE;             // Constate para marcar o valor do verde
+int MAIOR_QUE_PRETO;             // Constante para marcar o valor do preto
+int MAIOR_QUE_VERDE;             // Constate para marcar o valor do verde
 double TEMPO_MEIA_VOLTA;            // Tempo para o robô girar 90º Graus
 double TEMPO_ALINHAR_ESQUERDA;      // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
 double TEMPO_TRANSICAO_ESQUERDA;    // Tempo para andar durante a transição esquerda-direita
@@ -48,7 +48,8 @@ double VEL_X;
 double Kp; // Constante para controle Proporcional
 const double VEL_ANG = 0.1; // Constante para marcar a velocidade angular
 double FREQUENCIA_PARA_ALINHAR;
-
+double LDIAG;
+double DIAMETRO;
 const double PI = 3.141592653589793238463;
 
 enum wheel

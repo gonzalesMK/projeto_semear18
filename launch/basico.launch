@@ -1,6 +1,6 @@
 <launch>
 	<master auto="start"/>
-	<param name ="/use_sim_time" value="true"/>
+	
 
 	<param name ="MAIOR_QUE_PRETO" value="60"/>
     <param name ="MAIOR_QUE_VERDE" value="300"/>
@@ -11,39 +11,28 @@
 	<param name ="VEL_Z" value=".25"/>
 	<param name ="VEL_X_ALINHAR" value="0.015"/>
 	<param name ="VEL_X" value="0.015"/>
-
 	<param name ="Kp" value="2.0"/>
-	
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
-	
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
-	
 	<param name ="FREQUENCIA_PARA_ALINHAR" value="40"/>
-	
 	<param name ="FREQUENCIA_ARDUINO_MOTORES" value="20"/>
+	<param name ="LDIAG" value="0.116383204"/>
+	<param name ="DIAMETRO_RODA" value="0.099060"/>
+
 	
-
-	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
-
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
-
 	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" />
-
 	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output='screen' />
-
 	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
-
 	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
-	
 	<node name="mapa" pkg="projeto_semear" type="mapa_container_server" respawn="false" />
-	
 	<node name="estrategia" pkg="projeto_semear" type="estrategia_server" respawn="false" output="screen"/>
-
 	<node name="escolher_container" pkg="projeto_semear" type="escolher_container" respawn="false" />
-
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
+	<node name="interface_motores" pkg="projeto_semear" type="interface_arduino_motores" respawn="false" output="screen"/>
+	<node name="interface_elevadores" pkg="projeto_semear" type="interface_arduino_elevadores" respawn="false" output="screen"/>
 
-  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
+
 
 	<node name="FR_PID" pkg="pid" type="controller" ns="AMR/FR_PID" >
       <param name="Kp" value="5.0" />
@@ -66,6 +55,7 @@
       <param name="max_loop_frequency" value="19" />
       <param name="min_loop_frequency" value="21" />
     </node>
+	
 	<node name="FL_PID" pkg="pid" type="controller" ns="AMR/FL_PID" >
       <param name="Kp" value="5.0" />
       <param name="Ki" value="0.0" />
@@ -76,6 +66,7 @@
       <param name="max_loop_frequency" value="19" />
       <param name="min_loop_frequency" value="21" />
     </node>
+	
 	<node name="BR_PID" pkg="pid" type="controller" ns="AMR/BR_PID" >
       <param name="Kp" value="5.0" />
       <param name="Ki" value="0.0" />
@@ -88,7 +79,8 @@
     </node>
 
 	<!--- 
-	
+	  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
+	<param name ="/use_sim_time" value="tru"/>
 	<node name="controller" pkg="pid" type="controller" ns="PIDL">
        		<param name="Kp" value=".60" />
        		<param name="Ki" value="0.0" />

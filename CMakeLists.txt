@@ -32,6 +32,7 @@ add_message_files(
   Enable_Placa_Elevadores.msg
   Infra_Placa_Elevadores.msg
   Vel_Elevadores.msg
+  ServoPose.msg
 )
 
 # Generate services in the 'srv' folder
@@ -131,25 +132,11 @@ target_link_libraries(navigating_server
 )
 add_dependencies(navigating_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(path_planning_demo src/path_planning_demo.cpp)
-target_link_libraries(path_planning_demo
-  ${catkin_LIBRARIES}
-)
-add_dependencies(path_planning_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 add_executable(path_planning_server src/path_planning_server.cpp)
 target_link_libraries(path_planning_server
   ${catkin_LIBRARIES}
 )
 add_dependencies(path_planning_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(convert_colorsensor src/convert_colorsensor.cpp)
-target_link_libraries(convert_colorsensor
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
-add_dependencies(convert_colorsensor ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 
 add_executable(navigating_server_demo src/navigating_server_demo.cpp)
 target_link_libraries(navigating_server_demo
@@ -218,8 +205,14 @@ target_link_libraries(pid_demo
 add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-add_executable(interface_arduino src/interface_arduino.cpp)
-target_link_libraries(interface_arduino
+add_executable(interface_arduino_elevadores src/interface_arduino_elevadores.cpp)
+target_link_libraries(interface_arduino_elevadores
   ${catkin_LIBRARIES}
 )
-add_dependencies(interface_arduino ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(interface_arduino_elevadores ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(interface_arduino_motores src/interface_arduino_motores.cpp)
+target_link_libraries(interface_arduino_motores
+  ${catkin_LIBRARIES}
+)
+add_dependencies(interface_arduino_motores ${${PROJECT_NAME}_EXPORTED_TARGETS})

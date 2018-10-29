@@ -8,12 +8,13 @@
 #include <std_msgs/Bool.h>
 #include <boost/bind.hpp>
 #include <stdlib.h>
+#include <std_msgs/UInt16.h>
+#include <std_msgs/Float64.h>
+#include <std_msgs/Float32.h>
 
 const double PI = 3.141592653589793238463;
-const double DIAMETRO = 0.099060; // Diametro da RODA
-const double LX = 0.06099;        // Comprimento do eixo X
-const double LY = 0.0991225;      // Comprimento do eixo Y
-const double LDIAG = 0.116383204; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
+const double LX = 0.06099;   // Comprimento do eixo X
+const double LY = 0.0991225; // Comprimento do eixo Y
 
 void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback) {}
 void doneCb(const actionlib::SimpleClientGoalState &state, const projeto_semear::moveEletroimaResultConstPtr &result) {}
@@ -21,7 +22,7 @@ void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback) {
 void doneCb2(const actionlib::SimpleClientGoalState &state, const projeto_semear::setEletroimaResultConstPtr &result) {}
 void activeCb() {}
 
-void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
+void callback(const std_msgs::UInt16ConstPtr &msg, kineControl::color &color)
 {
     //ROS_INFO_STREAM("PRETO:" << kineControl::MAIOR_QUE_PRETO << "data: " << msg->data);
     if (msg->data > kineControl::MAIOR_QUE_VERDE)
@@ -34,7 +35,6 @@ void callback(const std_msgs::Float32ConstPtr &msg, kineControl::color &color)
     }
     else
     {
-
         color = kineControl::color::PRETO;
     }
 }
@@ -48,21 +48,21 @@ void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
 // Aqui são feitas as criações dos tópicos de leitura dos sensores e os parâmetros são lidos
 kineControl::robot::robot()
 {
-    FR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/FR_PID/setpoint", 1);
-    FL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/FL_PID/setpoint", 1);
-    BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/BR_PID/setpoint", 1);
-    BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/BL_PID/setpoint", 1);
+    FR_Motor_ = nh_.advertise<std_msgs::Float64>("/AMR/FR_PID/setpoint", 1);
+    FL_Motor_ = nh_.advertise<std_msgs::Float64>("/AMR/FL_PID/setpoint", 1);
+    BR_Motor_ = nh_.advertise<std_msgs::Float64>("/AMR/BR_PID/setpoint", 1);
+    BL_Motor_ = nh_.advertise<std_msgs::Float64>("/AMR/BL_PID/setpoint", 1);
 
-    lineSensorE0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE0", 1, boost::bind(callback, _1, boost::ref(colorE0_)));
-    lineSensorE1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE1", 1, boost::bind(callback, _1, boost::ref(colorE1_)));
-    lineSensorE2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE2", 1, boost::bind(callback, _1, boost::ref(colorE2_)));
-    lineSensorE3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE3", 1, boost::bind(callback, _1, boost::ref(colorE3_)));
+    lineSensorE0_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorE0", 1, boost::bind(callback, _1, boost::ref(colorE0_)));
+    lineSensorE1_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorE1", 1, boost::bind(callback, _1, boost::ref(colorE1_)));
+    lineSensorD0_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD0", 1, boost::bind(callback, _1, boost::ref(colorD0_)));
+    lineSensorD1_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD1", 1, boost::bind(callback, _1, boost::ref(colorD1_)));
 
-    lineSensorD0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD0", 1, boost::bind(callback, _1, boost::ref(colorD0_)));
-    lineSensorD1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD1", 1, boost::bind(callback, _1, boost::ref(colorD1_)));
-    lineSensorD2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD2", 1, boost::bind(callback, _1, boost::ref(colorD2_)));
-    lineSensorD3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD3", 1, boost::bind(callback, _1, boost::ref(colorD3_)));
-
+    lineSensorE2_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorE2", 1, boost::bind(callback, _1, boost::ref(colorE2_)));
+    lineSensorE3_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorE3", 1, boost::bind(callback, _1, boost::ref(colorE3_)));
+    lineSensorD2_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD2", 1, boost::bind(callback, _1, boost::ref(colorD2_)));
+    lineSensorD3_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD3", 1, boost::bind(callback, _1, boost::ref(colorD3_)));
+    /*
     lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
 
     frontalSensorEsq_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorEsq", 1, boost::bind(callback, _1, boost::ref(colorFE_)));
@@ -76,7 +76,7 @@ kineControl::robot::robot()
     ColorSensorL1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL1", 1, boost::bind(callback, _1, boost::ref(colorL1_)));
     ColorSensorL2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL2", 1, boost::bind(callback, _1, boost::ref(colorL2_)));
     ColorSensorL3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorL3", 1, boost::bind(callback, _1, boost::ref(colorL3_)));
-
+*/
     // Necessário um tempo para inicializar os nós
     ros::Duration(0.5).sleep();
     ros::spinOnce();
@@ -88,12 +88,12 @@ kineControl::robot::robot()
         update(0.5);
     }*/
 
-    if (!nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59.0))
+    if (!nh_.param("MAIOR_QUE_PRETO", MAIOR_QUE_PRETO, 59))
     {
         ROS_ERROR("Failed to get param 'MAIOR_QUE_PRETO'");
     }
 
-    if (!nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299.0))
+    if (!nh_.param("MAIOR_QUE_VERDE", MAIOR_QUE_VERDE, 299))
     {
         ROS_ERROR("Failed to get param 'MAIOR_QUE_VERDE'");
     }
@@ -145,8 +145,15 @@ kineControl::robot::robot()
     {
         ROS_ERROR("Failed to get param 'Kp'");
     }
+    if (!nh_.param("LDIAG", LDIAG, 0.116383204))
+    {
+        ROS_ERROR("Failed to get param 'LDIAG'");
+    }
+    if (!nh_.param("DIAMETRO_RODA", DIAMETRO, 0.099060))
+    {
+        ROS_ERROR("Failed to get param 'DIAMETRO_RODA'");
+    }
 }
-
 
 /* Essa função envia a velocidade para os tópicos dos PIDs,
   ** a saída da velocidade deve ser em RAD/s **/
@@ -159,10 +166,10 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     double w_module = sqrt(pow(vel.linear.x, 2) + pow(vel.linear.y, 2)) / (DIAMETRO);
     double conversao_angular = (LDIAG) / (DIAMETRO); // Converte o Rad/s em metros/s depois em Rad/s para as rodas
 
-    std_msgs::Float32 Wfl;
-    std_msgs::Float32 Wfr;
-    std_msgs::Float32 Wbl;
-    std_msgs::Float32 Wbr;
+    std_msgs::Float64 Wfl;
+    std_msgs::Float64 Wfr;
+    std_msgs::Float64 Wbl;
+    std_msgs::Float64 Wbr;
 
     // Modelo omnidirecional da base
     Wfl.data = ((w_module)*sin(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // Rad/s
@@ -183,10 +190,10 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
   ** a saída da velocidade deve ser em RAD/s **/
 bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::Twist *vel)
 {
-    std_msgs::Float32 Wfl;
-    std_msgs::Float32 Wfr;
-    std_msgs::Float32 Wbl;
-    std_msgs::Float32 Wbr;
+    std_msgs::Float64 Wfl;
+    std_msgs::Float64 Wfr;
+    std_msgs::Float64 Wbl;
+    std_msgs::Float64 Wbr;
 
     // Modelo simples da base
     Wfl.data = velL;
@@ -306,24 +313,24 @@ void kineControl::alinhar_doca(kineControl::robot &robot)
 void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - alinhar_depositar_esquerda() ");
-    
+
     kineControl::alinhar_atras(robot);
 
     geometry_msgs::Twist velocidade;
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
     rate.sleep();
-    
-    int erro1=0, erro2=0;
-    double velE=0, velD=0;
-    
+
+    int erro1 = 0, erro2 = 0;
+    double velE = 0, velD = 0;
+
     ros::spinOnce();
     while (robot.colorFE_ == AZUL_VERDE)
     {
         // Andar uma distância predefinida
-        velocidade.linear.x = 0 ;
-        velocidade.angular.z = 0 ;
+        velocidade.linear.x = 0;
+        velocidade.angular.z = 0;
         velocidade.linear.y = -VEL_Y;
-        
+
         erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
         erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
 
@@ -387,7 +394,7 @@ void kineControl::direita(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - direita() ");
 
-    kineControl::alinhar_esquerda(robot, - 1);
+    kineControl::alinhar_esquerda(robot, -1);
 
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
     rate.sleep();
@@ -400,7 +407,6 @@ void kineControl::direita(kineControl::robot &robot)
     int erro1 = 0, erro2 = 0;
     double velE, velD;
 
-    
     while (now - begin < ros::Duration(TEMPO_DIREITA))
     {
         // Movimentar lateralmente
@@ -855,7 +861,6 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     move_client.waitForServer();
     set_client.waitForServer();
 
-
     set_goal.pose = set_goal.posicao_pegar_container_superior;
     set_client.sendGoal(set_goal, &doneCb2, &activeCb, &feedbackCb2);
     set_client.waitForResult(ros::Duration());
@@ -893,7 +898,6 @@ void kineControl::pegar_container(kineControl::robot &robot, char lado_escolhido
     // Alinha novamente com a linha preta
     kineControl::alinhar_frente(robot, 5);
 }
-
 
 // Posicionamento ideal dos 3 sensores:    S1<--15mm-->S2<--15mm-->S3
 // Erro positivo -> o robô precisa ir para trás
