@@ -21,7 +21,7 @@
 
 	
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
-	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" />
+	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output='screen'/>
 	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output='screen' />
 	<node name="path_planning" pkg="projeto_semear" type="path_planning_server" respawn="false" output="screen"/>
 	<node name="gps" pkg="projeto_semear" type="gps" respawn="false" output="screen"/>
@@ -31,7 +31,6 @@
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 	<node name="interface_motores" pkg="projeto_semear" type="interface_arduino_motores" respawn="false" output="screen"/>
 	<node name="interface_elevadores" pkg="projeto_semear" type="interface_arduino_elevadores" respawn="false" output="screen"/>
-
 
 
 	<node name="FR_PID" pkg="pid" type="controller" ns="AMR/FR_PID" >

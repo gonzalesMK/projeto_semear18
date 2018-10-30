@@ -2,7 +2,6 @@
 #include <ros.h>
 #include <ros/time.h>
 #include <projeto_semear/Vel_Elevadores.h>
-#include <projeto_semear/ArduinoRGB.h>
 #include <projeto_semear/Infra_Placa_Elevadores.h>
 #include <projeto_semear/Enable_Placa_Elevadores.h>
 
@@ -13,8 +12,6 @@
 
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
-
-#include <PID_v1.h>
 
 /* A placa dos elevadores possui os seguintes conponentes:
     4 infras
@@ -40,16 +37,6 @@
 #define encoderCremalheiraVertical_chB 19
 #define encoderCremalheiraHorizontal_chA 21
 #define encoderCremalheiraHorizontal_chB 51
-
-/* Pinouts Infravermelhos */
-#define infra_FR A1
-#define infra_FL A2
-#define infra_BR A3
-#define infra_BL A4
-
-/* Pinouts RGB */
-#define SDApin 20
-#define SCLpin 21
 
 /* Pinouts Relés */
 #define releL 15
@@ -89,12 +76,10 @@ enum motor {
 /* Enable related global variable */
 bool enable_motor = false;
 bool enable_servo = false;
-bool enable_infra = false;
-bool enable_rele = false;
-bool enable_rgb = false;
 
-/* RGB */
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+bool enable_rele = false;
+// Removido enable RGB !! 
+// Removido enable infra !! 
 
 /* Servo
    A posição do servo em relação ao pwm é:
@@ -108,7 +93,6 @@ ros::NodeHandle nh;
 projeto_semear::Vel_Elevadores output_vel;
 projeto_semear::Vel_Elevadores input_vel;
 projeto_semear::Enable_Placa_Elevadores enables;
-projeto_semear::ArduinoRGB rgb;
 projeto_semear::Infra_Placa_Elevadores infras;
 
 /* Publishers */

@@ -117,7 +117,8 @@ int main(int argc, char **argv)
     
     /* Enables */
     enables_arduinos_pub = nh.advertise<projeto_semear::Enable_Placa_Elevadores>("/AMR/enableElevadores", 1);
-    ros::Subscriber servo_sub = nh.subscribe<projeto_semear::ServoPose>("/AMR/servoPwm", 1 , servo_ros_callback);  
+    ros::Subscriber servo_enable_sub = nh.subscribe<projeto_semear::ServoPose>("/AMR/servoPwm", 1 , servo_ros_callback);  
+    ros::Subscriber motor_enable_sub = nh.subscribe<std_msgs::Bool>("/AMR/enableMotoresElevador", 1 , enable_motores_elevadores_ros_callback);  
 
     enables_msg.enable_motor = false;
     enables_msg.enable_infra = false;

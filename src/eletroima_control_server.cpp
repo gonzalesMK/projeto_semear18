@@ -11,6 +11,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/Vel_Elevadores.h>
 #include <projeto_semear/ServoPose.h>
+#include <std_msgs/Bool.h>
 
 /** Esse código é responsável por controlar o Eletroima do robô no V-REP
  * 
@@ -47,9 +48,9 @@ double posicao_Servo = 0;
 
 ros::Publisher eletro_twist;
 ros::Publisher servo_pub;
-
+ros::Publisher enable_motor_pub;
 /* Subscrivers e Publishers para os Motores */
-ros::Subscriber controlV_sub; 
+ros::Subscriber controlV_sub;
 ros::Subscriber controlH_sub;
 ros::Publisher stateV_pub; // publica o Estado (Posição)
 ros::Publisher stateH_pub; // publica o Estado (Posição)
@@ -60,7 +61,28 @@ ros::Publisher V_Motor_pub; // publica o setPoint
 ros::Publisher vel_pub; // Publica a velocidade requerida para o arduino
 projeto_semear::Vel_Elevadores vel_msg;
 
+
+double ERRO_POSICAO_MOTOR=0.01;
+
 /* Falta os enables dos motores **/
+// Função de feedback do ActionLib
+void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
+{
+    //ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
+}
+
+// Função executada quando a tarefa termina
+void doneCb(const actionlib ::SimpleClientGoalState &state,
+            const projeto_semear::moveEletroimaResultConstPtr &result)
+{
+    //ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
+}
+
+// Called once when the goal becomes active
+void activeCb()
+{
+    //ROS_INFO("Goal just went active");
+}
 
 /* Envia o estado (Posição) de cado motor para o tópico do PID */
 void state_callback(const projeto_semear::Vel_ElevadoresConstPtr &msg)
@@ -92,56 +114,50 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
 {
     std_msgs::Float64 Hmotor_pose_msg;
     std_msgs::Float64 Vmotor_pose_msg;
-    
+
     projeto_semear::ServoPose Servo_pos_msg;
 
     // Distância a ser percorrida em cada direção
-    // o X não está sendo usado
     Hmotor_pose_msg.data = goal->deslocamento.linear.y + posicao_H + correcao_H;
     Vmotor_pose_msg.data = goal->deslocamento.linear.z + posicao_V + correcao_V;
-    double goal_w = remainderf(goal->deslocamento.angular.z + posicao_Servo, PI * 2);
 
     // Mensagem para enviar feedback
     projeto_semear::moveEletroimaFeedback feedback;
-
+    
     // Ligar enable do motor e do Servo
     projeto_semear::ServoPose servo_msg;
-    servo_msg.pwm = goal_w * 1024 / (2 * 3.14);
+    servo_msg.pwm = (uint16_t)(remainder(goal->deslocamento.angular.z + posicao_Servo, PI * 2) / (2 * PI) + 0.5) * 1024;
+    servo_msg.pwm = servo_msg.pwm > 1023 ? 1023 : servo_msg.pwm; // Checar se está entre o limite 0 e 1023 ( pwm do arduino )
+    servo_msg.pwm = servo_msg.pwm < 0 ? 0 : servo_msg.pwm;
     servo_msg.enable = true;
 
+    std_msgs::Bool enable_motor_msg;
+    enable_motor_msg.data = true;
+    enable_motor_pub.publish(enable_motor_msg);
 
     // Enviar SetPoint
     H_Motor_pub.publish(Hmotor_pose_msg);
     V_Motor_pub.publish(Vmotor_pose_msg);
-
+    
     ros::Rate r(20);
-    while (ros::ok())
+
+    double erro_V=10, erro_H=10;
+    while (ros::ok() && ! (erro_V < ERRO_POSICAO_MOTOR && erro_H < ERRO_POSICAO_MOTOR ))
     {
+        erro_V = fabs(posicao_V - Vmotor_pose_msg.data );
+        erro_H = fabs(posicao_H - Hmotor_pose_msg.data );
+
         vel_pub.publish(vel_msg);
         ros::spinOnce();
+       
         r.sleep();
     }
+    
+    enable_motor_msg.data = false;
+    enable_motor_pub.publish(enable_motor_msg);
+
     // Desligar enable do motor
     as->setSucceeded();
-}
-
-// Função de feedback do ActionLib
-void feedbackCb(const projeto_semear::moveEletroimaFeedbackConstPtr &feedback)
-{
-    //ROS_INFO_STREAM("Distance to Goal" << feedback->distance);
-}
-
-// Função executada quando a tarefa termina
-void doneCb(const actionlib ::SimpleClientGoalState &state,
-            const projeto_semear::moveEletroimaResultConstPtr &result)
-{
-    //ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
-}
-
-// Called once when the goal becomes active
-void activeCb()
-{
-    //ROS_INFO("Goal just went active");
 }
 
 void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionlib::SimpleActionServer<projeto_semear::setEletroimaAction> *as, tf::TransformListener &listener)
@@ -201,102 +217,50 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         ROS_ERROR_STREAM("Posicao nao conhecida: " << goal->pose);
     }
 
-    // Recebe a posição atual do eletroima
-    tf::StampedTransform pose_transform, orientation_transform;
+    std_msgs::Float64 Hmotor_pose_msg;
+    std_msgs::Float64 Vmotor_pose_msg;
 
-    while (true && ros::ok())
+    projeto_semear::ServoPose Servo_pos_msg;
+
+    // Posição a ser atingida
+    Hmotor_pose_msg.data = final_pose_msg.linear.y + correcao_H;
+    Vmotor_pose_msg.data = final_pose_msg.linear.z + correcao_V;
+
+    // Mensagem para enviar feedback
+    projeto_semear::moveEletroimaFeedback feedback;
+
+    // Ligar enable do motor e do Servo
+    projeto_semear::ServoPose servo_msg;
+    servo_msg.pwm = (final_pose_msg.angular.z / (2*PI) + 0.5 ) * 1024;
+    servo_msg.pwm = servo_msg.pwm > 1023 ? 1023 : servo_msg.pwm; // Checar se está entre o limite 0 e 1023 ( pwm do arduino )
+    servo_msg.pwm = servo_msg.pwm < 0 ? 0 : servo_msg.pwm;
+    servo_msg.enable = true;
+
+    std_msgs::Bool enable_motor_msg;
+    enable_motor_msg.data = true;
+    enable_motor_pub.publish(enable_motor_msg);
+
+    // Enviar SetPoint
+    H_Motor_pub.publish(Hmotor_pose_msg);
+    V_Motor_pub.publish(Vmotor_pose_msg);
+
+    ros::Rate r(20);
+
+    double erro_V=10, erro_H=10;
+    while (ros::ok() && ( erro_V > ERRO_POSICAO_MOTOR || erro_H > ERRO_POSICAO_MOTOR ))
     {
-        try
-        {
-            // Pega a posição do Eletroima em relação ao robô.
-            listener.lookupTransform("/AMR", "/eletroima",
-                                     ros::Time(0), pose_transform);
-            break;
-        }
-        catch (tf::TransformException ex)
-        {
-            ros::Duration(1.0).sleep();
-        }
+        erro_V = fabs(posicao_V - Vmotor_pose_msg.data );
+        erro_H = fabs(posicao_H - Hmotor_pose_msg.data );
+
+        vel_pub.publish(vel_msg);
+        ros::spinOnce();
+        r.sleep();
     }
-
-    // Create Pose message to send to V-REP
-    // A mensagem para o vrep envia a posição absoluta em que queremos o eletroimã, mas não envia o angulo absoluto. O ãngulo enviado é um deslocamento angular.
-    geometry_msgs::Twist pose_msg;
-    tf::Matrix3x3(pose_transform.getRotation()).getRPY(pose_msg.angular.x, pose_msg.angular.y, pose_msg.angular.z);
-    pose_msg.linear.x = pose_transform.getOrigin().x();
-    pose_msg.linear.y = pose_transform.getOrigin().y();
-    pose_msg.linear.z = pose_transform.getOrigin().z();
-
-    // Distância a ser percorrida em cada direção
-    double goal_x = final_pose_msg.linear.x;
-    double goal_y = final_pose_msg.linear.y;
-    double goal_z = final_pose_msg.linear.z;
-    double goal_w = final_pose_msg.angular.z;
-
-    double dist_x = goal_x - pose_msg.linear.x;
-    double dist_y = goal_y - pose_msg.linear.y;
-    double dist_z = goal_z - pose_msg.linear.z;
-    double dist_w = remainderf(goal_w - pose_msg.angular.z, 2 * PI);
-
-    // Sentido a ser percorrido em cada direção
-    double sent_x = boost::math::sign(dist_x); //devolve o sinal
-    double sent_y = dist_y > 0 ? 1 : -1;       // Pode ser assim também
-    double sent_z = boost::math::sign(dist_z);
-    double sent_w;
-
-    // helper variables
-    ros::Rate r(FREQUENCIA);
-    bool succeed = false;
-    ros::NodeHandle nh;
-
-    bool parou = true;
-    while (!succeed && nh.ok() && ros::ok())
-    {
-        listener.lookupTransform("/AMR", "/eletroima", ros::Time(0), pose_transform);
-        tf::Matrix3x3(pose_transform.getRotation()).getRPY(pose_msg.angular.x, pose_msg.angular.y, pose_msg.angular.z);
-        pose_msg.linear.x = pose_transform.getOrigin().x();
-        pose_msg.linear.y = pose_transform.getOrigin().y();
-        pose_msg.linear.z = pose_transform.getOrigin().z();
-
-        dist_x = goal_x - pose_msg.linear.x;
-        dist_y = goal_y - pose_msg.linear.y;
-        dist_z = goal_z - pose_msg.linear.z;
-        dist_w = remainderf(goal_w - pose_msg.angular.z, 2 * PI);
-        sent_w = boost::math::sign(dist_w);
-        parou = true;
-        // Preenche a mensagem a ser publicada
-        if (dist_w * sent_w >= W)
-        {
-            pose_msg.angular.z += sent_w * (W + fabs(dist_w) * K); // Soma à posição atual um deslocamento no sentido correto
-            parou = false;
-        }
-        if (dist_x * sent_x >= VEL_X)
-        {
-            pose_msg.linear.x += sent_x * (VEL_X + fabs(dist_x) * K);
-            parou = false;
-        }
-        if (dist_y * sent_y >= VEL_Y)
-        {
-            pose_msg.linear.y += sent_y * (VEL_Y + fabs(dist_y) * K);
-            parou = false;
-        }
-        if (dist_z * sent_z >= VEL_Z)
-        {
-            pose_msg.linear.z += sent_z * (VEL_Z + fabs(dist_z) * K);
-            parou = false;
-        }
-
-        // Eletroima next pose publication
-        eletro_twist.publish(pose_msg);
-
-        //ROS_INFO_STREAM("W: " << dist_w << " Pose W: " << pose_msg.angular.z);
-        // Check if Final Pose is reached.
-        if (parou)
-            succeed = true;
-        else
-            r.sleep();
-    }
-
+    
+    // Desligar enable do motor
+    enable_motor_msg.data = false;
+    enable_motor_pub.publish(enable_motor_msg);
+    
     as->setSucceeded();
 }
 
@@ -314,14 +278,18 @@ int main(int argc, char **argv)
     actionlib::SimpleActionServer<projeto_semear::moveEletroimaAction> server1(node, "moveEletroima", boost::bind(&move_eletroima, _1, &server1, std::ref(listener1)), false);
     actionlib::SimpleActionServer<projeto_semear::setEletroimaAction> server2(node, "setEletroima", boost::bind(&set_eletroima, _1, &server2, std::ref(listener2)), false);
 
-    /* Interface Motores */
-    stateV_pub = node.advertise<std_msgs::Float64>("AMR/V_PID/state", 1);
+    /* Interface para PID dos Motores */
+    stateV_pub = node.advertise<std_msgs::Float64>("AMR/V_PID/state", 1); //publica o estado para o PID, que foi lido pelo tópico arduinoElevadoresOutputVel
     stateH_pub = node.advertise<std_msgs::Float64>("AMR/H_PID/state", 1);
-    H_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/H_PID/setpoint", 1);
+
+    H_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/H_PID/setpoint", 1); // publica o setpoint do código para o pid
     V_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/V_PID/setpoint", 1);
-    
+
     controlH_sub = node.subscribe<std_msgs::Float64>("AMR/H_PID/control_effort", 10, controlH_callback);
     controlV_sub = node.subscribe<std_msgs::Float64>("AMR/V_PID/control_effort", 10, controlV_callback);
+
+    // enable
+    enable_motor_pub = node.advertise<std_msgs::Bool>("/AMR/enableMotoresElevador", 1);
 
     /* Servo */
     servo_pub = node.advertise<projeto_semear::ServoPose>("/AMR/servoPwm", 1);

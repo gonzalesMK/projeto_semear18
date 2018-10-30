@@ -30,9 +30,12 @@ add_message_files(
   Vel.msg
   ArduinoRGB.msg
   Enable_Placa_Elevadores.msg
+  Enable_Placa_Sensores.msg
   Infra_Placa_Elevadores.msg
+  Infra_Placa_Sensores.msg
   Vel_Elevadores.msg
   ServoPose.msg
+
 )
 
 # Generate services in the 'srv' folder
@@ -203,7 +206,6 @@ target_link_libraries(pid_demo
   motor_library
 )
 add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 
 add_executable(interface_arduino_elevadores src/interface_arduino_elevadores.cpp)
 target_link_libraries(interface_arduino_elevadores
