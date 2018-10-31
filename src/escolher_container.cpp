@@ -32,12 +32,11 @@ int empilhamento_maximo = 5;
 bool verde_cheio = 0;
 bool azul_cheio = 0;
 
-
 bool escolha(projeto_semear::EscolherContainer::Request &req,
              projeto_semear::EscolherContainer::Response &res)
 {
     projeto_semear::GetContainerInfo get_srv;
-    int dir,esq;
+    int dir, esq;
     switch (req.Posicao.location)
     {
     case projeto_semear::Pose::QUADRANTE_ESQUERDO:
@@ -57,19 +56,21 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         return false;
     }
 
-    get_srv.request.where =  esq;
+    // /containers à esquerda do robô
+    get_srv.request.where = esq;
     get_client.call(get_srv);
 
     std::vector<std::uint32_t> vec = get_srv.response.lista;
-    std::uint32_t cor_esquerda = vec.back(); // O último container é o primeiro da pilha
+    std::uint32_t cor_esquerda = vec.back(); // O último container é o mais alto da pilha
 
-    res.container_esq_esta_vazio = cor_esquerda == 0;
+    res.container_esq_esta_vazio = cor_esquerda == 0; // envia para respostas
 
+    // Containers à direita do robô
     get_srv.request.where = dir;
     get_client.call(get_srv);
 
-    vec = get_srv.response.lista; 
-    std::uint32_t cor_direita = vec.back(); // O último container é o primeiro da pilha
+    vec = get_srv.response.lista;
+    std::uint32_t cor_direita = vec.back(); // O último container é o mais alto da pilha
 
     //a partir daqui é para definir se tá cheio ou não algum
 
@@ -77,9 +78,9 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     get_client.call(get_srv);
 
     std::vector<std::uint32_t> vec2 = get_srv.response.lista;
-    std::uint32_t empilhamento_verde = sizeof(vec2);
+    std::uint32_t empilhamento_verde = vec2.size();
 
-    if(empilhamento_verde >= empilhamento_maximo)
+    if (empilhamento_verde >= empilhamento_maximo)
     {
         verde_cheio = 1;
     }
@@ -92,9 +93,9 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
     get_client.call(get_srv);
 
     std::vector<std::uint32_t> vec3 = get_srv.response.lista;
-    std::uint32_t empilhamento_azul = sizeof(vec3);
+    std::uint32_t empilhamento_azul = vec3.size();
 
-    if(empilhamento_azul >= empilhamento_maximo)
+    if (empilhamento_azul >= empilhamento_maximo)
     {
         azul_cheio = 1;
     }
@@ -103,46 +104,47 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         azul_cheio = 0;
     }
 
-    enum ESCOLHIDO{
-            ESQUERDA = 0,
-            DIREITA = 1,
-            NENHUM = 2, //pq só tem vermelho
-            DESCONHECIDO = 3 //não pega nenhum pq não sabe qual a cor
-            
+    enum ESCOLHIDO
+    {
+        ESQUERDA = 0,
+        DIREITA = 1,
+        NENHUM = 2,      //pq só tem vermelho
+        DESCONHECIDO = 3 //não pega nenhum pq não sabe qual a cor
+
     };
 
     enum cores
     {
-    AZUL = 13,
-    VERDE = 12,
-    VERMELHO = 14,
-    NENHUMA = 254,
-    DESCONHECIDA = 255
+        AZUL = 13,
+        VERDE = 12,
+        VERMELHO = 14,
+        NENHUMA = 254,
+        DESCONHECIDA = 255
     };
 
-    if(verde_cheio == 0 && azul_cheio == 0)
+    if (verde_cheio == 0 && azul_cheio == 0)
     {
-        if(req.Posicao.location == 1) //esquerda
+        if (req.Posicao.location == 1) //esquerda
         {
-            if(cor_esquerda == VERDE)
+            if (cor_esquerda == VERDE)
             {
                 res.container_escolhido = ESQUERDA;
                 res.cor = VERDE;
                 res.pilha = 0;
             }
-            else if(cor_direita == VERDE)
+            else if (cor_direita == VERDE)
             {
                 res.container_escolhido = DIREITA;
                 res.cor = VERDE;
                 res.pilha = 1;
             }
-            else if(cor_direita == AZUL)
+            else if (cor_direita == AZUL)
             {
                 res.container_escolhido = DIREITA;
                 res.cor = AZUL;
                 res.pilha = 1;
             }
-            else if(cor_esquerda == AZUL)
+            else if (cor_esquerda == AZUL)
             {
                 res.container_escolhido = ESQUERDA;
                 res.cor = AZUL;
@@ -160,28 +162,27 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             }
         }
 
-
-        else if(req.Posicao.location == 2) //direita
+        else if (req.Posicao.location == 2) //direita
         {
-            if(cor_direita == AZUL)
+            if (cor_direita == AZUL)
             {
                 res.container_escolhido = DIREITA;
                 res.cor = AZUL;
                 res.pilha = 5;
             }
-            else if(cor_esquerda == AZUL)
+            else if (cor_esquerda == AZUL)
             {
                 res.container_escolhido = ESQUERDA;
                 res.cor = AZUL;
                 res.pilha = 4;
             }
-            else if(cor_esquerda == VERDE)
+            else if (cor_esquerda == VERDE)
             {
                 res.container_escolhido = ESQUERDA;
                 res.cor = VERDE;
                 res.pilha = 4;
             }
-            else if(cor_direita == VERDE)
+            else if (cor_direita == VERDE)
             {
                 res.container_escolhido = DIREITA;
                 res.cor = VERDE;
@@ -199,7 +200,7 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             }
         }
 
-        else if(req.Posicao.location == 0)//meio
+        else if (req.Posicao.location == 0) //meio
         {
             if (cor_esquerda == VERDE)
             {
@@ -238,17 +239,17 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
         }
     }
 
-    else if(verde_cheio == 1)//verde ta cheio, ignora os verdes agora, independente da posição, só tem que pegar o azul
+    else if (verde_cheio == 1) //verde ta cheio, ignora os verdes agora, independente da posição, só tem que pegar o azul
     {
-        if(cor_direita == AZUL)
+        if (cor_direita == AZUL)
         {
             res.container_escolhido = DIREITA;
             res.cor = AZUL;
-            if(req.Posicao.location == 0)
+            if (req.Posicao.location == 0)
             {
                 res.pilha = 3;
             }
-            else if(req.Posicao.location == 1)
+            else if (req.Posicao.location == 1)
             {
                 res.pilha = 1;
             }
@@ -258,15 +259,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             }
         }
 
-        else if(cor_esquerda == AZUL)
+        else if (cor_esquerda == AZUL)
         {
             res.container_escolhido = ESQUERDA;
             res.cor = AZUL;
-            if(req.Posicao.location == 0)
+            if (req.Posicao.location == 0)
             {
                 res.pilha = 2;
             }
-            else if(req.Posicao.location == 1)
+            else if (req.Posicao.location == 1)
             {
                 res.pilha = 0;
             }
@@ -285,15 +286,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
 
     else //azul ta cheio, ignora os azuis agora
     {
-        if(cor_direita == VERDE)
+        if (cor_direita == VERDE)
         {
             res.container_escolhido = DIREITA;
             res.cor = VERDE;
-            if(req.Posicao.location == 0)
+            if (req.Posicao.location == 0)
             {
                 res.pilha = 3;
             }
-            else if(req.Posicao.location == 1)
+            else if (req.Posicao.location == 1)
             {
                 res.pilha = 1;
             }
@@ -303,15 +304,15 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             }
         }
 
-        else if(cor_esquerda == VERDE)
+        else if (cor_esquerda == VERDE)
         {
             res.container_escolhido = ESQUERDA;
             res.cor = VERDE;
-            if(req.Posicao.location == 0)
+            if (req.Posicao.location == 0)
             {
                 res.pilha = 2;
             }
-            else if(req.Posicao.location == 1)
+            else if (req.Posicao.location == 1)
             {
                 res.pilha = 0;
             }
@@ -327,7 +328,6 @@ bool escolha(projeto_semear::EscolherContainer::Request &req,
             res.cor = NENHUMA;
         }
     }
-
 }
 
 int main(int argc, char **argv)
@@ -348,10 +348,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-
-
-
-
-
-

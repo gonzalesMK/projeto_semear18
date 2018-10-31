@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         // Decidindo próximo passo
         ROS_INFO("MAIN - Decidindo proximo passo");
         estrategia_srv.call(estrategia_msg);
-        ROS_INFO_STREAM("MAIN - Estrategia: cor - " << estrategia_msg.response.cor << " - container escolhido (0-1-2) : " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go << "mudar de lugar: " << mudar_de_lugar);
+        ROS_INFO_STREAM("ESTRATEGIA-cor-" << estrategia_msg.response.cor << "-container escolhido (0-1-2): " << estrategia_msg.response.container_escolhido << " pilha:" << estrategia_msg.response.pilha << "To go: " << estrategia_msg.response.to_go << "mudar de lugar: " << mudar_de_lugar);
 
         while (estrategia_msg.response.container_escolhido == 3 && mudar_de_lugar == false)
         {
