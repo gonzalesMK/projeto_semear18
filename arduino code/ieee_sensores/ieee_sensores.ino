@@ -42,16 +42,8 @@ void setup() {
   nh.advertise(pub_rgb);
   nh.subscribe(sub_enables);
 
-  pinMode(infra_FR, INPUT_PULLUP);
-  pinMode(infra_FL, INPUT_PULLUP);
-  /* pinMode(infra_BR, INPUT);
-    pinMode(infra_BL, INPUT);
-    pinMode(infra_SR, INPUT);
-    pinMode(infra_SL, INPUT);*/
-
   /* Set the RGB */
-  if (!tcs.begin())  while (10);
-
+  //if (!tcs.begin())  while (10);
 
 }
 
