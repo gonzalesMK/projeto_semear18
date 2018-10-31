@@ -34,24 +34,27 @@ bool enable_rgb = false;
 bool enable_infra = false;
 
 void setup() {
-  
+  pinMode(infraFD, INPUT);
+  pinMode(infraFL, INPUT);
+  pinMode(infraRR, INPUT);
+  pinMode(infraRL, INPUT);
+  pinMode(infraSE, INPUT);
+  pinMode(infraSD, INPUT);
 }
-
+double teste;
 void loop() {
-  // put your main code here, to run repeatedly:
-  Serial.println( analogRead(infraFD) );
 
-  delay(100);
+    infras.infraFR = analogRead(infra_FD);
+    infras.infraFL = analogRead(infra_FL);
+    infras.infraBR = analogRead(infra_RR);
+    infras.infraBL = analogRead(infra_RL);
+    infras.infraBL = analogRead(infra_SE);
+    infras.infraBL = analogRead(infra_SD);
+
+    pub_infras.publish(infras);
+    delay(10);
 }
 
 void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg )
 {
-  enable_motor = msg.enable_motor;
-  enable_servo = msg.enable_servo;
-  enable_infra = msg.enable_infra;
-  enable_rele  = msg.enable_rele;
-  enable_rgb   = msg.enable_rgb;
-
-  servo_pwm = msg.servo_pwm;
 }
-
