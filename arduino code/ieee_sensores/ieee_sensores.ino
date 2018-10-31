@@ -8,12 +8,12 @@
 #include "Adafruit_TCS34725.h"
 
 /* Pinouts Infravermelhos */
-#define infraFD A0
-#define infraFL A1
-#define infraRR A2
-#define infraRL A3
-#define infraSE A6
-#define infraSD A7
+#define infra_FR A0
+#define infra_FL A1
+#define infra_BR A2
+#define infra_BL A3
+#define infra_SR A6
+#define infra_SL A7
 
 #define SDApin A4
 #define SCLpin A5
@@ -21,6 +21,7 @@
 projeto_semear::ArduinoRGB rgb;
 projeto_semear::Infra_Placa_Sensores infras;
 
+ros::NodeHandle nh;
 ros::Publisher pub_rgb("/AMR/arduinoSensoresRGB", &rgb ); //  RGB info
 ros::Publisher pub_infras("/AMR/arduinoSensoresInfras", &infras ); //  Infra Info
 
@@ -31,30 +32,38 @@ ros::Subscriber<projeto_semear::Enable_Placa_Sensores> sub_enables("/AMR/enableE
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
 bool enable_rgb = false;
-bool enable_infra = false;
 
 void setup() {
-  pinMode(infraFD, INPUT);
-  pinMode(infraFL, INPUT);
-  pinMode(infraRR, INPUT);
-  pinMode(infraRL, INPUT);
-  pinMode(infraSE, INPUT);
-  pinMode(infraSD, INPUT);
+
+  nh.getHardware()->setBaud(57600);
+  nh.initNode();
+  
+  nh.advertise(pub_infras);
+  nh.advertise(pub_rgb);
+  nh.subscribe(sub_enables);
+  
+  pinMode(infra_FR, INPUT);
+  pinMode(infra_FL, INPUT);
+  pinMode(infra_BR, INPUT);
+  pinMode(infra_BL, INPUT);
+  pinMode(infra_SR, INPUT);
+  pinMode(infra_SL, INPUT);
 }
-double teste;
+
 void loop() {
 
-    infras.infraFR = analogRead(infra_FD);
+    infras.infraFR = analogRead(infra_FR);
     infras.infraFL = analogRead(infra_FL);
-    infras.infraBR = analogRead(infra_RR);
-    infras.infraBL = analogRead(infra_RL);
-    infras.infraBL = analogRead(infra_SE);
-    infras.infraBL = analogRead(infra_SD);
+    infras.infraBR = analogRead(infra_BR);
+    infras.infraBL = analogRead(infra_BL);
+    infras.infraSR = analogRead(infra_SR);
+    infras.infraSL = analogRead(infra_SL);
 
-    pub_infras.publish(infras);
+    pub_infras.publish(&infras);
     delay(10);
 }
 
-void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg )
+void enable_callback( const projeto_semear::Enable_Placa_Sensores &msg )
 {
+  enable_rgb = msg.enable_rgb;
 }
