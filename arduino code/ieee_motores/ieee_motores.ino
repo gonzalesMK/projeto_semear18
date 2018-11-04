@@ -9,33 +9,31 @@
 #include <PinChangeInterruptSettings.h>
 #include <PinChangeInterruptPins.h>
 
-#include <PID_v1.h>
-
 /* Parametros dos Motores: */
-#define motorFR_A    7   // motor 1 placa A - in1
-#define motorFR_B    5   // motor 1 placa A - in2
-#define motorFR_enable 12 //motor 1 placa A - en1
+#define motorFR_A    37  // OUT 1 e OUT2
+#define motorFR_B    39
+#define motorFR_enable 4
 
-#define motorFL_A    9    // motor 3 placa B - in3
-#define motorFL_B    8    // motor 3 placa B - in4
-#define motorFL_enable 11
+#define motorFL_A    36 // OUT5 e OUT6
+#define motorFL_B    38
+#define motorFL_enable 6
 
-#define motorBR_A    11   // motor 4 placa B - in1
-#define motorBR_B    10   // motor 4 placa B - in2 
-#define motorBR_enable 10
+#define motorBR_A    40 // OUT7 e OUT8
+#define motorBR_B    42
+#define motorBR_enable 7
 
-#define motorBL_A    4    // motor 2 placa A - in3
-#define motorBL_B    6    // motor 2 placa A - in4
-#define motorBL_enable 13 // motor 2 placa A - en2
+#define motorBL_A    41 // OUT 3 e OUT4
+#define motorBL_B    43
+#define motorBL_enable 5
 
 /* Parametros dos Encoders: */
-#define encoderFR_chA 18 // Native Interruption Pin
-#define encoderFR_chB 19 // Native Interruption Pin 
-#define encoderBL_chA 21 // Native Interruption Pin
+#define encoderFR_chA 18 //  Native Interruption Pin
+#define encoderFR_chB 19 //  Native Interruption Pin 
+#define encoderBL_chA 20 //  Native Interruption Pin
 #define encoderBL_chB 51
-#define encoderBR_chA 3  // Native Interruption Pin
-#define encoderBR_chB 2  // Native Interruption Pin
-#define encoderFL_chA 20 // Native Interruption Pin
+#define encoderBR_chA 3  //  Native Interruption Pin
+#define encoderBR_chB 2  //  Native Interruption Pin
+#define encoderFL_chA 21 //  Native Interruption Pin
 #define encoderFL_chB 50
 
 /* Constantes: */
@@ -84,6 +82,7 @@ void encoder_BL_chB_cb();
 
 // Set up the ros node, publishers and subscribers
 ros::NodeHandle nh;
+
 ros::Publisher pub_output_vel("/AMR/arduinoVel", &output_vel);
 ros::Subscriber<projeto_semear::Vel> sub_cmd_vel("/AMR/InputVelBase", &cmd_vel_callback);
 
@@ -95,7 +94,6 @@ void setup()
   nh.initNode();
 
   nh.advertise(pub_output_vel);
-
   nh.subscribe(sub_cmd_vel);
 
   // Set the motor pins:
@@ -106,7 +104,7 @@ void setup()
   pinMode(motorFL_A, OUTPUT);
   pinMode(motorFL_B, OUTPUT);
   pinMode(motorFL_enable, OUTPUT);
-  
+
   pinMode(motorBR_A, OUTPUT);
   pinMode(motorBR_B, OUTPUT);
   pinMode(motorBR_enable, OUTPUT);
@@ -154,16 +152,16 @@ void loop()
   double omega_BR = (deltaBR * AnglePerCount) / dt;
   double omega_BL = (deltaBL * AnglePerCount) / dt;
 
-  output_vel.wFR = omega_FR; // /(2*pi);
-  output_vel.wFL = omega_FL; // /(2*pi);
-  output_vel.wBR = omega_BR; // /(2*pi);
-  output_vel.wBL = omega_BL; // /(2*pi);
+  output_vel.wFR = omega_FR;
+  output_vel.wFL = omega_FL;
+  output_vel.wBR = omega_BR;
+  output_vel.wBL = omega_BL;
 
   pub_output_vel.publish(&output_vel);
 
   int i = 0;
   for (i = 0; i < 4 ; i++) {
-    
+
     if ( wMotor[i] > 255 ) {
 
       wMotor[i] = 255;
@@ -327,7 +325,6 @@ void cmd_vel_callback( const projeto_semear::Vel &vel )
   wMotor[BR] += (int) vel.wBR;
   wMotor[FL] += (int) vel.wFL;
   wMotor[FR] += (int) vel.wFR;
-
 }
 
 

@@ -8,7 +8,7 @@
 
 /* Pinouts Infravermelhos */
 #define infra_FR A6
-#define infra_FL A0
+#define infra_FL A0 // está com problemas
 #define infra_BR A2
 #define infra_BL A3
 #define infra_SR A1
@@ -52,15 +52,11 @@ void loop() {
   if ( !enable_rgb) {
     infras.infraFR = analogRead(infra_FR);
     infras.infraFL = analogRead(infra_FL);
-    infras.infraBR = 0;
-    infras.infraBL = 0;
-    infras.infraSR = 0;
-    infras.infraSL = 0;
-    /*    infras.infraBR = analogRead(infra_BR);
-        infras.infraBL = analogRead(infra_BL);
-        infras.infraSR = analogRead(infra_SR);
-        infras.infraSL = analogRead(infra_SL);
-    */
+    infras.infraBR = analogRead(infra_BR);
+    infras.infraBL = analogRead(infra_BL);
+    infras.infraSR = analogRead(infra_SR);
+    infras.infraSL = analogRead(infra_SL);
+
     pub_infras.publish(&infras);
 
     rgb.red = 0;
@@ -70,12 +66,12 @@ void loop() {
     pub_rgb.publish(&rgb);
 
   }
-  
+
   if ( enable_rgb ) {
     uint16_t clear, red, green, blue;
 
     tcs.getRawData(&red, &green, &blue, &clear);
-  
+
     rgb.red = red;
     rgb.green = green;
     rgb.blue = blue;

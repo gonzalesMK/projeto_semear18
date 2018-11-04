@@ -25,18 +25,18 @@
 */
 
 /* Pinout dos Motores: */
-#define motorCremalheiraVertical_A    7
-#define motorCremalheiraVertical_B    5
-#define motorCremalheiraVertical_enable 12
-#define motorCremalheiraHorizontal_A    9
-#define motorCremalheiraHorizontal_B    8
-#define motorCremalheiraHorizontal_enable 11
+#define motorCremalheiraVertical_A    47  //servo 2
+#define motorCremalheiraVertical_B    49
+#define motorCremalheiraVertical_enable 4
+#define motorCremalheiraHorizontal_A    43 //servo 1
+#define motorCremalheiraHorizontal_B    45
+#define motorCremalheiraHorizontal_enable 5
 
 /* Pinout dos Encoders: */
-#define encoderCremalheiraVertical_chA 18
-#define encoderCremalheiraVertical_chB 19
-#define encoderCremalheiraHorizontal_chA 21
-#define encoderCremalheiraHorizontal_chB 51
+#define encoderCremalheiraVertical_chA 2
+#define encoderCremalheiraVertical_chB 3
+#define encoderCremalheiraHorizontal_chA 18
+#define encoderCremalheiraHorizontal_chB 19
 
 /* Pinouts Relés */
 #define releL 15
@@ -97,7 +97,6 @@ projeto_semear::Infra_Placa_Elevadores infras;
 
 /* Publishers */
 ros::Publisher pub_output_vel("/AMR/arduinoElevadoresOutputVel", &output_vel); //  Publish real velocity in Rad/s
-ros::Publisher pub_rgb("/AMR/arduinoElevadoresRGB", &rgb ); //  RGB info
 ros::Publisher pub_infras("/AMR/arduinoElevadoresInfras", &infras ); //  Infra Info
 
 /* Callbacks for ROS */
@@ -168,33 +167,13 @@ void setup()
   pinMode(servo, OUTPUT);
 
   /* Set the RGB */
-  if (!tcs.begin())  while (10);
+  //if (!tcs.begin())  while (10);
 }
 
 void loop()
 {
   unsigned long start_time = millis();
 
-  if (enable_rgb) {
-    uint16_t clear, red, green, blue;
-
-    tcs.getRawData(&red, &green, &blue, &clear);
-    rgb.red = red;
-    rgb.green = green;
-    rgb.blue = blue;
-
-    pub_rgb.publish(rgb);
-
-  }
-
-  if ( enable_infra) {
-    infras.infraFR = analogRead(infra_FR);
-    infras.infraFL = analogRead(infra_FL);
-    infras.infraBR = analogRead(infra_BR);
-    infras.infraBL = analogRead(infra_BL);
-
-    pub_infras.publish(infras);
-  }
 
   if ( enable_rele) {
     digitalWrite( releR, HIGH);
@@ -258,9 +237,6 @@ void loop()
     _Prev_H_Ticks = tick_H;
   }
 
-  if ( !enable_rgb) {
-    delay( dt * 1000 - (millis() - start_time) );
-  }
   nh.spinOnce();
 
 }
@@ -319,9 +295,7 @@ void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg )
 {
   enable_motor = msg.enable_motor;
   enable_servo = msg.enable_servo;
-  enable_infra = msg.enable_infra;
   enable_rele  = msg.enable_rele;
-  enable_rgb   = msg.enable_rgb;
 
   servo_pwm = msg.servo_pwm;
 }
