@@ -1,7 +1,7 @@
 #include <ros.h>
 #include <projeto_semear/ArduinoRGB.h>
 #include <projeto_semear/Infra_Placa_Sensores.h>
-#include <projeto_semear/Enable_Placa_Sensores.h>
+#include <std_msgs/Bool.h>
 
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
@@ -24,12 +24,12 @@ projeto_semear::Infra_Placa_Sensores infras;
 
 ros::NodeHandle nh;
 
-ros::Publisher pub_rgb("/AMR/arduinoSensoresRGB", &rgb ); //  RGB info
-ros::Publisher pub_infras("/AMR/arduinoSensoresInfras", &infras ); //  Infra Info
+ros::Publisher pub_rgb("/AMR/arduinoRGB", &rgb ); //  RGB info
+ros::Publisher pub_infras("/AMR/arduinoSensoresRGBInfras", &infras ); //  Infra Info
 
-void enable_callback(const projeto_semear::Enable_Placa_Sensores &msg ); // Enable Callback
+void enable_callback(const std_msgs::Bool &msg ); // Enable Callback
 
-ros::Subscriber<projeto_semear::Enable_Placa_Sensores> sub_enables("/AMR/enableRGBSensores", &enable_callback); // Subscrive to enable topic
+ros::Subscriber<std_msgs::Bool> sub_enables("/AMR/enableRGB", &enable_callback); // Subscrive to enable topic
 
 bool enable_rgb = false;
 
@@ -40,10 +40,25 @@ void setup() {
 
   nh.advertise(pub_infras);
   nh.advertise(pub_rgb);
+  
   nh.subscribe(sub_enables);
 
   /* Set the RGB */
-  //if (!tcs.begin())  while (10);
+  if (!tcs.begin())  while (100);
+
+ /* Publish all nodes one time before spinOnce */
+    infras.infraFR = 0;
+    infras.infraFL = 0;
+    infras.infraBR = 0;
+    infras.infraBL = 0;
+    infras.infraSR = 0;
+    infras.infraSL = 0;
+    pub_infras.publish(&infras);
+
+    rgb.red = 0;
+    rgb.green = 0;
+    rgb.blue = 0 ;
+    pub_rgb.publish(&rgb);
 
 }
 
@@ -59,13 +74,6 @@ void loop() {
 
     pub_infras.publish(&infras);
     
-/* É necessário se usar ROSSERIAL_PYTHON
-    rgb.red = 0;
-    rgb.green = 0;
-    rgb.blue = 0;
-
-    pub_rgb.publish(&rgb); 
-*/
   }
 
   if ( enable_rgb ) {
@@ -81,11 +89,10 @@ void loop() {
   }
 
   nh.spinOnce();
-
   delay(25);
 }
 
-void enable_callback( const projeto_semear::Enable_Placa_Sensores &msg )
+void enable_callback( const std_msgs::Bool &msg )
 {
-  enable_rgb = msg.enable_rgb;
+  enable_rgb = msg.data;
 }

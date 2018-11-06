@@ -77,6 +77,15 @@
       <param name="min_loop_frequency" value="21" />
     </node>
 
+  <node pkg="rosserial_server" type="serial_node" name="rosserial_server">
+    <rosparam>
+      port: /dev/arduino
+      require:
+        publishers: [ status ]
+        subscribers: [ cmd, lights ]
+    </rosparam>
+  </node>
+  
 	<!--- 
 	  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
 	<param name ="/use_sim_time" value="tru"/>

@@ -1,4 +1,3 @@
-// Codigo escrito por Mateus Valverde Gasparino
 // Data: 18/10/2017
 #include <ros.h>
 #include <ros/time.h>
@@ -45,7 +44,7 @@ const double AnglePerCount = 2 * pi / count_num;
 
 // Global variables:
 projeto_semear::Vel output_vel;
-projeto_semear::Vel output;
+projeto_semear::Vel output_pwm;
 projeto_semear::Vel input_vel;
 
 volatile long tick_FR = 0.0,
@@ -84,6 +83,7 @@ void encoder_BL_chB_cb();
 ros::NodeHandle nh;
 
 ros::Publisher pub_output_vel("/AMR/arduinoVel", &output_vel);
+ros::Publisher pub_output_pwm("/AMR/arduinoPWM", &output_pwm);
 ros::Subscriber<projeto_semear::Vel> sub_cmd_vel("/AMR/InputVelBase", &cmd_vel_callback);
 
 void setup()
@@ -94,6 +94,8 @@ void setup()
   nh.initNode();
 
   nh.advertise(pub_output_vel);
+  // DEBUG
+  nh.advertise(pub_output_pwm);
   nh.subscribe(sub_cmd_vel);
 
   // Set the motor pins:
@@ -133,7 +135,6 @@ void setup()
 
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(encoderFL_chB), encoder_FL_chB_cb, CHANGE);
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(encoderBL_chB), encoder_BL_chB_cb, CHANGE);
-
 }
 
 void loop()
@@ -157,7 +158,12 @@ void loop()
   output_vel.wBR = omega_BR;
   output_vel.wBL = omega_BL;
 
+  output_pwm.wFR = wMotor[FR];
+  output_pwm.wFL = wMotor[FL];
+  output_pwm.wBR = wMotor[BR];
+  output_pwm.wBL = wMotor[BL];
   pub_output_vel.publish(&output_vel);
+  pub_output_pwm.publish(&output_pwm);
 
   int i = 0;
   for (i = 0; i < 4 ; i++) {
@@ -321,10 +327,10 @@ void encoder_BL_chB_cb(void) {
 
 void cmd_vel_callback( const projeto_semear::Vel &vel )
 {
-  wMotor[BL] += (int) vel.wBL;
-  wMotor[BR] += (int) vel.wBR;
-  wMotor[FL] += (int) vel.wFL;
-  wMotor[FR] += (int) vel.wFR;
+  wMotor[BL] += vel.wBL;
+  wMotor[BR] += vel.wBR;
+  wMotor[FL] += vel.wFL;
+  wMotor[FR] += vel.wFR;
 }
 
 

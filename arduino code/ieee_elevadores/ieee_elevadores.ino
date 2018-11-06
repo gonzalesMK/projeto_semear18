@@ -3,15 +3,15 @@
 #include <ros/time.h>
 #include <projeto_semear/Vel_Elevadores.h>
 #include <projeto_semear/Infra_Placa_Elevadores.h>
-#include <projeto_semear/Enable_Placa_Elevadores.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Int16.h>
 
 #include <PinChangeInterrupt.h>
 #include <PinChangeInterruptBoards.h>
 #include <PinChangeInterruptSettings.h>
 #include <PinChangeInterruptPins.h>
 
-#include <Wire.h>
-#include "Adafruit_TCS34725.h"
+#include <Servo.h>
 
 /* A placa dos elevadores possui os seguintes conponentes:
     4 infras
@@ -25,11 +25,11 @@
 */
 
 /* Pinout dos Motores: */
-#define motorCremalheiraVertical_A    47  //servo 2
-#define motorCremalheiraVertical_B    49
+#define motorCremalheiraVertical_A    35  // RINA1 servo 2
+#define motorCremalheiraVertical_B    37  // RINA2 
 #define motorCremalheiraVertical_enable 4
-#define motorCremalheiraHorizontal_A    43 //servo 1
-#define motorCremalheiraHorizontal_B    45
+#define motorCremalheiraHorizontal_A    39 // RINA3 servo 1
+#define motorCremalheiraHorizontal_B    41 // RINA4
 #define motorCremalheiraHorizontal_enable 5
 
 /* Pinout dos Encoders: */
@@ -39,18 +39,16 @@
 #define encoderCremalheiraHorizontal_chB 19
 
 /* Pinouts Relés */
-#define releL 15
-#define releR 16
+#define eletroima 51
 
 /* Pinout Fim de cursos */
-#define cremalheira_vertical_baixo 16
-#define cremalheira_vertical_alto 17
-#define cremalheira_horizontal_frente 18
-#define cremalheira_horizontal_tras 19
-#define garra 20
+#define cremalheira_vertical_baixo 43 // INA1 -- Deve estar na garra
+#define cremalheira_vertical_alto 45  // INA2
+#define cremalheira_horizontal_frente 47 // INA3
+#define cremalheira_horizontal_tras 49 // INA4
 
-/* Pinout Servo */
-#define servo 15 // PWM
+/* Pinout Servos */
+#define servo 11
 
 /* Constantes: */
 #define dt           0.05    // Loop time [s]    
@@ -73,39 +71,33 @@ enum motor {
   H = 1,
 } ;
 
-/* Enable related global variable */
-bool enable_motor = false;
-bool enable_servo = false;
+/* Eletroima Global Bariable */
+volatile bool enable_eletroima = false;
 
-bool enable_rele = false;
-// Removido enable RGB !! 
-// Removido enable infra !! 
+/* Pose Global Variable */
+Servo s;
+int servo_pose = 0;
 
-/* Servo
-   A posição do servo em relação ao pwm é:
-    PREENCHER !!
-*/
-uint32_t servo_pwm = 0;
-
-// Set up the ros node, publishers and subscribers
+/* Set up the ros node, publishers and subscribers */
 ros::NodeHandle nh;
 
-projeto_semear::Vel_Elevadores output_vel;
+projeto_semear::Vel_Elevadores output_displacement;
 projeto_semear::Vel_Elevadores input_vel;
-projeto_semear::Enable_Placa_Elevadores enables;
 projeto_semear::Infra_Placa_Elevadores infras;
+std_msgs::Bool enables;
 
 /* Publishers */
-ros::Publisher pub_output_vel("/AMR/arduinoElevadoresOutputVel", &output_vel); //  Publish real velocity in Rad/s
-ros::Publisher pub_infras("/AMR/arduinoElevadoresInfras", &infras ); //  Infra Info
+ros::Publisher pub_output_displacement("/AMR/arduinoElevadoresOutputDisplacement", &output_displacement); //  Publish real velocity in Rad/s
 
 /* Callbacks for ROS */
 void cmd_vel_callback( const projeto_semear::Vel_Elevadores &vel ); // Input Vel Callback:
-void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg ); // Enable Callback
+void enable_eletroima_callback( const std_msgs::Bool &msg ); // Enable Callback
+void servo_pose_callback(const std_msgs::Int16 &msg); // Receive the servo position
 
 /* Subscribers */
 ros::Subscriber<projeto_semear::Vel_Elevadores> sub_cmd_vel("/AMR/arduinoElevadoresInputVel", &cmd_vel_callback); // Subscribe to input velocity
-ros::Subscriber<projeto_semear::Enable_Placa_Elevadores> sub_enables("/AMR/enableElevadores", &enable_callback); // Subscrive to enable topic
+ros::Subscriber<std_msgs::Bool> sub_enable_eletroima("/AMR/activateEletroima", &enable_eletroima_callback); // Subscribe to enable topic
+ros::Subscriber<std_msgs::Int16> sub_servo_pose("AMR/servo", &servo_pose_callback);
 
 /* Callback for interruptions from encoder */
 void encoder_V_chA_cb();
@@ -127,10 +119,11 @@ void setup()
 
   nh.initNode();
 
-  nh.advertise(pub_output_vel);
+  nh.advertise(pub_output_displacement);
 
   nh.subscribe(sub_cmd_vel);
-  nh.subscribe(sub_enables);
+  nh.subscribe(sub_enable_eletroima);
+  nh.subscribe(sub_servo_pose);
 
   /* Set the motor pins: */
   pinMode(motorCremalheiraVertical_A, OUTPUT);
@@ -153,88 +146,61 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(encoderCremalheiraHorizontal_chB), encoder_H_chB_cb, CHANGE);
 
   /* Set the Relés (relay) pins */
-  pinMode( releL, OUTPUT);
-  pinMode( releR, OUTPUT);
+  pinMode( eletroima, OUTPUT);
 
   /* Set the Fim de Curso (microSwitch) pins */
   pinMode(cremalheira_vertical_baixo    , INPUT_PULLUP);
   pinMode(cremalheira_vertical_alto     , INPUT_PULLUP);
   pinMode(cremalheira_horizontal_frente , INPUT_PULLUP);
   pinMode(cremalheira_horizontal_tras   , INPUT_PULLUP);
-  pinMode(garra                         , INPUT_PULLUP);
 
-  /* Set the Servo (slave) pins*/
-  pinMode(servo, OUTPUT);
-
-  /* Set the RGB */
-  //if (!tcs.begin())  while (10);
+  /* Servo motor */
+  s.attach(servo);
 }
 
 void loop()
 {
   unsigned long start_time = millis();
 
+  digitalWrite( eletroima, enable_eletroima);
 
-  if ( enable_rele) {
-    digitalWrite( releR, HIGH);
-    digitalWrite( releL, HIGH);
-  } else {
-    digitalWrite( releR, LOW);
-    digitalWrite( releL, LOW);
+  if ( servo_pose != -1 ) {
+    s.write(servo_pose);
   }
 
-  if (enable_servo) {
-    digitalWrite( servo, servo_pwm);
-    enable_servo = 0;
+  // encoder displacement of each wheel
+  output_displacement.CremalheiraVertical   = tick_V;
+  output_displacement.CremalheiraHorizontal = tick_H;
+
+  pub_output_displacement.publish(&output_displacement);
+
+  for ( int i = 0; i < 2 ; i++) {
+    if ( wMotor[i] > 255 )wMotor[i] = 255;
+    else if ( wMotor[i] < - 255)wMotor[i] = -255;
   }
 
-  if ( enable_motor) {
-    // extract the wheel velocities from the tick signals count
-    int deltaV = tick_V - _Prev_V_Ticks;
-    int deltaH = tick_H - _Prev_H_Ticks;
+  analogWrite(motorCremalheiraVertical_enable, abs(wMotor[V]));
+  if (wMotor[V] > 0)
+  {
+    digitalWrite(motorCremalheiraVertical_B, HIGH);
+    digitalWrite(motorCremalheiraVertical_A, LOW);
+  }
+  else
+  {
+    digitalWrite(motorCremalheiraVertical_A, HIGH);
+    digitalWrite(motorCremalheiraVertical_B, LOW);
+  }
 
-    // angular velocity of each wheel
-    double omega_V = (deltaV * AnglePerCount) / dt;
-    double omega_H = (deltaH * AnglePerCount) / dt;
-
-    // Publish Real Velocity
-    output_vel.CremalheiraVertical = omega_V; // /(2*pi);
-    output_vel.CremalheiraHorizontal = omega_H; // /(2*pi);
-    pub_output_vel.publish(&output_vel);
-
-    int i = 0;
-    for (i = 0; i < 2 ; i++) {
-      if ( wMotor[i] > 255 )wMotor[i] = 255;
-      else if ( wMotor[i] < - 255)wMotor[i] = -255;
-    }
-
-    analogWrite(motorCremalheiraVertical_enable, abs(wMotor[V]));
-    if (wMotor[V] > 0)
-    {
-      digitalWrite(motorCremalheiraVertical_B, HIGH);
-      digitalWrite(motorCremalheiraVertical_A, LOW);
-    }
-    else
-    {
-      digitalWrite(motorCremalheiraVertical_A, HIGH);
-      digitalWrite(motorCremalheiraVertical_B, LOW);
-    }
-
-    analogWrite(motorCremalheiraHorizontal_enable, abs(wMotor[H]));
-    if (wMotor[H] < 0)
-    {
-      digitalWrite(motorCremalheiraHorizontal_B, HIGH);
-      digitalWrite(motorCremalheiraHorizontal_A, LOW);
-    }
-    else
-    {
-      digitalWrite(motorCremalheiraHorizontal_A, HIGH);
-      digitalWrite(motorCremalheiraHorizontal_B, LOW);
-    }
-
-    /* Setting encoder variables */
-    _Prev_V_Ticks = tick_V;
-    _Prev_H_Ticks = tick_H;
+  analogWrite(motorCremalheiraHorizontal_enable, abs(wMotor[H]));
+  if (wMotor[H] < 0)
+  {
+    digitalWrite(motorCremalheiraHorizontal_B, HIGH);
+    digitalWrite(motorCremalheiraHorizontal_A, LOW);
+  }
+  else
+  {
+    digitalWrite(motorCremalheiraHorizontal_A, HIGH);
+    digitalWrite(motorCremalheiraHorizontal_B, LOW);
   }
 
   nh.spinOnce();
@@ -287,16 +253,17 @@ void encoder_H_chB_cb()
 
 void cmd_vel_callback( const projeto_semear::Vel_Elevadores &vel )
 {
-  wMotor[V] += (int) vel.CremalheiraVertical;
-  wMotor[H] += (int) vel.CremalheiraHorizontal;
+  wMotor[V] = (int) vel.CremalheiraVertical;
+  wMotor[H] = (int) vel.CremalheiraHorizontal;
 }
 
-void enable_callback( const projeto_semear::Enable_Placa_Elevadores &msg )
+void enable_eletroima_callback( const std_msgs::Bool &msg )
 {
-  enable_motor = msg.enable_motor;
-  enable_servo = msg.enable_servo;
-  enable_rele  = msg.enable_rele;
+  enable_eletroima  = msg.data;
+}
 
-  servo_pwm = msg.servo_pwm;
+void servo_pose_callback(const std_msgs::Int16 &msg)
+{
+  servo_pose = msg.data;
 }
 

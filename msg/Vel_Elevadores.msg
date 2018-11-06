@@ -1,2 +1,2 @@
-float32 CremalheiraHorizontal
-float32 CremalheiraVertical
+int32 CremalheiraHorizontal
+int32 CremalheiraVertical

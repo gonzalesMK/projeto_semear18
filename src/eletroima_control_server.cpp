@@ -10,7 +10,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <actionlib/client/simple_action_client.h>
 #include <projeto_semear/Vel_Elevadores.h>
-#include <projeto_semear/ServoPose.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Bool.h>
 
 /** Esse código é responsável por controlar o Eletroima do robô no V-REP
@@ -36,11 +36,9 @@ const double W = boost::math::constants::pi<double>() / 10 / FREQUENCIA; // Rad/
 const double PI = boost::math::constants::pi<double>();
 const double K = 0.1;
 
-double correcao_V = 0;
-double correcao_H = 0;
-
 double posicao_V = 0;
 double posicao_H = 0;
+
 double posicao_Servo = 0;
 
 // Precisa de uma função para inicializar as cremalheiras
@@ -115,25 +113,18 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
     std_msgs::Float64 Hmotor_pose_msg;
     std_msgs::Float64 Vmotor_pose_msg;
 
-    projeto_semear::ServoPose Servo_pos_msg;
-
     // Distância a ser percorrida em cada direção
-    Hmotor_pose_msg.data = goal->deslocamento.linear.y + posicao_H + correcao_H;
-    Vmotor_pose_msg.data = goal->deslocamento.linear.z + posicao_V + correcao_V;
+    Hmotor_pose_msg.data = goal->deslocamento.linear.y + posicao_H;
+    Vmotor_pose_msg.data = goal->deslocamento.linear.z + posicao_V;
 
     // Mensagem para enviar feedback
     projeto_semear::moveEletroimaFeedback feedback;
     
     // Ligar enable do motor e do Servo
-    projeto_semear::ServoPose servo_msg;
-    servo_msg.pwm = (uint16_t)(remainder(goal->deslocamento.angular.z + posicao_Servo, PI * 2) / (2 * PI) + 0.5) * 1024;
-    servo_msg.pwm = servo_msg.pwm > 1023 ? 1023 : servo_msg.pwm; // Checar se está entre o limite 0 e 1023 ( pwm do arduino )
-    servo_msg.pwm = servo_msg.pwm < 0 ? 0 : servo_msg.pwm;
-    servo_msg.enable = true;
-
-    std_msgs::Bool enable_motor_msg;
-    enable_motor_msg.data = true;
-    enable_motor_pub.publish(enable_motor_msg);
+    std_msgs::Int16 servo_msg;
+    
+    servo_msg.data = goal->deslocamento.angular.z;
+    servo_pub.publish(servo_msg);
 
     // Enviar SetPoint
     H_Motor_pub.publish(Hmotor_pose_msg);
@@ -141,7 +132,8 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
     
     ros::Rate r(20);
 
-    double erro_V=10, erro_H=10;
+    double erro_V=100000, erro_H=10000;
+    
     while (ros::ok() && ! (erro_V < ERRO_POSICAO_MOTOR && erro_H < ERRO_POSICAO_MOTOR ))
     {
         erro_V = fabs(posicao_V - Vmotor_pose_msg.data );
@@ -153,8 +145,9 @@ void move_eletroima(const projeto_semear::moveEletroimaGoalConstPtr &goal, actio
         r.sleep();
     }
     
-    enable_motor_msg.data = false;
-    enable_motor_pub.publish(enable_motor_msg);
+    // Desligar a movimentação do servo
+    servo_msg.data = -1;
+    servo_pub.publish(servo_msg);
 
     // Desligar enable do motor
     as->setSucceeded();
@@ -167,32 +160,32 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
 
     actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> client("moveEletroima", true);
 
-    if (goal->pose == goal->posicao_inicial)
+    if (goal->pose == goal->posicao_inicial)  // Garra retraída e com 90º
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -1.4999e-1;
         final_pose_msg.linear.z = +1.0816e-1;
+        final_pose_msg.linear.y = -1.4999e-1;
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = boost::math::constants::pi<double>();
+        final_pose_msg.angular.z = 94;
     }
-    else if (goal->pose == goal->posicao_pegar_container_superior)
+    else if (goal->pose == goal->posicao_pegar_container_superior) // Garra para frente e com 0º
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -0.2;
         final_pose_msg.linear.z = +1.0e-1;
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = boost::math::constants::pi<double>();
+        final_pose_msg.angular.z = 4;
     }
-    else if (goal->pose == goal->posicao_inicial_rotacionada)
+    else if (goal->pose == goal->posicao_inicial_rotacionada)   // Garra para frente e com 
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -1.4999e-1;
         final_pose_msg.linear.z = +1.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = boost::math::constants::pi<double>() / 2;
+        final_pose_msg.angular.z = 94;
     }
     else if (goal->pose == goal->posicao_segurar_container)
     {
@@ -201,16 +194,16 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         final_pose_msg.linear.z = +2.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = boost::math::constants::pi<double>();
+        final_pose_msg.angular.z = 4;
     }
-    else if (goal->pose == goal->posicao_segurar_container_rotacionado)
+    else if (goal->pose == goal->posicao_segurar_container_rotacionado) // Gara para frente e 90º
     {
         final_pose_msg.linear.x = 0;
         final_pose_msg.linear.y = -0.2;
         final_pose_msg.linear.z = +2.0816e-1;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = boost::math::constants::pi<double>() / 2;
+        final_pose_msg.angular.z = 94;
     }
     else
     {
@@ -220,33 +213,26 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     std_msgs::Float64 Hmotor_pose_msg;
     std_msgs::Float64 Vmotor_pose_msg;
 
-    projeto_semear::ServoPose Servo_pos_msg;
-
     // Posição a ser atingida
-    Hmotor_pose_msg.data = final_pose_msg.linear.y + correcao_H;
-    Vmotor_pose_msg.data = final_pose_msg.linear.z + correcao_V;
+    Hmotor_pose_msg.data = final_pose_msg.linear.y + posicao_H;
+    Vmotor_pose_msg.data = final_pose_msg.linear.z + posicao_V;
 
     // Mensagem para enviar feedback
     projeto_semear::moveEletroimaFeedback feedback;
 
     // Ligar enable do motor e do Servo
-    projeto_semear::ServoPose servo_msg;
-    servo_msg.pwm = (final_pose_msg.angular.z / (2*PI) + 0.5 ) * 1024;
-    servo_msg.pwm = servo_msg.pwm > 1023 ? 1023 : servo_msg.pwm; // Checar se está entre o limite 0 e 1023 ( pwm do arduino )
-    servo_msg.pwm = servo_msg.pwm < 0 ? 0 : servo_msg.pwm;
-    servo_msg.enable = true;
-
-    std_msgs::Bool enable_motor_msg;
-    enable_motor_msg.data = true;
-    enable_motor_pub.publish(enable_motor_msg);
-
+    std_msgs::Int16 servo_msg;
+    
+    servo_msg.data = final_pose_msg.angular.z;
+    servo_pub.publish(servo_msg);
+    
     // Enviar SetPoint
     H_Motor_pub.publish(Hmotor_pose_msg);
     V_Motor_pub.publish(Vmotor_pose_msg);
 
     ros::Rate r(20);
 
-    double erro_V=10, erro_H=10;
+    double erro_V=10000, erro_H=10000;
     while (ros::ok() && ( erro_V > ERRO_POSICAO_MOTOR || erro_H > ERRO_POSICAO_MOTOR ))
     {
         erro_V = fabs(posicao_V - Vmotor_pose_msg.data );
@@ -257,9 +243,9 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
         r.sleep();
     }
     
-    // Desligar enable do motor
-    enable_motor_msg.data = false;
-    enable_motor_pub.publish(enable_motor_msg);
+    // Desativar servo
+    servo_msg.data= -1;
+    servo_pub.publish(servo_msg);
     
     as->setSucceeded();
 }
@@ -279,22 +265,20 @@ int main(int argc, char **argv)
     actionlib::SimpleActionServer<projeto_semear::setEletroimaAction> server2(node, "setEletroima", boost::bind(&set_eletroima, _1, &server2, std::ref(listener2)), false);
 
     /* Interface para PID dos Motores */
-    stateV_pub = node.advertise<std_msgs::Float64>("AMR/V_PID/state", 1); //publica o estado para o PID, que foi lido pelo tópico arduinoElevadoresOutputVel
-    stateH_pub = node.advertise<std_msgs::Float64>("AMR/H_PID/state", 1);
+    stateV_pub = node.advertise<std_msgs::Float64>("AMR/V_PID/state", 10); //publica o estado para o PID, que foi lido pelo tópico arduinoElevadoresOutputVel
+    stateH_pub = node.advertise<std_msgs::Float64>("AMR/H_PID/state", 10);
 
-    H_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/H_PID/setpoint", 1); // publica o setpoint do código para o pid
-    V_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/V_PID/setpoint", 1);
+    H_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/H_PID/setpoint", 10); // publica o setpoint do código para o pid
+    V_Motor_pub = node.advertise<std_msgs::Float64>("/AMR/V_PID/setpoint", 10);
 
     controlH_sub = node.subscribe<std_msgs::Float64>("AMR/H_PID/control_effort", 10, controlH_callback);
     controlV_sub = node.subscribe<std_msgs::Float64>("AMR/V_PID/control_effort", 10, controlV_callback);
 
-    // enable
-    enable_motor_pub = node.advertise<std_msgs::Bool>("/AMR/enableMotoresElevador", 1);
-
     /* Servo */
-    servo_pub = node.advertise<projeto_semear::ServoPose>("/AMR/servoPwm", 1);
+    servo_pub = node.advertise<std_msgs::Int16>("/AMR/servo", 10);
 
-    ros::Subscriber arduino_state_motor_sub = node.subscribe<projeto_semear::Vel_Elevadores>("/AMR/arduinoElevadoresOutputVel", 10, state_callback); // Output Vel dos Motores
+
+    ros::Subscriber arduino_state_motor_sub = node.subscribe<projeto_semear::Vel_Elevadores>("/AMR/arduinoElevadoresOutputDisplacement", 10, state_callback); // Output Vel dos Motores
     vel_pub = node.advertise<projeto_semear::Vel_Elevadores>("/AMR/arduinoElevadoresInputVel", 10);
 
     server1.start();

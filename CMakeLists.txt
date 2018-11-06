@@ -35,7 +35,7 @@ add_message_files(
   Infra_Placa_Sensores.msg
   Vel_Elevadores.msg
   ServoPose.msg
-
+  Sonar_Infra_Placa_Sensores.msg
 )
 
 # Generate services in the 'srv' folder
@@ -199,14 +199,6 @@ target_link_libraries(main
 )
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-
-add_executable(pid_demo src/pid_demo.cpp)
-target_link_libraries(pid_demo
-  ${catkin_LIBRARIES}
-  motor_library
-)
-add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 add_executable(interface_arduino_elevadores src/interface_arduino_elevadores.cpp)
 target_link_libraries(interface_arduino_elevadores
   ${catkin_LIBRARIES}
@@ -218,3 +210,15 @@ target_link_libraries(interface_arduino_motores
   ${catkin_LIBRARIES}
 )
 add_dependencies(interface_arduino_motores ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(interface_arduino_sensores_rgb src/interface_arduino_sensores_rgb.cpp)
+target_link_libraries(interface_arduino_sensores_rgb
+  ${catkin_LIBRARIES}
+)
+add_dependencies(interface_arduino_sensores_rgb ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(interface_arduino_sensores_sonar src/interface_arduino_sensores_sonar.cpp)
+target_link_libraries(interface_arduino_sensores_sonar
+  ${catkin_LIBRARIES}
+)
+add_dependencies(interface_arduino_sensores_sonar ${${PROJECT_NAME}_EXPORTED_TARGETS})

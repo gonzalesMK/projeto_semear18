@@ -17,7 +17,6 @@ ros::Subscriber controlBL_sub;
 ros::Publisher stateFL_pub;
 ros::Subscriber controlFL_sub;
 
-
 /** Esse código é responsável pela interface Arduino <-> ROS
  * Por isso, ele vai ficar responsável pelas 3 placas:
  *  Placa dos motores:
@@ -59,20 +58,19 @@ void state_callback(const projeto_semear::VelConstPtr &msg)
  */
 void controlFR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFR = msg->data;
+    vel_msg.wFR = (uint16_t) msg->data;
 }
 void controlFL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFL = msg->data;
+    vel_msg.wFL = (uint16_t) msg->data;
 }
 void controlBL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wBL = -msg->data;
+    vel_msg.wBL = (uint16_t) msg->data;
 }
 void controlBR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-
-    vel_msg.wBR = msg->data;
+    vel_msg.wBR = (uint16_t) msg->data;
 }
 
 

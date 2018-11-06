@@ -30,9 +30,9 @@ void feedbackCb2(const projeto_semear::setEletroimaFeedbackConstPtr &feedback); 
 void doneCb2(const actionlib::SimpleClientGoalState &state,                     // Função executada quando a tarefa termina
              const projeto_semear::setEletroimaResultConstPtr &result);
 void activeCb();
+
 // Essas duas funções classificam a saída do sensor. RGB em suas cores respectivas
-void callbackGarraR(const std_msgs::ColorRGBA &msg);
-void callbackGarraL(const std_msgs::ColorRGBA &msg);
+void callbackRGB(const std_msgs::ColorRGBA &msg);
 
 typedef actionlib::SimpleActionClient<projeto_semear::moveEletroimaAction> MoveClient;
 typedef actionlib::SimpleActionClient<projeto_semear::setEletroimaAction> SetClient;
@@ -41,12 +41,11 @@ ros::ServiceClient get_client;
 ros::ServiceClient set_client;
 ros::ServiceClient pose_client;
 
-ros::Subscriber subGarraR;
-ros::Subscriber subGarraL;
+ros::Subscriber subRGB;
 
 ros::Publisher enable_eletroima_pub;
 
-int cor_garra_L, cor_garra_R;
+int cor_garra;
 
 // Service
 bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
@@ -110,7 +109,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     projeto_semear::setEletroimaGoal set_goal;
 
     // Posiciona a garra
-    set_goal.pose = set_goal.posicao_pegar_container_superior;
+    set_goal.pose = set_goal.posicao_pegar_container_superior; // pode ter um para esquerda e outro para direita
     set_eletroima_client.sendGoal(set_goal, doneCb2, activeCb, feedbackCb2);
 
     // Mensagem para atualizar o mapa de containers
@@ -135,10 +134,10 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
 
         // Atualiza o container da esquerda
         set_msg.request.where = dir;
-        set_msg.request.color = cor_garra_L;
+        set_msg.request.color = cor_garra;
         set_msg.request.altura = i;
 
-        if (cor_garra_L == set_msg.request.DESCONHECIDO)
+        if (cor_garra == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da Direita nao foi identificado");
         }
@@ -177,10 +176,10 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
 
         // Atualiza o container da esquerda
         set_msg.request.where = esq;
-        set_msg.request.color = cor_garra_R;
+        set_msg.request.color = cor_garra;
         set_msg.request.altura = i;
 
-        if (cor_garra_R == set_msg.request.DESCONHECIDO)
+        if (cor_garra == set_msg.request.DESCONHECIDO)
         {
             ROS_ERROR("Container da esquerda nao foi identificado");
         }
@@ -221,8 +220,7 @@ int main(int argc, char **argv)
     enable_eletroima_pub = node.advertise<std_msgs::Bool>("/AMR/activateEletroima", 1);
 
     // Leitura dos sensores da Garra
-    subGarraR = node.subscribe("/AMR/sensorGarraR", 1000, callbackGarraR);
-    subGarraL = node.subscribe("/AMR/sensorGarraL", 1000, callbackGarraL);
+    subRGB = node.subscribe("/AMR/arduinoRGB", 1000, callbackRGB);
 
     // Cria o serviço
     ros::ServiceServer service = node.advertiseService("descobrir_cor", descobrirCor);
@@ -278,11 +276,8 @@ int reconhece_cor(const std_msgs::ColorRGBA &msg)
         return projeto_semear::SetContainer::Request::DESCONHECIDO;
     }
 }
-void callbackGarraR(const std_msgs::ColorRGBA &msg)
+
+void callbackRGB(const std_msgs::ColorRGBA &msg)
 {
-    cor_garra_R = reconhece_cor(msg);
-}
-void callbackGarraL(const std_msgs::ColorRGBA &msg)
-{
-    cor_garra_L = reconhece_cor(msg);
+    cor_garra = reconhece_cor(msg);
 }
