@@ -11,6 +11,7 @@
 #include <std_msgs/UInt16.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/UInt32.h>
 
 const double PI = 3.141592653589793238463;
 const double LX = 0.06099;   // Comprimento do eixo X
@@ -25,21 +26,21 @@ void activeCb() {}
 void callback(const std_msgs::UInt16ConstPtr &msg, kineControl::color &color)
 {
     //ROS_INFO_STREAM("PRETO:" << kineControl::MAIOR_QUE_PRETO << "data: " << msg->data);
-    if (msg->data > kineControl::MAIOR_QUE_VERDE)
+    if (msg->data > kineControl::MAIOR_QUE_PRETO)
     {
-        color = kineControl::color::BRANCO;
+        color = kineControl::color::PRETO;
     }
-    else if (msg->data > kineControl::MAIOR_QUE_PRETO)
+    else if (msg->data > kineControl::MAIOR_QUE_VERDE)
     {
         color = kineControl::color::AZUL_VERDE;
     }
     else
     {
-        color = kineControl::color::PRETO;
+        color = kineControl::color::BRANCO;
     }
 }
 
-void distance_callback(const std_msgs::Float32ConstPtr &msg, double &variable)
+void distance_callback(const std_msgs::UInt32ConstPtr &msg, uint32_t &variable)
 {
     variable = msg->data;
 }
@@ -62,9 +63,9 @@ kineControl::robot::robot()
     lineSensorE3_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorE3", 1, boost::bind(callback, _1, boost::ref(colorE3_)));
     lineSensorD2_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD2", 1, boost::bind(callback, _1, boost::ref(colorD2_)));
     lineSensorD3_ = nh_.subscribe<std_msgs::UInt16>("/AMR/lineSensorD3", 1, boost::bind(callback, _1, boost::ref(colorD3_)));
-    /*
-    lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
 
+    lateralSensor_ = nh_.subscribe<std_msgs::UInt32>("/AMR/sonar", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
+    /*
     frontalSensorEsq_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorEsq", 1, boost::bind(callback, _1, boost::ref(colorFE_)));
     frontalSensorDir_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorDir", 1, boost::bind(callback, _1, boost::ref(colorFD_)));
 
@@ -153,6 +154,10 @@ kineControl::robot::robot()
     {
         ROS_ERROR("Failed to get param 'DIAMETRO_RODA'");
     }
+    if (!nh_.param("VEL_MAX", VEL_MAX, 2.5))
+    {
+        ROS_ERROR("Failed to get param 'VEL_MAX'");
+    }
 }
 
 /* Essa função envia a velocidade para os tópicos dos PIDs,
@@ -176,6 +181,38 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     Wfr.data = ((w_module)*cos(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // Rad/s
     Wbl.data = ((w_module)*cos(PI / 4 + theta) + (vel.angular.z) * conversao_angular) * PI; // Rad/s
     Wbr.data = ((w_module)*sin(PI / 4 + theta) - (vel.angular.z) * conversao_angular) * PI; // Rad/s
+
+    double maior_velocidade = VEL_MAX;
+    bool alguma_maior_que_max = false;
+
+    if ( fabs(Wfl.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wfl.data);
+    }
+    if (fabs(Wfr.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wfr.data);
+    }
+    if (fabs(Wbl.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wbl.data);
+    }
+    if (fabs(Wbr.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wbr.data);
+    }
+
+    if (alguma_maior_que_max)
+    {
+        Wfl.data = Wfl.data / maior_velocidade * VEL_MAX;
+        Wfr.data = Wfr.data / maior_velocidade * VEL_MAX;
+        Wbl.data = Wbl.data / maior_velocidade * VEL_MAX;
+        Wbr.data = Wbr.data / maior_velocidade * VEL_MAX;
+    }
 
     // Publicação para o motor
     FR_Motor_.publish(Wfr);
@@ -215,6 +252,38 @@ bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::T
         Wfr.data += ((w_module)*cos(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // Rad/s
         Wbl.data += ((w_module)*cos(PI / 4 + theta) + (vel->angular.z) * conversao_angular) * PI; // Rad/s
         Wbr.data += ((w_module)*sin(PI / 4 + theta) - (vel->angular.z) * conversao_angular) * PI; // Rad/s
+    }
+
+    double maior_velocidade = VEL_MAX;
+    bool alguma_maior_que_max = false;
+
+    if ( fabs(Wfl.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wfl.data);
+    }
+    if (fabs(Wfr.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wfr.data);
+    }
+    if (fabs(Wbl.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wbl.data);
+    }
+    if (fabs(Wbr.data) > maior_velocidade)
+    {
+        alguma_maior_que_max = true;
+        maior_velocidade = fabs(Wbr.data);
+    }
+
+    if (alguma_maior_que_max)
+    {
+        Wfl.data = Wfl.data / maior_velocidade * VEL_MAX;
+        Wfr.data = Wfr.data / maior_velocidade * VEL_MAX;
+        Wbl.data = Wbl.data / maior_velocidade * VEL_MAX;
+        Wbr.data = Wbr.data / maior_velocidade * VEL_MAX;
     }
 
     // Publicação para o motor
@@ -718,7 +787,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     double dist;
     if (dir == 0)
     {
-        dist = 0.071;
+        dist = 10;
 
         if (container_esq_esta_vazio)
         {
@@ -727,7 +796,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     }
     else if (dir == 1)
     {
-        dist = 0.01;
+        dist = 3;
 
         if (container_esq_esta_vazio)
         {
@@ -736,7 +805,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     }
     else if (dir == 2)
     {
-        dist = 0.04;
+        dist = 7;
 
         if (container_esq_esta_vazio)
         {

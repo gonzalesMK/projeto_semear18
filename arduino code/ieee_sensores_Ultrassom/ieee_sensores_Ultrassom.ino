@@ -3,11 +3,11 @@
 #include <projeto_semear/Sonar_Infra_Placa_Sensores.h>
 #include <Ultrasonic.h>
 /* Pinouts Infravermelhos */
-#define infra_FR A6
-#define infra_FL A1 // está com problemas
-#define infra_BR A2
-#define infra_BL A3
-#define infra_SL A7
+#define infra_FFL A0
+#define infra_FBL A7
+#define infra_BFL A1
+#define infra_BBL A2
+#define infra_SL A6
 
 //Define os pinos para o trigger e echo
 #define pino_trigger 4
@@ -32,10 +32,10 @@ void setup() {
 
 void loop() {
 
-  infras.infraFR = analogRead(infra_FR);
-  infras.infraFL = analogRead(infra_FL);
-  infras.infraBR = analogRead(infra_BR);
-  infras.infraBL = analogRead(infra_BL);
+  infras.infraFFL = analogRead(infra_FFL);
+  infras.infraFBL = analogRead(infra_FBL);
+  infras.infraBFL = analogRead(infra_BFL);
+  infras.infraBBL = analogRead(infra_BBL);
   infras.infraSL = analogRead(infra_SL);
 
   infras.sonar = ultrasonic.convert( ultrasonic.timing(), Ultrasonic::CM);

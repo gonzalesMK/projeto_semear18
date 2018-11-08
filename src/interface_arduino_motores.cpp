@@ -39,16 +39,16 @@ void state_callback(const projeto_semear::VelConstPtr &msg)
     std_msgs::Float64 goal;
 
     // Filling goal here
-    goal.data = msg->wFR;
+    goal.data = (double) msg->wFR;
     stateFR_pub.publish(goal);
 
-    goal.data = msg->wBR;
+    goal.data = (double) msg->wBR;
     stateBR_pub.publish(goal);
 
-    goal.data = msg->wFL;
+    goal.data = (double) msg->wFL;
     stateFL_pub.publish(goal);
 
-    goal.data = msg->wBL;
+    goal.data = (double) msg->wBL;
     stateBL_pub.publish(goal);
 }
 
@@ -58,19 +58,19 @@ void state_callback(const projeto_semear::VelConstPtr &msg)
  */
 void controlFR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFR = (uint16_t) msg->data;
+    vel_msg.wFR = (int16_t) msg->data;
 }
 void controlFL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFL = (uint16_t) msg->data;
+    vel_msg.wFL = (int16_t) msg->data;
 }
 void controlBL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wBL = (uint16_t) msg->data;
+    vel_msg.wBL = (int16_t) msg->data;
 }
 void controlBR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wBR = (uint16_t) msg->data;
+    vel_msg.wBR = (int16_t) msg->data;
 }
 
 

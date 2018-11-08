@@ -5,7 +5,6 @@
 #include <projeto_semear/Infra_Placa_Elevadores.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int16.h>
-
 #include <PinChangeInterrupt.h>
 #include <PinChangeInterruptBoards.h>
 #include <PinChangeInterruptSettings.h>
@@ -25,12 +24,12 @@
 */
 
 /* Pinout dos Motores: */
-#define motorCremalheiraVertical_A    35  // RINA1 servo 2
-#define motorCremalheiraVertical_B    37  // RINA2 
-#define motorCremalheiraVertical_enable 4
-#define motorCremalheiraHorizontal_A    39 // RINA3 servo 1
-#define motorCremalheiraHorizontal_B    41 // RINA4
-#define motorCremalheiraHorizontal_enable 5
+#define motorCremalheiraHorizontal_A    35  // RINA1 servo 2
+#define motorCremalheiraHorizontal_B    37  // RINA2 
+#define motorCremalheiraHorizontal_enable 4
+#define motorCremalheiraVertical_A    39 // RINA3 servo 1
+#define motorCremalheiraVertical_B    41 // RINA4
+#define motorCremalheiraVertical_enable 5
 
 /* Pinout dos Encoders: */
 #define encoderCremalheiraVertical_chA 2
@@ -48,7 +47,7 @@
 #define cremalheira_horizontal_tras 49 // INA4
 
 /* Pinout Servos */
-#define servo 11
+#define servo 13
 
 /* Constantes: */
 #define dt           0.05    // Loop time [s]    
@@ -64,7 +63,7 @@ volatile long tick_V = 0.0,
 long _Prev_V_Ticks = 0.0,
      _Prev_H_Ticks = 0.0;
 
-volatile int wMotor[2] = {0.0, 0.0};
+volatile long int wMotor[2] = {0.0, 0.0};
 
 enum motor {
   V = 0,
@@ -180,7 +179,7 @@ void loop()
   }
 
   analogWrite(motorCremalheiraVertical_enable, abs(wMotor[V]));
-  if (wMotor[V] > 0)
+  if (wMotor[V] < 0)
   {
     digitalWrite(motorCremalheiraVertical_B, HIGH);
     digitalWrite(motorCremalheiraVertical_A, LOW);
@@ -192,7 +191,7 @@ void loop()
   }
 
   analogWrite(motorCremalheiraHorizontal_enable, abs(wMotor[H]));
-  if (wMotor[H] < 0)
+  if (wMotor[H] > 0)
   {
     digitalWrite(motorCremalheiraHorizontal_B, HIGH);
     digitalWrite(motorCremalheiraHorizontal_A, LOW);
@@ -235,9 +234,9 @@ void encoder_H_chA_cb()
   int chB = digitalRead(encoderCremalheiraHorizontal_chB);
 
   if (chB != chA)
-    tick_H++;
-  else
     tick_H--;
+  else
+    tick_H++;
 }
 
 void encoder_H_chB_cb()
@@ -246,15 +245,15 @@ void encoder_H_chB_cb()
   int chB = digitalRead(encoderCremalheiraHorizontal_chB);
 
   if (chB == chA)
-    tick_H++;
-  else
     tick_H--;
+  else
+    tick_H++;
 }
 
 void cmd_vel_callback( const projeto_semear::Vel_Elevadores &vel )
 {
-  wMotor[V] = (int) vel.CremalheiraVertical;
-  wMotor[H] = (int) vel.CremalheiraHorizontal;
+  wMotor[V] = vel.CremalheiraVertical;
+  wMotor[H] = vel.CremalheiraHorizontal;
 }
 
 void enable_eletroima_callback( const std_msgs::Bool &msg )

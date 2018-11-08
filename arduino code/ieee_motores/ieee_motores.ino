@@ -127,7 +127,7 @@ void setup()
 
   // Set encoder pins
   attachInterrupt(digitalPinToInterrupt(encoderFR_chA), encoder_FR_chA_cb, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(encoderFL_chA), encoder_FL_chA_cb, CHANGE);
+//  attachInterrupt(digitalPinToInterrupt(encoderFL_chA), encoder_FL_chA_cb, CHANGE);
   attachInterrupt(digitalPinToInterrupt(encoderBR_chA), encoder_BR_chA_cb, CHANGE);
   attachInterrupt(digitalPinToInterrupt(encoderBL_chA), encoder_BL_chA_cb, CHANGE);
   attachInterrupt(digitalPinToInterrupt(encoderFR_chB), encoder_FR_chB_cb, CHANGE);
@@ -149,7 +149,7 @@ void loop()
 
   // angular velocity of each wheel
   double omega_FR = (deltaFR * AnglePerCount) / dt;
-  double omega_FL = (deltaFL * AnglePerCount) / dt;
+  double omega_FL = (deltaFL * AnglePerCount) / dt * 2;
   double omega_BR = (deltaBR * AnglePerCount) / dt;
   double omega_BL = (deltaBL * AnglePerCount) / dt;
 
@@ -162,6 +162,7 @@ void loop()
   output_pwm.wFL = wMotor[FL];
   output_pwm.wBR = wMotor[BR];
   output_pwm.wBL = wMotor[BL];
+  
   pub_output_vel.publish(&output_vel);
   pub_output_pwm.publish(&output_pwm);
 
@@ -245,9 +246,9 @@ void encoder_FR_chA_cb()
   int chA = digitalRead(encoderFR_chA);
 
   if (chB != chA)
-    tick_FR++;
-  else
     tick_FR--;
+  else
+    tick_FR++;
 }
 
 void encoder_FR_chB_cb() {
@@ -255,9 +256,9 @@ void encoder_FR_chB_cb() {
   int chA = digitalRead(encoderFR_chA);
 
   if (chB == chA)
-    tick_FR++;
-  else
     tick_FR--;
+  else
+    tick_FR++;
 
 }
 
@@ -273,10 +274,7 @@ void encoder_FL_chA_cb()
 }
 
 void encoder_FL_chB_cb() {
-  int chA = digitalRead(encoderFL_chA);
-  int chB = digitalRead(encoderFL_chB);
-
-  if (chB == chA)
+  if (wMotor[FL] > 0 )
     tick_FL++;
   else
     tick_FL--;
@@ -327,10 +325,10 @@ void encoder_BL_chB_cb(void) {
 
 void cmd_vel_callback( const projeto_semear::Vel &vel )
 {
-  wMotor[BL] += vel.wBL;
-  wMotor[BR] += vel.wBR;
-  wMotor[FL] += vel.wFL;
-  wMotor[FR] += vel.wFR;
+  wMotor[BL] += (int) vel.wBL;
+  wMotor[BR] += (int) vel.wBR;
+  wMotor[FL] += (int) vel.wFL;
+  wMotor[FR] += (int) vel.wFR;
 }
 
 

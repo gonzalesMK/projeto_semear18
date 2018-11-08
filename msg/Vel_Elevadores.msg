@@ -1,2 +1,2 @@
-int32 CremalheiraHorizontal
-int32 CremalheiraVertical
+int16 CremalheiraHorizontal
+int16 CremalheiraVertical

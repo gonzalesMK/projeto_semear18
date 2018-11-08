@@ -1,6 +1,5 @@
-uint16 infraFR
-uint16 infraFL
-uint16 infraBR
-uint16 infraBL
+uint16 infraFFR
+uint16 infraFBR
+uint16 infraBFR
+uint16 infraBBR
 uint16 infraSR
-uint16 infraSL

@@ -60,7 +60,7 @@ ros::Publisher vel_pub; // Publica a velocidade requerida para o arduino
 projeto_semear::Vel_Elevadores vel_msg;
 
 
-double ERRO_POSICAO_MOTOR=0.01;
+double ERRO_POSICAO_MOTOR=500;
 
 /* Falta os enables dos motores **/
 // Função de feedback do ActionLib
@@ -163,47 +163,47 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     if (goal->pose == goal->posicao_inicial)  // Garra retraída e com 90º
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.z = +1.0816e-1;
-        final_pose_msg.linear.y = -1.4999e-1;
+        final_pose_msg.linear.y = 500;
+        final_pose_msg.linear.z = 14575;
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = 94;
+        final_pose_msg.angular.z = 100;
     }
     else if (goal->pose == goal->posicao_pegar_container_superior) // Garra para frente e com 0º
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -0.2;
-        final_pose_msg.linear.z = +1.0e-1;
+        final_pose_msg.linear.y = 14762;
+        final_pose_msg.linear.z = 14575;
         final_pose_msg.angular.x = 0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = 4;
+        final_pose_msg.angular.z = 100;
     }
     else if (goal->pose == goal->posicao_inicial_rotacionada)   // Garra para frente e com 
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -1.4999e-1;
-        final_pose_msg.linear.z = +1.0816e-1;
+        final_pose_msg.linear.y = 500;
+        final_pose_msg.linear.z = 14575;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = 94;
+        final_pose_msg.angular.z = 100;
     }
     else if (goal->pose == goal->posicao_segurar_container)
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -0.2;
-        final_pose_msg.linear.z = +2.0816e-1;
+        final_pose_msg.linear.y = 14762;
+        final_pose_msg.linear.z = 0;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = 4;
+        final_pose_msg.angular.z = 100;
     }
     else if (goal->pose == goal->posicao_segurar_container_rotacionado) // Gara para frente e 90º
     {
         final_pose_msg.linear.x = 0;
-        final_pose_msg.linear.y = -0.2;
-        final_pose_msg.linear.z = +2.0816e-1;
+        final_pose_msg.linear.y = 14762;
+        final_pose_msg.linear.z = 14575;
         final_pose_msg.angular.x = .0;
         final_pose_msg.angular.y = .0;
-        final_pose_msg.angular.z = 94;
+        final_pose_msg.angular.z = 100;
     }
     else
     {
@@ -214,8 +214,8 @@ void set_eletroima(const projeto_semear::setEletroimaGoalConstPtr &goal, actionl
     std_msgs::Float64 Vmotor_pose_msg;
 
     // Posição a ser atingida
-    Hmotor_pose_msg.data = final_pose_msg.linear.y + posicao_H;
-    Vmotor_pose_msg.data = final_pose_msg.linear.z + posicao_V;
+    Hmotor_pose_msg.data = final_pose_msg.linear.y;
+    Vmotor_pose_msg.data = final_pose_msg.linear.z;
 
     // Mensagem para enviar feedback
     projeto_semear::moveEletroimaFeedback feedback;

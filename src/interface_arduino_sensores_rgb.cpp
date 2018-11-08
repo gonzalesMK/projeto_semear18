@@ -7,10 +7,10 @@
 
 /* Subscribers e Publishers para os Infra */
 ros::Subscriber infra_elevadores_sub;
-ros::Publisher linesensor_E0;
-ros::Publisher linesensor_E1;
-ros::Publisher linesensor_D0;
+ros::Publisher linesensor_D3;
+ros::Publisher linesensor_D2;
 ros::Publisher linesensor_D1;
+ros::Publisher linesensor_D0;
 
 
 /*  RGB   */
@@ -22,20 +22,20 @@ std_msgs::Bool enable_rgb;
 /* Interface para os Infravermelhos, podem ser até 6 */
 void infra_elevadores_callback(const projeto_semear::Infra_Placa_SensoresConstPtr &msg)
 {
-    std_msgs::UInt16 lineBL;
-    std_msgs::UInt16 lineBR;
-    std_msgs::UInt16 lineFR;
-    std_msgs::UInt16 lineFL;
+    std_msgs::UInt16 lineBBR;
+    std_msgs::UInt16 lineBFR;
+    std_msgs::UInt16 lineFBR;
+    std_msgs::UInt16 lineFFR;
 
-    lineBL.data = msg->infraBL;
-    lineBR.data = msg->infraBR;
-    lineFR.data = msg->infraFR;
-    lineFL.data = msg->infraFL;
+    lineBBR.data = msg->infraBBR;
+    lineBFR.data = msg->infraBFR;
+    lineFBR.data = msg->infraFBR;
+    lineFFR.data = msg->infraFFR;
 
-    linesensor_E0.publish(lineBL);
-    linesensor_E1.publish(lineFL);
-    linesensor_D0.publish(lineBR);
-    linesensor_D1.publish(lineFR);
+    linesensor_D3.publish(lineBBR);
+    linesensor_D2.publish(lineBFR);
+    linesensor_D1.publish(lineFBR);
+    linesensor_D0.publish(lineFFR);
 }
 
 /* FALTA IMPLEMENTAR O ENABLE RGB NO CÓDIGO */
@@ -61,10 +61,10 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     /* Interface Infras */
-    linesensor_E0 = nh.advertise<std_msgs::UInt16>("/AMR/lineSensorE0", 5);  // Infras
-    linesensor_E1 = nh.advertise<std_msgs::UInt16>("/AMR/lineSensorE1", 5);
-    linesensor_D0 = nh.advertise<std_msgs::UInt16>("/AMR/lineSensorD0", 5);
-    linesensor_D1 = nh.advertise<std_msgs::UInt16>("/AMR/lineSensorD1", 5);
+    linesensor_D3 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D3", 5);  // Infras
+    linesensor_D2 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D2", 5);
+    linesensor_D1 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D1", 5);
+    linesensor_D0 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D0", 5);
     infra_elevadores_sub = nh.subscribe<projeto_semear::Infra_Placa_Sensores>("/AMR/arduinoSensoresRGBInfras", 5, infra_elevadores_callback);
        
     /* RGB */

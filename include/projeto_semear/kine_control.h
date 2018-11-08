@@ -46,6 +46,7 @@ double VEL_Y;
 double VEL_Z;
 double VEL_X;
 double Kp; // Constante para controle Proporcional
+double VEL_MAX; // Constate para controle da velocidade máxima em rad/s para ser enviada ao motor
 const double VEL_ANG = 0.1; // Constante para marcar a velocidade angular
 double FREQUENCIA_PARA_ALINHAR;
 double LDIAG;
@@ -97,7 +98,7 @@ class robot
     color colorL2_ = BRANCO;
     color colorL3_ = BRANCO;
 
-    double lateral_distance_ = 1;
+    uint32_t lateral_distance_ = 1;
 
     ros::Publisher FR_Motor_;
     ros::Publisher FL_Motor_;

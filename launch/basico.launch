@@ -2,20 +2,25 @@
 	<master auto="start"/>
 	
 
-	<param name ="MAIOR_QUE_PRETO" value="60"/>
-    <param name ="MAIOR_QUE_VERDE" value="300"/>
+	<param name ="MAIOR_QUE_PRETO" value="600"/>
+    <param name ="MAIOR_QUE_VERDE" value="400"/>
 	<param name ="TEMPO_MEIA_VOLTA" value="3"/>
 	<param name ="TEMPO_TRANSICAO_ESQUERDA" value="1"/>
 	<param name ="TEMPO_DIREITA" value = "0.4"/>
+
 	<param name ="VEL_Y" value="0.15"/>
 	<param name ="VEL_Z" value=".25"/>
 	<param name ="VEL_X_ALINHAR" value="0.015"/>
 	<param name ="VEL_X" value="0.015"/>
-	<param name ="Kp" value="2.0"/>
+
+    <param name = "VEL_MAX" value="2.5"/>  <!---  Maior valor em Rad/s a ser enviado ao motor -->
+	<param name ="Kp" value=".50"/>       <!---  Constante que multiplica os erros dos sensores de IR durante os alinhamentos com linha -->
+	
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
 	<param name ="FREQUENCIA_PARA_ALINHAR" value="40"/>
 	<param name ="FREQUENCIA_ARDUINO_MOTORES" value="20"/>
+
 	<param name ="LDIAG" value="0.116383204"/>
 	<param name ="DIAMETRO_RODA" value="0.099060"/>
 
@@ -77,14 +82,28 @@
       <param name="min_loop_frequency" value="21" />
     </node>
 
-  <node pkg="rosserial_server" type="serial_node" name="rosserial_server">
-    <rosparam>
-      port: /dev/arduino
-      require:
-        publishers: [ status ]
-        subscribers: [ cmd, lights ]
-    </rosparam>
-  </node>
+	<node name="H_PID" pkg="pid" type="controller" ns="AMR/H_PID" >
+      <param name="Kp" value="0.25" />
+      <param name="Ki" value="0.5" />
+      <param name="Kd" value="0.01" />
+      <param name="upper_limit" value="255" />
+      <param name="lower_limit" value="-255" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+
+	<node name="V_PID" pkg="pid" type="controller" ns="AMR/V_PID" >
+      <param name="Kp" value="0.25" />
+      <param name="Ki" value="0.0" />
+      <param name="Kd" value="0.01" />
+      <param name="upper_limit" value="255" />
+      <param name="lower_limit" value="-255" />
+      <param name="windup_limit" value="100" />
+      <param name="max_loop_frequency" value="19" />
+      <param name="min_loop_frequency" value="21" />
+    </node>
+
   
 	<!--- 
 	  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   

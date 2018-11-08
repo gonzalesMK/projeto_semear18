@@ -7,15 +7,14 @@
 #include "Adafruit_TCS34725.h"
 
 /* Pinouts Infravermelhos */
-#define infra_FR A6
-#define infra_FL A0 // está com problemas
-#define infra_BR A2
-#define infra_BL A3
-#define infra_SR A1
-#define infra_SL A7
+#define infra_FFR A1
+#define infra_FBR A0
+#define infra_BFR A7
+#define infra_BBR A6
+#define infra_SR A2
 
-//#define SDApin A4
-//#define SCLpin A5
+#define SDApin A4
+#define SCLpin A5
 
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
@@ -44,36 +43,26 @@ void setup() {
   nh.subscribe(sub_enables);
 
   /* Set the RGB */
-  if (!tcs.begin())  while (100);
-
- /* Publish all nodes one time before spinOnce */
-    infras.infraFR = 0;
-    infras.infraFL = 0;
-    infras.infraBR = 0;
-    infras.infraBL = 0;
-    infras.infraSR = 0;
-    infras.infraSL = 0;
-    pub_infras.publish(&infras);
-
-    rgb.red = 0;
-    rgb.green = 0;
-    rgb.blue = 0 ;
-    pub_rgb.publish(&rgb);
+  tcs.begin();
 
 }
 
 void loop() {
 
   if ( !enable_rgb) {
-    infras.infraFR = analogRead(infra_FR);
-    infras.infraFL = analogRead(infra_FL);
-    infras.infraBR = analogRead(infra_BR);
-    infras.infraBL = analogRead(infra_BL);
+    infras.infraFFR = analogRead(infra_FFR);
+    infras.infraFBR = analogRead(infra_FBR);
+    infras.infraBFR = analogRead(infra_BFR);
+    infras.infraBBR = analogRead(infra_BBR);
     infras.infraSR = analogRead(infra_SR);
-    infras.infraSL = analogRead(infra_SL);
 
     pub_infras.publish(&infras);
-    
+
+    rgb.red = 0;
+    rgb.green = 0;
+    rgb.blue = 0 ;
+    pub_rgb.publish(&rgb);
+  
   }
 
   if ( enable_rgb ) {
