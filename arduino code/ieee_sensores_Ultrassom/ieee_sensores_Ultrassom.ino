@@ -3,10 +3,10 @@
 #include <projeto_semear/Sonar_Infra_Placa_Sensores.h>
 #include <Ultrasonic.h>
 /* Pinouts Infravermelhos */
-#define infra_FFL A0
-#define infra_FBL A7
-#define infra_BFL A1
-#define infra_BBL A2
+#define infra_FFL A1
+#define infra_FBL A2
+#define infra_BFL A3
+#define infra_BBL A7
 #define infra_SL A6
 
 //Define os pinos para o trigger e echo
@@ -23,7 +23,7 @@ ros::Publisher pub_infras("/AMR/arduinoSensoresUltrassom", &infras ); //  Infra 
 
 void setup() {
 
-  nh.getHardware()->setBaud(57600);
+  nh.getHardware()->setBaud(9600);
   nh.initNode();
 
   nh.advertise(pub_infras);
@@ -43,5 +43,5 @@ void loop() {
   pub_infras.publish(&infras);
 
   nh.spinOnce();
-  delay(25);
+  delay(50);
 }

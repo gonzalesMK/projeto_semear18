@@ -24,7 +24,11 @@
 	<param name ="LDIAG" value="0.116383204"/>
 	<param name ="DIAMETRO_RODA" value="0.099060"/>
 
+    <param name ="DIST_CEN_SONAR" value="7"/>  <!---  Distâncias de alinhamento para o sonar--> 
+    <param name ="DIST_DIR_SONAR" value="3"/>
+    <param name ="DIST_ESQ_SONAR" value="10"/>
 	
+
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
 	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" output='screen'/>
 	<node name="descobrir_cor_srv" pkg="projeto_semear" type="descobrir_cor_server" respawn="false" output='screen' />
@@ -36,6 +40,8 @@
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 	<node name="interface_motores" pkg="projeto_semear" type="interface_arduino_motores" respawn="false" output="screen"/>
 	<node name="interface_elevadores" pkg="projeto_semear" type="interface_arduino_elevadores" respawn="false" output="screen"/>
+    <node name="interface_arduino_sensores_rgb" pkg="projeto_semear" type="interface_arduino_sensores_rgb" respawn="false" output="screen"/>
+    <node name="interface_arduino_sensores_sonar" pkg="projeto_semear" type="interface_arduino_sensores_sonar" respawn="false" output="screen"/>
 
 
 	<node name="FR_PID" pkg="pid" type="controller" ns="AMR/FR_PID" >
@@ -105,9 +111,11 @@
     </node>
 
   
+	
+	  	
 	<!--- 
-	  	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
-	<param name ="/use_sim_time" value="tru"/>
+    <node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
+    <param name ="/use_sim_time" value="tru"/>
 	<node name="controller" pkg="pid" type="controller" ns="PIDL">
        		<param name="Kp" value=".60" />
        		<param name="Ki" value="0.0" />

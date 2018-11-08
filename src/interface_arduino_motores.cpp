@@ -58,19 +58,19 @@ void state_callback(const projeto_semear::VelConstPtr &msg)
  */
 void controlFR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFR = (int16_t) msg->data;
+    vel_msg.wFR = (float) msg->data;
 }
 void controlFL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wFL = (int16_t) msg->data;
+    vel_msg.wFL = (float) msg->data;
 }
 void controlBL_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wBL = (int16_t) msg->data;
+    vel_msg.wBL = (float) msg->data;
 }
 void controlBR_callback(const std_msgs::Float64ConstPtr &msg)
 {
-    vel_msg.wBR = (int16_t) msg->data;
+    vel_msg.wBR = (float) msg->data;
 }
 
 
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     stateFL_pub = nh.advertise<std_msgs::Float64>("AMR/FL_PID/state", 1);
     controlFL_sub = nh.subscribe<std_msgs::Float64>("AMR/FL_PID/control_effort", 1, controlFL_callback);
     ros::Publisher vel_pub = nh.advertise<projeto_semear::Vel>("/AMR/InputVelBase", 1);
-
+    ros::Subscriber vel_sub = nh.subscribe<projeto_semear::Vel>("/AMR/arduinoVel", 1 , state_callback);
     
     double FREQUENCIA_ARDUINO = 20;
     if (!nh.param("FREQUENCIA_ARDUINO_MOTORES", FREQUENCIA_ARDUINO, 20.0))

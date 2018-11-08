@@ -36,7 +36,7 @@
 #define encoderFL_chB 50
 
 /* Constantes: */
-#define dt           0.05    // Loop time [s]    
+#define dt           0.1    // Loop time [s]    
 #define pi           3.14159265
 #define count_num    6600   // count number of encoder * 4 
 
@@ -89,7 +89,7 @@ ros::Subscriber<projeto_semear::Vel> sub_cmd_vel("/AMR/InputVelBase", &cmd_vel_c
 void setup()
 {
   // set the baud rate
-  nh.getHardware()->setBaud(57600);
+  nh.getHardware()->setBaud(9600);
 
   nh.initNode();
 
@@ -169,13 +169,13 @@ void loop()
   int i = 0;
   for (i = 0; i < 4 ; i++) {
 
-    if ( wMotor[i] > 255 ) {
+    if ( wMotor[i] > 254 ) {
 
-      wMotor[i] = 255;
+      wMotor[i] = 254;
 
-    } else if ( wMotor[i] < - 255) {
+    } else if ( wMotor[i] < - 254) {
 
-      wMotor[i] = -255;
+      wMotor[i] = -254;
 
     }
   }

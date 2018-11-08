@@ -75,7 +75,7 @@ volatile bool enable_eletroima = false;
 
 /* Pose Global Variable */
 Servo s;
-int servo_pose = 0;
+int servo_pose = 16;
 
 /* Set up the ros node, publishers and subscribers */
 ros::NodeHandle nh;
@@ -114,7 +114,7 @@ void garra_cb();
 void setup()
 {
   // set the baud rate
-  nh.getHardware()->setBaud(57600);
+  nh.getHardware()->setBaud(9600);
 
   nh.initNode();
 
@@ -201,7 +201,7 @@ void loop()
     digitalWrite(motorCremalheiraHorizontal_A, HIGH);
     digitalWrite(motorCremalheiraHorizontal_B, LOW);
   }
-
+  delay(50);
   nh.spinOnce();
 
 }

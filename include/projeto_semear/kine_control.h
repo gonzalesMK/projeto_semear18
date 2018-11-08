@@ -47,6 +47,9 @@ double VEL_Z;
 double VEL_X;
 double Kp; // Constante para controle Proporcional
 double VEL_MAX; // Constate para controle da velocidade máxima em rad/s para ser enviada ao motor
+double DIST_CEN_SONAR;
+double DIST_DIR_SONAR;
+double DIST_ESQ_SONAR;
 const double VEL_ANG = 0.1; // Constante para marcar a velocidade angular
 double FREQUENCIA_PARA_ALINHAR;
 double LDIAG;

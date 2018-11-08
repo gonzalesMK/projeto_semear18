@@ -61,10 +61,10 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     /* Interface Infras */
-    linesensor_D3 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D3", 5);  // Infras
-    linesensor_D2 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D2", 5);
-    linesensor_D1 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D1", 5);
-    linesensor_D0 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D0", 5);
+    linesensor_D3 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D0", 5);  // Infras
+    linesensor_D2 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D1", 5);
+    linesensor_D1 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D2", 5);
+    linesensor_D0 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_D3", 5);
     infra_elevadores_sub = nh.subscribe<projeto_semear::Infra_Placa_Sensores>("/AMR/arduinoSensoresRGBInfras", 5, infra_elevadores_callback);
        
     /* RGB */

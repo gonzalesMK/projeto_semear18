@@ -9,7 +9,7 @@
 /* Pinouts Infravermelhos */
 #define infra_FFR A1
 #define infra_FBR A0
-#define infra_BFR A7
+#define infra_BFR A2
 #define infra_BBR A6
 #define infra_SR A2
 
@@ -34,7 +34,7 @@ bool enable_rgb = false;
 
 void setup() {
 
-  nh.getHardware()->setBaud(57600);
+  nh.getHardware()->setBaud(9600);
   nh.initNode();
 
   nh.advertise(pub_infras);
@@ -78,10 +78,10 @@ void loop() {
   }
 
   nh.spinOnce();
-  delay(25);
+  delay(50);
 }
 
 void enable_callback( const std_msgs::Bool &msg )
 {
   enable_rgb = msg.data;
-}
+}        

@@ -158,6 +158,18 @@ kineControl::robot::robot()
     {
         ROS_ERROR("Failed to get param 'VEL_MAX'");
     }
+    if (!nh_.param("DIST_DIR_SONAR", DIST_DIR_SONAR, 7.0))
+    {
+        ROS_ERROR("Failed to get param 'DIST_DIR_SONAR'");
+    }
+    if (!nh_.param("DIST_DIR_SONAR", DIST_ESQ_SONAR, 10.0))
+    {
+        ROS_ERROR("Failed to get param 'DIST_ESQ_SONAR'");
+    }
+    if (!nh_.param("DIST_CEN_SONAR", DIST_CEN_SONAR, 3.0))
+    {
+        ROS_ERROR("Failed to get param 'DIST_CEN_SONAR'");
+    }
 }
 
 /* Essa função envia a velocidade para os tópicos dos PIDs,
@@ -185,7 +197,8 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     double maior_velocidade = VEL_MAX;
     bool alguma_maior_que_max = false;
 
-    if ( fabs(Wfl.data) > maior_velocidade)
+    ROS_INFO_STREAM("Wfl: " << Wfl.data);
+    if (fabs(Wfl.data) > maior_velocidade)
     {
         alguma_maior_que_max = true;
         maior_velocidade = fabs(Wfl.data);
@@ -213,7 +226,7 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
         Wbl.data = Wbl.data / maior_velocidade * VEL_MAX;
         Wbr.data = Wbr.data / maior_velocidade * VEL_MAX;
     }
-
+    ROS_INFO_STREAM("Wfl: " << Wfl.data);
     // Publicação para o motor
     FR_Motor_.publish(Wfr);
     FL_Motor_.publish(Wfl);
@@ -257,7 +270,7 @@ bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::T
     double maior_velocidade = VEL_MAX;
     bool alguma_maior_que_max = false;
 
-    if ( fabs(Wfl.data) > maior_velocidade)
+    if (fabs(Wfl.data) > maior_velocidade)
     {
         alguma_maior_que_max = true;
         maior_velocidade = fabs(Wfl.data);
@@ -660,6 +673,13 @@ void kineControl::linha_preta(kineControl::robot &robot)
     double VelE, VelD;
     int erro1 = -5, erro2 = -5;
 
+    geometry_msgs::Twist velocidade;
+    velocidade.linear.x = VEL_X;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    ros::Duration(1).sleep();
+
     while ((erro1 != 0 || erro2 != 0) && ros::ok())
     {
         erro1 = kineControl::erro_sensores_esquerda_com_preto(robot, erro1);
@@ -673,7 +693,6 @@ void kineControl::linha_preta(kineControl::robot &robot)
         rate.sleep();
     }
 
-    geometry_msgs::Twist velocidade;
     velocidade.linear.x = 0;
     velocidade.linear.y = 0;
     velocidade.angular.z = 0;
@@ -787,7 +806,7 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     double dist;
     if (dir == 0)
     {
-        dist = 10;
+        dist = DIST_ESQ_SONAR; //10
 
         if (container_esq_esta_vazio)
         {
@@ -796,16 +815,16 @@ void kineControl::alinhar_pilha(kineControl::robot &robot, int dir, bool contain
     }
     else if (dir == 1)
     {
-        dist = 3;
+        dist = DIST_DIR_SONAR; // 3
 
         if (container_esq_esta_vazio)
         {
             dist = 0.01 + 0.061;
         }
     }
-    else if (dir == 2)
+    else if (dir == 2) // 7
     {
-        dist = 7;
+        dist = DIST_CEN_SONAR;
 
         if (container_esq_esta_vazio)
         {
