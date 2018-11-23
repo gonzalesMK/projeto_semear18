@@ -48,6 +48,8 @@ int main(int argc, char **argv)
 
     projeto_semear::DepositarContainer depositar_msg;
 
+    ros::Duration(10); // Esperando os motores ligarem
+    
     // Indo para linha Preta
     ROS_INFO("MAIN - Indo para linha preta!");
     navigation_msg.goal_pose.location = navigation_msg.goal_pose.QUADRANTE_CENTRAL;

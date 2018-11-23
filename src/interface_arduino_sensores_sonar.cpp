@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     linesensor_E2 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_E1", 5);
     linesensor_E1 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_E2", 5);
     linesensor_E0 = nh.advertise<std_msgs::UInt16>("/AMR/linesensor_E3", 5);
-    pub_sonar = nh.advertise<std_msgs::UInt32>("/AMR/sonar", 5); // sonar
+    pub_sonar = nh.advertise<std_msgs::UInt32>("/AMR/sonar", 1); // sonar
     infra_elevadores_sub = nh.subscribe<projeto_semear::Sonar_Infra_Placa_Sensores>("/AMR/arduinoSensoresUltrassom", 5, infra_elevadores_callback);
     ros::spin();
 }

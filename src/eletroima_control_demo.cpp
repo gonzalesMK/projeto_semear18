@@ -49,7 +49,7 @@ void doneCb2(const actionlib::SimpleClientGoalState &state,
   ROS_INFO_STREAM("Finished in sta te" << state.toString().c_str());
 }
 
-// Called once when the goal becomes active
+//Q Called once when the goal becomes active
 void activeCb()
 {
 

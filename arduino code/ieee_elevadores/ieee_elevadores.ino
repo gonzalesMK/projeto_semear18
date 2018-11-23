@@ -75,7 +75,7 @@ volatile bool enable_eletroima = false;
 
 /* Pose Global Variable */
 Servo s;
-int servo_pose = 16;
+int servo_pose = -1;
 
 /* Set up the ros node, publishers and subscribers */
 ros::NodeHandle nh;
