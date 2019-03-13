@@ -54,20 +54,17 @@ kineControl::robot::robot()
     BR_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBRSpeed", 1);
     BL_Motor_ = nh_.advertise<std_msgs::Float32>("/AMR/motorBLSpeed", 1);
 
-    lineSensorE0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE0", 1, boost::bind(callback, _1, boost::ref(colorE0_)));
     lineSensorE1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE1", 1, boost::bind(callback, _1, boost::ref(colorE1_)));
     lineSensorE2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE2", 1, boost::bind(callback, _1, boost::ref(colorE2_)));
-    lineSensorE3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorE3", 1, boost::bind(callback, _1, boost::ref(colorE3_)));
 
-    lineSensorD0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD0", 1, boost::bind(callback, _1, boost::ref(colorD0_)));
     lineSensorD1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD1", 1, boost::bind(callback, _1, boost::ref(colorD1_)));
     lineSensorD2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD2", 1, boost::bind(callback, _1, boost::ref(colorD2_)));
-    lineSensorD3_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorD3", 1, boost::bind(callback, _1, boost::ref(colorD3_)));
 
-    lateralSensor_ = nh_.subscribe<std_msgs::Float32>("/AMR/sensor_lateral", 1, boost::bind(distance_callback, _1, boost::ref(lateral_distance_)));
+    lineSensorF1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorF1", 1, boost::bind(callback, _1, boost::ref(colorF1_)));
+    lineSensorF2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorF2", 1, boost::bind(callback, _1, boost::ref(colorF2_)));
 
-    frontalSensorEsq_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorEsq", 1, boost::bind(callback, _1, boost::ref(colorFE_)));
-    frontalSensorDir_ = nh_.subscribe<std_msgs::Float32>("/image_converter/frontalSensorDir", 1, boost::bind(callback, _1, boost::ref(colorFD_)));
+    lineSensorB1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorB1", 1, boost::bind(callback, _1, boost::ref(colorF1_)));
+    lineSensorB2_ = nh_.subscribe<std_msgs::Float32>("/image_converter/lineSensorB2", 1, boost::bind(callback, _1, boost::ref(colorF2_)));
 
     ColorSensorR0_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR0", 1, boost::bind(callback, _1, boost::ref(colorR0_)));
     ColorSensorR1_ = nh_.subscribe<std_msgs::Float32>("/image_converter/ColorSensorR1", 1, boost::bind(callback, _1, boost::ref(colorR1_)));
@@ -231,8 +228,8 @@ void kineControl::alinhar_frente(kineControl::robot &robot, int initial_erro)
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::erro_sensores_E1E2(robot, erro1);
+        erro2 = kineControl::erro_sensores_D1D2(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -249,7 +246,6 @@ void kineControl::alinhar_frente(kineControl::robot &robot, int initial_erro)
 // Função para alinhar os sensores de baixo do robô quando a linha presta está atrás. Os dois sensores da frente deverão ficar sobre a linha preta ou azul, equanto os de trás devem
 // ficar fora da linha.
 void kineControl::alinhar_atras(kineControl::robot &robot)
-
 {
     ROS_INFO("KINECONTROL - alinhar_atras() - a linha preta esta a frente");
 
@@ -261,8 +257,8 @@ void kineControl::alinhar_atras(kineControl::robot &robot)
 
     while (erro1 != 0 || erro2 != 0)
     {
-        erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
-        erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
+        erro1 = kineControl::erro_sensores_E1E2(robot, erro1);
+        erro2 = kineControl::erro_sensores_D1D2(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -318,8 +314,8 @@ void kineControl::alinhar_depositar_esquerda(kineControl::robot &robot)
         velocidade.angular.z = 0 ;
         velocidade.linear.y = -VEL_Y;
         
-        erro1 = kineControl::erro_sensores_E0E1(robot, erro1);
-        erro2 = kineControl::erro_sensores_D0D1(robot, erro2);
+        erro1 = kineControl::erro_sensores_E1E2(robot, erro1);
+        erro2 = kineControl::erro_sensores_D1D2(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -1102,6 +1098,53 @@ int kineControl::erro_sensores_D2D3(kineControl::robot &robot, int temp_erro)
     // Caso chegue aqui ?!
     return temp_erro;
 }
+
+
+int kineControl::erro_sensores_D1D2(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorD1_ == BRANCO && robot.colorD2_ != BRANCO)
+    {
+        return 0;
+    }
+
+    if (robot.colorD1_ != BRANCO)
+        return 1;
+
+    if (robot.colorD1_ == BRANCO && robot.colorD2_ == BRANCO && temp_erro > 0)
+        return 2;
+
+    if (robot.colorD2_ == BRANCO)
+        return -1;
+
+    // Caso chegue aqui ?!
+    return temp_erro;
+}
+
+int kineControl::erro_sensores_E1E2(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorE1_ == BRANCO && robot.colorE2_ != BRANCO)
+    {
+        return 0;
+    }
+
+    if (robot.colorE1_ != BRANCO)
+        return 1;
+
+    if (robot.colorE1_ == BRANCO && robot.colorE2_ == BRANCO && temp_erro > 0)
+        return 2;
+
+    if (robot.colorE2_ == BRANCO)
+        return -1;
+
+    // Caso chegue aqui ?!
+    return temp_erro;
+}
+
+
 int kineControl::erro_sensores_esquerda_com_preto(kineControl::robot &robot, int temp_erro)
 {
     ros::spinOnce();

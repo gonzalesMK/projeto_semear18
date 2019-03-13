@@ -87,6 +87,12 @@ class robot
     color colorFE_ = BRANCO;
     color colorFD_ = BRANCO;
 
+
+    color colorB1_ = BRANCO;
+    color colorB2_ = BRANCO;
+    color colorF1_ = BRANCO;
+    color colorF2_ = BRANCO;
+
     color colorR0_ = BRANCO;
     color colorR1_ = BRANCO;
     color colorR2_ = BRANCO;
@@ -114,6 +120,12 @@ class robot
     ros::Subscriber lineSensorD3_;
 
     ros::Subscriber lateralSensor_;
+
+
+    ros::Subscriber lineSensorB1_;
+    ros::Subscriber lineSensorB2_;
+    ros::Subscriber lineSensorF1_;
+    ros::Subscriber lineSensorF2_;
 
     ros::Subscriber ColorSensorR0_;
     ros::Subscriber ColorSensorR1_;
@@ -174,6 +186,9 @@ int erro_sensores_D0D1(kineControl::robot &robot, int temp_erro);
 int erro_sensores_D2D3(kineControl::robot &robot, int temp_erro);
 int erro_sensores_E0E1(kineControl::robot &robot, int temp_erro);
 int erro_sensores_E2E3(kineControl::robot &robot, int temp_erro);
+
+int erro_sensores_E1E2(kineControl::robot &robot, int temp_erro);
+int erro_sensores_D1D2(kineControl::robot &robot, int temp_erro);
 } // namespace kineControl
 
 // Overload of << for the Pose

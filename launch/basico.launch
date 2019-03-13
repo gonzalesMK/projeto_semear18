@@ -18,10 +18,10 @@
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
 	<param name ="FREQUENCIA_PARA_ALINHAR" value="40"/>
-	
+
 
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
-
+	<!--- 	
 	<node name="navigating" pkg="projeto_semear" type="navigating_server" respawn="false" output="screen"/>
 
 	<node name="eletroima" pkg="projeto_semear" type="eletroima_control_server" respawn="false" />
@@ -41,7 +41,7 @@
 	<node name="depositar_container" pkg="projeto_semear" type="depositar_server" respawn="false" output="screen"/>
 
   	<node name="main" pkg="projeto_semear" type="main" respawn="false" output="screen"/>   
-	<!--- 
+
 	
 	<node name="controller" pkg="pid" type="controller" ns="PIDL">
        		<param name="Kp" value=".60" />
