@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     kineControl::robot robot;
-    kineControl::alinhar_doca(robot);
+    kineControl::linha_preta(robot);
 
 
     return 0;
