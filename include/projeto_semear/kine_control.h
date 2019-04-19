@@ -162,8 +162,10 @@ class robot
 // MUDAS APENAS 1 QUADRANTE POR VEZ !! SE MANDAR DIREITA E ESQUERDA, VAI PARAR NO CENTRO.
 // void mudar_quadrante(kineControl::robot &robot, std::uint8_t from, std::uint8_t to);
 void linha_preta(kineControl::robot &robot);
+void linha_verde(kineControl::robot &robot);
 void esquerda(kineControl::robot &robot);
 void direita(kineControl::robot &robot);
+void frente(kineControl::robot &robot);
 void alinhar_atras(kineControl::robot &robot);
 void alinhar_frente(kineControl::robot &robot, int initial_erro = -5);
 void ir_doca(kineControl::robot &robot);
@@ -175,12 +177,17 @@ void pegar_container(kineControl::robot &robot, char lado_escolhido);
 void depositar_container(kineControl::robot &robot, uint32_t cor, uint32_t posicao_origem_do_container);
 void alinhar_pilha(kineControl::robot &robot, int dir, bool container_esq_esta_vazio = false);
 void alinhar_esquerda(kineControl::robot &robot, int dir_esq = 1);
+void alinhar_frente1(kineControl::robot &robot, int dir_esq = 1);
+void alinhar_tras1(kineControl::robot &robot, int dir_esq = 1);
 void alinhar_depositar_esquerda(kineControl::robot &robot);
 void alinhar_direita(kineControl::robot &robot);
 void alinhar_adiantado(kineControl::robot &robot);
 
 int erro_sensores_esquerda_com_preto(kineControl::robot &robot, int temp_erro = 0);
 int erro_sensores_direita_com_preto(kineControl::robot &robot, int temp_erro = 0);
+
+int erro_sensores_esquerda_com_verde(kineControl::robot &robot, int temp_erro = 0);
+int erro_sensores_direita_com_verde(kineControl::robot &robot, int temp_erro = 0);
 
 int erro_sensores_D0D1(kineControl::robot &robot, int temp_erro);
 int erro_sensores_D2D3(kineControl::robot &robot, int temp_erro);
@@ -189,6 +196,9 @@ int erro_sensores_E2E3(kineControl::robot &robot, int temp_erro);
 
 int erro_sensores_E1E2(kineControl::robot &robot, int temp_erro);
 int erro_sensores_D1D2(kineControl::robot &robot, int temp_erro);
+
+int erro_sensores_B1B2(kineControl::robot &robot, int temp_erro);
+int erro_sensores_F1F2(kineControl::robot &robot, int temp_erro);
 } // namespace kineControl
 
 // Overload of << for the Pose

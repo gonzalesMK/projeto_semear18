@@ -419,6 +419,48 @@ void kineControl::direita(kineControl::robot &robot)
     kineControl::alinhar_frente(robot);
 }
 
+void kineControl::frente(kineControl::robot &robot)
+{
+    ROS_INFO_STREAM("KINECONTROL - esquerda");
+
+    kineControl::alinhar_frente1(robot);
+
+    ros::Time begin = ros::Time::now();
+    ros::Time now = ros::Time::now();
+
+    geometry_msgs::Twist velocidade;
+
+    ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    int erro1 = 0, erro2 = 0;
+    double velE, velD;
+
+    while (now - begin < ros::Duration(TEMPO_TRANSICAO_ESQUERDA))
+    {
+        // Movimentar lateralmente
+        velocidade.linear.y = -VEL_Y;
+        velocidade.linear.x = 0;
+        velocidade.angular.z = 0;
+
+        erro1 = kineControl::erro_sensores_F1F2(robot, erro1);
+        erro2 = kineControl::erro_sensores_B1B2(robot, erro2);
+
+        velE = -erro1 * Kp;
+        velD = -erro2 * Kp;
+
+        robot.setVelocityPID(velE, velD, &velocidade);
+
+        rate.sleep();
+        ros::spinOnce();
+        now = ros::Time::now();
+    }
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+    kineControl::alinhar_frente(robot);
+}
+
 // Função para detectar as linhas pretas durante as transições para ESQUERDA
 // dir_esq -> 1 para ir para esquerda e -1 para ir para direita
 //FEITO
@@ -463,7 +505,90 @@ void kineControl::alinhar_esquerda(kineControl::robot &robot, int dir_esq)
 
     kineControl::alinhar_frente(robot);
 }
+//FEITO
+void kineControl::alinhar_frente1(kineControl::robot &robot, int dir_esq)
+{
 
+    ROS_INFO_STREAM("KINECONTROL - alinhar_frente() ");
+
+    geometry_msgs::Twist velocidade;
+    ros::spinOnce();
+
+    ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    int erro1 = 0, erro2 = 0;
+    double velE, velD;
+
+    while (robot.colorFE_ != PRETO)
+    {
+        // Movimentar lateralmente
+        velocidade.linear.y = 0;
+        velocidade.linear.x = VEL_Y * dir_esq;
+        velocidade.angular.z = 0;
+
+        erro1 = kineControl::erro_sensores_F1F2(robot, erro1);
+        erro2 = kineControl::erro_sensores_B1B2(robot, erro2);
+
+        velE = -erro1 * Kp;
+        velD = -erro2 * Kp;
+
+        robot.setVelocityPID(velE, velD, &velocidade);
+
+        rate.sleep();
+        ros::spinOnce();
+    }
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+
+    ros::Time begin = ros::Time::now();
+    ros::Time now = ros::Time::now();
+
+    kineControl::alinhar_frente(robot);
+}
+//FEITO
+void kineControl::alinhar_tras1(kineControl::robot &robot, int dir_esq)
+{
+
+    ROS_INFO_STREAM("KINECONTROL - alinhar_tras() ");
+
+    geometry_msgs::Twist velocidade;
+    ros::spinOnce();
+
+    ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    int erro1 = 0, erro2 = 0;
+    double velE, velD;
+
+    while (robot.colorFE_ != PRETO)
+    {
+        // Movimentar lateralmente
+        velocidade.linear.y = 0;
+        velocidade.linear.x = -VEL_Y * dir_esq;
+        velocidade.angular.z = 0;
+
+        erro1 = kineControl::erro_sensores_F1F2(robot, erro1);
+        erro2 = kineControl::erro_sensores_B1B2(robot, erro2);
+
+        velE = -erro1 * Kp;
+        velD = -erro2 * Kp;
+
+        robot.setVelocityPID(velE, velD, &velocidade);
+
+        rate.sleep();
+        ros::spinOnce();
+    }
+
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+    robot.setVelocity(velocidade);
+
+    ros::Time begin = ros::Time::now();
+    ros::Time now = ros::Time::now();
+
+    kineControl::alinhar_frente(robot);
+}
 // Função para detectar as linhas pretas durante as transições para Direita
 //FEITO
 void kineControl::alinhar_direita(kineControl::robot &robot)
@@ -594,6 +719,37 @@ void kineControl::linha_preta(kineControl::robot &robot)
 
     robot.setVelocity(velocidade);
 }
+//FEITO
+void kineControl::linha_verde(kineControl::robot &robot)
+{
+    ROS_INFO("KINECONTROL - linha_verde - a linha verde esta a frente");
+
+    ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    rate.sleep();
+    double VelE, VelD;
+    int erro1 = -5, erro2 = -5;
+
+    while ((erro1 != 0 || erro2 != 0) && ros::ok())
+    {
+        erro1 = kineControl::erro_sensores_esquerda_com_verde(robot, erro1);
+        erro2 = kineControl::erro_sensores_direita_com_verde(robot, erro2);
+
+        VelE = -erro1 * Kp;
+        VelD = -erro2 * Kp;
+
+        robot.setVelocityPID(VelE, VelD);
+
+        rate.sleep();
+    }
+
+    geometry_msgs::Twist velocidade;
+    velocidade.linear.x = 0;
+    velocidade.linear.y = 0;
+    velocidade.angular.z = 0;
+
+    robot.setVelocity(velocidade);
+}
+
 //NÃO SEI AINDA, PERGUNTAR PARA O GONZALES
 void kineControl::alinhar_containerdepositado(kineControl::robot &robot)
 {
@@ -1153,6 +1309,50 @@ int kineControl::erro_sensores_E1E2(kineControl::robot &robot, int temp_erro)
     // Caso chegue aqui ?!
     return temp_erro;
 }
+//FEITO
+int kineControl::erro_sensores_F1F2(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorF1_ == BRANCO && robot.colorF2_ != BRANCO)
+    {
+        return 0;
+    }
+
+    if (robot.colorF1_ != BRANCO)
+        return 1;
+
+    if (robot.colorF1_ == BRANCO && robot.colorF2_ == BRANCO && temp_erro > 0)
+        return 2;
+
+    if (robot.colorF2_ == BRANCO)
+        return -1;
+
+    // Caso chegue aqui ?!
+    return temp_erro;
+}
+//FEITO
+int kineControl::erro_sensores_B1B2(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorB1_ == BRANCO && robot.colorB2_ != BRANCO)
+    {
+        return 0;
+    }
+
+    if (robot.colorB1_ != BRANCO)
+        return 1;
+
+    if (robot.colorB1_ == BRANCO && robot.colorB2_ == BRANCO && temp_erro > 0)
+        return 2;
+
+    if (robot.colorB2_ == BRANCO)
+        return -1;
+
+    // Caso chegue aqui ?!
+    return temp_erro;
+}
 
 //FEITO
 int kineControl::erro_sensores_esquerda_com_preto(kineControl::robot &robot, int temp_erro)
@@ -1190,6 +1390,49 @@ int kineControl::erro_sensores_direita_com_preto(kineControl::robot &robot, int 
         return 2;
 
     if (robot.colorD2_ != PRETO)
+        return -1;
+
+    // Caso chegue aqui ?!
+    return temp_erro;
+}
+
+
+//FEITO
+int kineControl::erro_sensores_esquerda_com_verde(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorE1_ != AZUL_VERDE && robot.colorE2_ == AZUL_VERDE)
+    {
+        return 0;
+    }
+
+    if (robot.colorE1_ == AZUL_VERDE)
+        return 1;
+
+    if (robot.colorE1_ != AZUL_VERDE && robot.colorE2_ != AZUL_VERDE && temp_erro > 0)
+        return 2;
+
+    if (robot.colorE2_ != AZUL_VERDE)
+        return -1;
+}
+//FEITO
+int kineControl::erro_sensores_direita_com_verde(kineControl::robot &robot, int temp_erro)
+{
+    ros::spinOnce();
+
+    if (robot.colorD1_ != AZUL_VERDE && robot.colorD2_ == AZUL_VERDE)
+    {
+        return 0;
+    }
+
+    if (robot.colorD1_ == AZUL_VERDE)
+        return 1;
+
+    if (robot.colorD1_ != AZUL_VERDE && robot.colorD2_ != AZUL_VERDE && temp_erro > 0)
+        return 2;
+
+    if (robot.colorD2_ != AZUL_VERDE)
         return -1;
 
     // Caso chegue aqui ?!
