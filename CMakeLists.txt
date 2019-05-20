@@ -82,13 +82,13 @@ target_link_libraries(eletroima_control_server
 )
 add_dependencies(eletroima_control_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(eletroima_control_demo src/eletroima_control_demo.cpp)
+add_executable(eletroima_control_demo src/test/eletroima_control_demo.cpp)
 target_link_libraries(eletroima_control_demo
   ${catkin_LIBRARIES}
 )
 add_dependencies(eletroima_control_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(kine_control_demo src/kine_control_demo.cpp)
+add_executable(kine_control_demo src/test/kine_control_demo.cpp)
 target_link_libraries(kine_control_demo
   ${catkin_LIBRARIES}
   motor_library
@@ -113,7 +113,7 @@ target_link_libraries(gps
 add_dependencies(gps ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-add_executable(gps_demo src/gps_demo.cpp)
+add_executable(gps_demo src/test/gps_demo.cpp)
 target_link_libraries(gps_demo
   ${catkin_LIBRARIES}
 )
@@ -126,7 +126,7 @@ target_link_libraries(navigating_server
 )
 add_dependencies(navigating_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(path_planning_demo src/path_planning_demo.cpp)
+add_executable(path_planning_demo src/test/path_planning_demo.cpp)
 target_link_libraries(path_planning_demo
   ${catkin_LIBRARIES}
 )
@@ -146,7 +146,7 @@ target_link_libraries(convert_colorsensor
 add_dependencies(convert_colorsensor ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-add_executable(navigating_server_demo src/navigating_server_demo.cpp)
+add_executable(navigating_server_demo src/test/navigating_server_demo.cpp)
 target_link_libraries(navigating_server_demo
   ${catkin_LIBRARIES}
   motor_library
@@ -161,7 +161,7 @@ target_link_libraries(depositar_server
 )
 add_dependencies(depositar_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(depositar_client src/depositar_client.cpp)
+add_executable(depositar_client src/test/depositar_client.cpp)
 target_link_libraries(depositar_client
   ${catkin_LIBRARIES}
   motor_library
@@ -176,7 +176,7 @@ target_link_libraries(mapa_container_server
 )
 add_dependencies(mapa_container_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(mapa_container_demo src/mapa_container_demo.cpp)
+add_executable(mapa_container_demo src/test/mapa_container_demo.cpp)
 target_link_libraries(mapa_container_demo
   ${catkin_LIBRARIES}
   motor_library
@@ -190,7 +190,7 @@ target_link_libraries(descobrir_cor_server
 )
 add_dependencies(descobrir_cor_server ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(descobrir_cor_demo src/descobrir_cor_demo.cpp)
+add_executable(descobrir_cor_demo src/test/descobrir_cor_demo.cpp)
 target_link_libraries(descobrir_cor_demo
   ${catkin_LIBRARIES}
   motor_library
@@ -205,7 +205,7 @@ target_link_libraries(main
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-add_executable(pid_demo src/pid_demo.cpp)
+add_executable(pid_demo src/test/pid_demo.cpp)
 target_link_libraries(pid_demo
   ${catkin_LIBRARIES}
   motor_library
