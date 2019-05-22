@@ -148,6 +148,10 @@ kineControl::robot::robot()
     }
 }
 
+/* Controla a velocidade do robô:
+Input: 
+    Twist Vel  -> vetor da velocidade, só levamos em consideracao velocidade linear X e Y e a angular Z
+*/
 bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
 {
     // Ângulo XY do vetor velocidade
@@ -175,6 +179,17 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BL_Motor_.publish(Wbl);
 }
 
+/* Controla a velocidade do robô para ser usada com as funções PID -> ver função alinhar_esquerda
+A vantagem de usar essa interface é que, enquanto o robô se movimenta para esquerda ou para direita, podemos sobrepor ao seu movimento lateral
+um movimento ascendente ou descendente de maneira a manter os sensores da esquerda ou da direita alinhados. Exemplo:
+        Suponha que o robô esteja seguindo linha para direita e os 2 sensores da esquerda se desalinham para cima. Basta o PID avisar que há um erro e
+        somar à velocidade das rodas da esquerda uma velocidade para baixo. Assim, o robô conserta seu alinhamento sem parar de se movimentar.
+    
+Input:
+    float velR -> velocidade a ser somada nas rodas da direita
+    float velL -> velocidade a ser somada nas rodas da esquerda
+    Twist Vel  -> vetor da velocidade, só levamos em consideracao velocidade linear X e Y e a angular Z
+*/
 bool kineControl::robot::setVelocityPID(float velL, float velR, geometry_msgs::Twist *vel)
 {
     std_msgs::Float32 Wfl;
