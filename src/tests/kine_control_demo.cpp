@@ -20,7 +20,6 @@ int main(int argc, char **argv)
     //    kineControl::esquerda(motor);
     //kineControl::alinhar_direita(motor);
     //kineControl::direita(motor);
-    kineControl::alinhar_esquerda(robot);
     //kineControl::alinhar_para_tras(robot);
     //kineControl::alinhar_para_frente(robot);
 

@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        erro1.data = kineControl::erro_sensores_E2E3(robot, erro1.data);
-        erro2.data = kineControl::erro_sensores_D2D3(robot, erro2.data);
+        erro1.data = kineControl::ErrorLineSensorLeft(robot, erro1.data);
+        erro2.data = kineControl::ErrorLineSensorRight(robot, erro2.data);
         
         ROS_INFO_STREAM("ERRO ESQUERDA: " << erro1.data << " ERRO DIREITA: " << erro2);
         

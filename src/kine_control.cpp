@@ -179,7 +179,7 @@ bool kineControl::robot::setVelocity(const geometry_msgs::Twist &vel)
     BL_Motor_.publish(Wbl);
 }
 
-/* Controla a velocidade do robô para ser usada com as funções PID -> ver função alinhar_esquerda
+/* Controla a velocidade do robô para ser usada com as funções PID -> ver função alignToBlackLineOnLeft
 A vantagem de usar essa interface é que, enquanto o robô se movimenta para esquerda ou para direita, podemos sobrepor ao seu movimento lateral
 um movimento ascendente ou descendente de maneira a manter os sensores da esquerda ou da direita alinhados. Exemplo:
         Suponha que o robô esteja seguindo linha para direita e os 2 sensores da esquerda se desalinham para cima. Basta o PID avisar que há um erro e
@@ -246,8 +246,8 @@ void kineControl::alinhar_frente(kineControl::robot &robot, int initial_erro)
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::ErrorLineSensorLeft(robot, erro1);
+        erro2 = kineControl::ErrorLineSensorRight(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -354,7 +354,7 @@ void kineControl::esquerda(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - esquerda");
 
-    kineControl::alinhar_esquerda(robot);
+    kineControl::alignToBlackLineOnLeft(robot);
 
     ros::Time begin = ros::Time::now();
     ros::Time now = ros::Time::now();
@@ -372,8 +372,8 @@ void kineControl::esquerda(kineControl::robot &robot)
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::ErrorLineSensorLeft(robot, erro1);
+        erro2 = kineControl::ErrorLineSensorRight(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -396,7 +396,7 @@ void kineControl::direita(kineControl::robot &robot)
 {
     ROS_INFO_STREAM("KINECONTROL - direita() ");
 
-    kineControl::alinhar_esquerda(robot, - 1);
+    kineControl::alignToBlackLineOnLeft(robot);
 
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
     rate.sleep();
@@ -417,8 +417,8 @@ void kineControl::direita(kineControl::robot &robot)
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::ErrorLineSensorLeft(robot, erro1);
+        erro2 = kineControl::ErrorLineSensorRight(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -438,27 +438,28 @@ void kineControl::direita(kineControl::robot &robot)
 
 // Função para detectar as linhas pretas durante as transições para ESQUERDA
 // dir_esq -> 1 para ir para esquerda e -1 para ir para direita
-void kineControl::alinhar_esquerda(kineControl::robot &robot, int dir_esq)
+void kineControl::alignToBlackLineOnLeft(kineControl::robot &robot)
 {
 
-    ROS_INFO_STREAM("KINECONTROL - alinhar_esquerda() ");
+    ROS_INFO_STREAM("KINECONTROL - alignToBlackLineOnLeft() ");
 
     geometry_msgs::Twist velocidade;
     ros::spinOnce();
 
     ros::Rate rate(FREQUENCIA_PARA_ALINHAR);
+    
     int erro1 = 0, erro2 = 0;
     double velE, velD;
 
     while (robot.colorFE_ != PRETO)
     {
         // Movimentar lateralmente
-        velocidade.linear.y = -VEL_Y * dir_esq;
+        velocidade.linear.y = -VEL_Y;
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::ErrorLineSensorLeft(robot, erro1);
+        erro2 = kineControl::ErrorLineSensorRight(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -502,8 +503,8 @@ void kineControl::alinhar_direita(kineControl::robot &robot)
         velocidade.linear.x = 0;
         velocidade.angular.z = 0;
 
-        erro1 = kineControl::erro_sensores_E2E3(robot, erro1);
-        erro2 = kineControl::erro_sensores_D2D3(robot, erro2);
+        erro1 = kineControl::ErrorLineSensorLeft(robot, erro1);
+        erro2 = kineControl::ErrorLineSensorRight(robot, erro2);
 
         velE = -erro1 * Kp;
         velD = -erro2 * Kp;
@@ -1053,7 +1054,7 @@ int kineControl::erro_sensores_E0E1(kineControl::robot &robot, int temp_erro)
 
     return temp_erro;
 }
-int kineControl::erro_sensores_E2E3(kineControl::robot &robot, int temp_erro)
+int kineControl::ErrorLineSensorLeft(kineControl::robot &robot, int temp_erro)
 {
     ros::spinOnce();
 
@@ -1096,7 +1097,7 @@ int kineControl::erro_sensores_D0D1(kineControl::robot &robot, int temp_erro)
     // Caso chegue aqui ?!
     return temp_erro;
 }
-int kineControl::erro_sensores_D2D3(kineControl::robot &robot, int temp_erro)
+int kineControl::ErrorLineSensorRight(kineControl::robot &robot, int temp_erro)
 {
     ros::spinOnce();
 

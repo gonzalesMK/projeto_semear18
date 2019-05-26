@@ -163,7 +163,7 @@ bool descobrirCor(projeto_semear::DescobrirCor::Request &req,
     set_eletroima_client.sendGoal(set_goal, doneCb2, activeCb, feedbackCb2);
 
     // Alinha com a esquerda
-    kineControl::alinhar_esquerda(robot);
+    kineControl::alignToBlackLineOnLeft(robot);
 
     set_eletroima_client.waitForResult(ros::Duration());
 
