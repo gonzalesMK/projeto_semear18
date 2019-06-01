@@ -25,6 +25,7 @@ find_package(OpenCV REQUIRED)
 
 add_message_files(
   FILES
+  PololuLineSensor.msg
   Colors.msg
   Pose.msg
 )
@@ -46,6 +47,7 @@ add_service_files(
 
 add_action_files(
   FILES 
+  goToFirstPose.action
   moveEletroima.action
   setEletroima.action
   navigation.action

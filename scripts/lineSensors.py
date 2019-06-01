@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs import UInt16
+from std_msgs.msg import UInt16
 from functools import partial
 import numpy as np
 
 
-
 class LineSensor:
     """
-    This class is an abstraction of a group of sensors to line detection. We implement a function to keep track of a line with those sensors
+    This class is an abstraction of a group of sensors to line detection. I implemented a function to keep track of a line with those sensors
 
-    In our robot, we have 1 pololu's sensor with 2 phototransitors in each of the following: Left, Front, Right and Back of the robot.
+    In our robot, we have 1 pololu's sensor - with 2 phototransitorseach - in each of the following: Left, Front, Right and Back of the robot.
 
-    This class should subscribe to each sensor topic, and the topics should advertise AnalogValue UInt16 with the readings
+    This class should subscribe to each sensor topic, and the topics should advertise AnalogValue UInt16 with the respective readings
 
     Parameters
     ----------
@@ -28,7 +27,6 @@ class LineSensor:
             return -1 
         
         self.sensorsTopics = topicsToSubscribeTo
-
         self._BLACK_LOW_LIMIT= 800 # more than that is considered black
         self.numberOfSensors = len(topicsToSubscribeTo)
         self._maxValue = (self.numberOfSensors - 1) * 1000

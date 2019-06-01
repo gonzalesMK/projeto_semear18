@@ -4,7 +4,7 @@ import roslib; #roslib.load_manifest('smach_tutorials')
 import rospy
 import smach
 import smach_ros
-
+from lineSensors import *
 # Check SMACH ROS description file to understand each state 
 
 class start(smach.State):
@@ -259,7 +259,7 @@ def main():
                                           'nextPosition':'nextPosition'})
 
 
-    # Execute SMACH plan
+    # Eprojeto_semear/navigationAction.hxecute SMACH plan
     outcome = sm.execute()
 
 

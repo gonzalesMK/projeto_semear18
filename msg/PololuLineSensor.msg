@@ -1,0 +1,2 @@
+bool sensorA
+bool sensorB
