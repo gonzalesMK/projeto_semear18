@@ -35,10 +35,11 @@
 namespace kineControl
 {
 
-double MAIOR_QUE_PRETO;             // Constante para marcar o valor do preto
-double MAIOR_QUE_VERDE;             // Constate para marcar o valor do verde
-double TEMPO_MEIA_VOLTA;            // Tempo para o robô girar 90º Graus
-double TEMPO_ALINHAR_ESQUERDA;      // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
+double MAIOR_QUE_PRETO;           // Constante para marcar o valor do preto
+double MAIOR_QUE_VERDE;           // Constate para marcar o valor do verde
+double TEMPO_MEIA_VOLTA;          // Tempo para o robô girar 90º Graus
+
+double TEMPO_ALINHAR_ESQUERDA;    // Depois que o robô alinha com a esquerda, ele anda uma distância predefinida por esse tempo
 double TEMPO_TRANSICAO_ESQUERDA;    // Tempo para andar durante a transição esquerda-direita
 double PRECISAO_DIST_ALINHAR_PILHA; // Precisão quando alinha lateralmente com os containers
 double TEMPO_DIREITA;
@@ -46,6 +47,10 @@ double VEL_Y;
 double VEL_Z;
 double VEL_X;
 double Kp; // Constante para controle Proporcional
+double DIAMETRO; // Diametro da RODA
+double LX;        // Comprimento do eixo X
+double LY;      // Comprimento do eixo Y
+double LDIAG; // Comprimento da diagonal do robõ  = sqrt(LX * LX + LY * LY)
 const double VEL_ANG = 0.1; // Constante para marcar a velocidade angular
 double FREQUENCIA_PARA_ALINHAR;
 
