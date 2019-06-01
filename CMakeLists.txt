@@ -21,7 +21,9 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+
 find_package(OpenCV REQUIRED)
+# find_library(PIGPIO_LIBRARY pygpio /path)
 
 add_message_files(
   FILES
@@ -72,6 +74,9 @@ include_directories(
 # Declare a C++ library
 add_library(motor_library src/kine_control.cpp
 )
+add_library(rotary_encoder rasp/rotary_encoder.cpp
+)
+
 # Link Library with respective dependencies
 target_link_libraries(motor_library ${catkin_LIBRARIES})
 add_dependencies(motor_library ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -212,3 +217,14 @@ target_link_libraries(pid_demo
 )
 add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+#add_executable(publishEncoder rasp/publishEncoder.cpp)
+#target_link_libraries(publishEncoder
+# ${catkin_LIBRARIES}
+#  rotary_encoder
+#)
+#add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(motorCode rasp/motorCode.cpp)
+target_link_libraries(motorCode
+ ${catkin_LIBRARIES}
+)
