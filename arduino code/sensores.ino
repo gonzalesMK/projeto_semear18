@@ -27,6 +27,8 @@
  *  260: Desligar o feedback do encoder, fim de curso e o motor da garra
  *  261: Ligar os sensores de linha
  *  262: Desligar sensores de linha
+ *  263: Ligar os sensores de containers
+ *  264: Desligar os sensores de containers
  *
  *   Caso o motor tenha sido ativado (enviando previamente 259), o PWM e o sentido podem ser controlados enviando valores entre [-255,255]
  *   Não recomenda-se ativar os sensores e o motor ao mesmo tempo
@@ -34,7 +36,6 @@
  * O feedback dos motores são 2 Serial.print. Primeiro, envia-se um LONG INT com os ticks do motor e, posteriormente, um BOOL para avisar se algum fim de curso foi ativado.
  *
  * O feedback dos sensores são os 6 sensores da pololu seguido pelos 2 sensores digitais
- *
  */
 
 #include <QTRSensors.h>
@@ -62,7 +63,7 @@
 
 // SENSORES Analógicos POLOLU de A0 até A7
 #define CONTROL_PIN 5
-
+#define IS_BLACK 500
 // Sensores Digitais 
 #define DIGI1 13
 #define DIGI2 7
@@ -124,6 +125,7 @@ void setup()
 int servo_pose;
 bool publish_encoder=false;
 bool publish_sensors = false;
+bool publish_containers_sensors = false;
 
 void loop() {
   
@@ -148,17 +150,20 @@ void loop() {
   if(publish_sensors){
     qtr.readLineBlack(sensorValues);
     
+    byte sensorsValuesByte = 0;
     for (uint8_t i = 0; i < SensorCount; i++)
     {
-      Serial.write(sensorValues[i]);
+      sensorsValuesByte |= ( (sensorValues[i] > IS_BLACK) << i );
     }
-    
+    Serial.write(sensorsValuesByte);
+  
+  }
+  
+  if( publish_containers_sensors){
     Serial.write(digitalRead(DIGI1));
     Serial.write(digitalRead(DIGI2));
   }
-  
 }
-
 
 /*
   SerialEvent occurs whenever a new data comes in the hardware serial RX. This
@@ -212,7 +217,14 @@ void serialEvent() {
       case 262:  // Desliga sensores de linha
         publish_sensors = false;
         break; 
+      
+      case 263:  
+        publish_containers_sensors = true;
+        break; 
         
+      case 264:  
+        publish_containers_sensors = false;
+        break;   
     }
   }
 }
