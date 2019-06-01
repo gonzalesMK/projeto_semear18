@@ -1,4 +1,5 @@
 <launch>
+
 	<master auto="start"/>
 	<param name ="/use_sim_time" value="true"/>
 
@@ -12,18 +13,11 @@
 	<param name ="VEL_X_ALINHAR" value="0.015"/>
 	<param name ="VEL_X" value="0.015"/>
 
-
 	<param name ="Kp" value="2.0"/>
 	
 	<param name ="TEMPO_ALINHAR_ESQUERDA" value="0.3"/>
 	<param name ="PRECISAO_DIST_ALINHAR_PILHA" value="0.005"/>
 	<param name ="FREQUENCIA_PARA_ALINHAR" value="40"/>
-	
-	<param name ="DIAMETRO" value="0.099060"/>
-	<param name ="LX" value="0.06099"/>
-	<param name ="LY" value="0.0991225"/>
-	<param name ="LDIAG" value="0.116383204"/>
-
 
 	<node name="convert" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
 
