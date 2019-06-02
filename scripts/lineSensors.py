@@ -1,57 +1,59 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import UInt16
-from functools import partial
+from std_msgs.msg import UInt8
 import numpy as np
+from enum import Enum
 
+class Sides(Enum):
+    LEFT = 0
+    RIGHT = 1
+    FRONT = 2
+    BACK = 3
 
-class LineSensor:
+    def __int__(self):
+        return self.value
+
+class LineSensor(object):
     """
     This class is an abstraction of a group of sensors to line detection. I implemented a function to keep track of a line with those sensors
 
     In our robot, we have 1 pololu's sensor - with 2 phototransitorseach - in each of the following: Left, Front, Right and Back of the robot.
 
-    This class should subscribe to each sensor topic, and the topics should advertise AnalogValue UInt16 with the respective readings
+    This class should subscribe a topics that advertise UInt8 -each bit is a sensor reading
 
-    Parameters
-    ----------
-    topicsToSubscribe : list of Strings
-        Each string is a name of a topic to subscribe to - THE TOPICS SHOULD BE IN THE RIGHT ORDER TO BE USED
+    The output of the readLine() is an array with the line position for each pair of sensor:
+        -2 : line is in front/right of the robot, and all the sensors are out of the line
+        -1 : line is in front/right of the robot, and the front sensor is over the line
+        0 : the robot is over the line
+        1 : contrary of -1
+        2 : contrty of -2
     
     """
+    def __init__(self):
 
-    def __init__(self, topicsToSubscribeTo):
+        self._subscribers = rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
+        self._error = np.ones(4) * - 2
 
-        if( topicsToSubscribeTo is not list ):
-            print("The given topics names are not a list")
-            return -1 
-        
-        self.sensorsTopics = topicsToSubscribeTo
-        self._BLACK_LOW_LIMIT= 800 # more than that is considered black
-        self.numberOfSensors = len(topicsToSubscribeTo)
-        self._maxValue = (self.numberOfSensors - 1) * 1000
-        self.values = list(0 for topic in topicsToSubscribeTo)
-        self._subscribers = []
-        self.__linePose = 0 
-        for i in range(self.numberOfSensors):
-            self._subscribers.append( rospy.Subscriber(topicsToSubscribeTo[i], partial(self.__callback, sensorNumber = i)))
-
-
-    def __callback(self, msg, sensorNumber):
+    def __callback(self, msg):
         """
         Callback to the ROS subscriber
 
         Parameters
         ----------
-        msg : std_msgs/UInt16
+        msg : std_msgs/UInt8
             The readings of the sensor
         
-        sensorNumber: int
-            The number of the sensor to set the value to
         """
+        # Check if at least one sensor is over the line 
+        sensorValueA = np.array( [ (msg.data & 1) != 0, (msg.data & 4) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
+        sensorValueB = np.array([ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
+        onLine =  sensorValueA + sensorValueB
         
-        self.values[sensorNumber] = msg.data
-
+        for i in range(4):
+            if (onLine[i]):
+                self._error[i] = 1*sensorValueA[i]-sensorValueB[i]
+            else:
+                self._error[i] = 2 if self._error[i] > 0 else - 2
 
     def reset(self, resetToMinimun=True):
         """
@@ -63,29 +65,12 @@ class LineSensor:
             if True, the new values are 0, otherwise they are the ( numberOfSensors - 1 ) * 1000
         """
 
-        for i in range(len(self.values)):
-            if resetToMinimun :
-                self.values = 0
+        for i in range(len(self._error)):
+            if resetToMinimun:
+                self._error = np.ones(4)*-2
             else:
-                self.values = (self.numberOfSensors - 1) * 1000
+                self._error = np.ones(4)*2
 
-    def readLine(self):
+    def readLines(self):
       
-        # Check if at least one sensor is over the line 
-        onLine = np.sum( self.values > self.BLACK_LOW_LIMIT) >= 1 
-
-        avg = np.sum( self.values[i] * (i * 1000) for i in range(len(self.values))) # We are not using the first value of the array ?! Maybe change that later on
-        sum = np.sum( self.values )
-
-        if sum == 0:
-            avg = 0
-        else:
-            avg /= sum
-
-        
-        if (onLine) : # If the line has been detected
-            self.__linePose = avg
-        else:
-            self.__linePose = 0 if avg < (self.maxValue/2) else self._maxValue
-        
-        return self.__linePose
+        return self._error

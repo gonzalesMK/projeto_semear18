@@ -43,12 +43,12 @@ int main(int argc, char *argv[])
 
     //    sleep(1000);
 
-    ros::Publisher pub1 = node.advertise<std_msgs::Int32>("/motorFR/encoder", 1);
-    ros::Publisher pub2 = node.advertise<std_msgs::Int32>("/motorFL/encoder", 1);
-    ros::Publisher pub3 = node.advertise<std_msgs::Int32>("/motorBR/encoder", 1);
-    ros::Publisher pub4 = node.advertise<std_msgs::Int32>("/motorBL/encoder", 1);
+    ros::Publisher pub1 = node.advertise<std_msgs::Int32>("/motorFR/encoderVelocity", 1);
+    ros::Publisher pub2 = node.advertise<std_msgs::Int32>("/motorFL/encoderVelocity", 1);
+    ros::Publisher pub3 = node.advertise<std_msgs::Int32>("/motorBR/encoderVelocity", 1);
+    ros::Publisher pub4 = node.advertise<std_msgs::Int32>("/motorBL/encoderVelocity", 1);
 
-    ros::Subscriber pid_sub = node.subscribe<std_msgs::Bool>("/pid_enable", 1, pid_cb);
+    ros::Subscriber pid_sub = node.subscribe<std_msgs::Bool>("/encoder_enable", 1, pid_cb);
 
     std_msgs::Int32 msg1;
     std_msgs::Int32 msg2;

@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include <std_msgs/UInt16.h>
+#include <std_msgs/UInt8.h>
 #include <std_msgs/ColorRGBA.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
@@ -14,34 +14,32 @@ using namespace std;
  * to get the same results as the Pololu Arduino library for QTR sensors ( we are trying to mimic the function readLineBlack)
  */
 
-const int LINE_TOP_LIMIT = 100; // values below are considered to be a detecting a line. MISSING CALIBRATION !!!
-
-ros::Publisher pub[4]; // one publisher for each side of the robot - because we have one value for each 2 sensors
+const int LINE_TOP_LIMIT = 320; // values below are considered to be a detecting a line. MISSING CALIBRATION !!!
 
 enum SensorsPosition
 {
-    B1,
-    B2,
-    R1,
-    R2,
     L1,
     L2,
+    R1,
+    R2,
     F1,
-    F2
+    F2,
+    B1,
+    B2
+
 };
 enum LineSensors
 {
-    Back,
-    Right,
     Left,
-    Front
+    Right,
+    Front,
+    Back
 };
 
-static std::uint16_t values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static bool values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-std::uint16_t pastLineValues[4] = {0, 0, 0, 0};
 
-void callback(const sensor_msgs::ImageConstPtr &msg, std::uint16_t &value, ros::Publisher &pub);
+void callback(const sensor_msgs::ImageConstPtr &msg, bool &value);
 
 int main(int argc, char **argv)
 {
@@ -50,26 +48,43 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     // Publishers
-    ros::Publisher pubB1 = n.advertise<std_msgs::UInt16>("/lineSensorB1", 1);
-    ros::Publisher pubB2 = n.advertise<std_msgs::UInt16>("/lineSensorB2", 1);
-    ros::Publisher pubR1 = n.advertise<std_msgs::UInt16>("/lineSensorR1", 1);
-    ros::Publisher pubR2 = n.advertise<std_msgs::UInt16>("/lineSensorR2", 1);
-    ros::Publisher pubL1 = n.advertise<std_msgs::UInt16>("/lineSensorL1", 1);
-    ros::Publisher pubL2 = n.advertise<std_msgs::UInt16>("/lineSensorL2", 1);
-    ros::Publisher pubF1 = n.advertise<std_msgs::UInt16>("/lineSensorF1", 1);
-    ros::Publisher pubF2 = n.advertise<std_msgs::UInt16>("/lineSensorF2", 1);
+    ros::Publisher pubPololu = n.advertise<std_msgs::UInt8>("/pololuSensor", 1);
 
     // Subscribe to all the lineSensors in the base from the simulation
-    ros::Subscriber subB1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorB1", 1, boost::bind(callback, _1, boost::ref(values[B1]), boost::ref(pubB1) ));
-    ros::Subscriber subB2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorB2", 1, boost::bind(callback, _1, boost::ref(values[B2]), boost::ref(pubB2) ));
-    ros::Subscriber subR1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorR1", 1, boost::bind(callback, _1, boost::ref(values[R1]), boost::ref(pubR1) ));
-    ros::Subscriber subR2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorR2", 1, boost::bind(callback, _1, boost::ref(values[R2]), boost::ref(pubR2) ));
-    ros::Subscriber subL1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorL1", 1, boost::bind(callback, _1, boost::ref(values[L1]), boost::ref(pubL1) ));
-    ros::Subscriber subL2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorL2", 1, boost::bind(callback, _1, boost::ref(values[L2]), boost::ref(pubL2) ));
-    ros::Subscriber subF1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF1", 1, boost::bind(callback, _1, boost::ref(values[F1]), boost::ref(pubF1) ));
-    ros::Subscriber subF2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF2", 1, boost::bind(callback, _1, boost::ref(values[F2]), boost::ref(pubF2) ));
+    ros::Subscriber subB1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorB1", 1, boost::bind(callback, _1, boost::ref(values[B1])));
+    ros::Subscriber subB2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorB2", 1, boost::bind(callback, _1, boost::ref(values[B2])));
+    ros::Subscriber subR1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorR1", 1, boost::bind(callback, _1, boost::ref(values[R1])));
+    ros::Subscriber subR2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorR2", 1, boost::bind(callback, _1, boost::ref(values[R2])));
+    ros::Subscriber subL1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorL1", 1, boost::bind(callback, _1, boost::ref(values[L1])));
+    ros::Subscriber subL2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorL2", 1, boost::bind(callback, _1, boost::ref(values[L2])));
+    ros::Subscriber subF1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF1", 1, boost::bind(callback, _1, boost::ref(values[F1])));
+    ros::Subscriber subF2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF2", 1, boost::bind(callback, _1, boost::ref(values[F2])));
 
-/*    
+    std_msgs::UInt8 msg;
+    ros::Rate rate(100);
+
+    while( ros::ok() ){
+        msg.data = 0 ;
+        
+        for(int i = 0; i < 8; i++){
+            msg.data |= (values[i] << i); // 1 if is black
+        }
+        pubPololu.publish(msg);   
+        ros::spinOnce();
+        rate.sleep();
+    }
+    
+    return 0;
+}
+
+void callback(const sensor_msgs::ImageConstPtr &msg, bool &value)
+{
+
+    value = ( sqrt(pow((double)msg->data[0], 2) + pow((double)msg->data[1], 2) + pow((double)msg->data[2], 2))) < LINE_TOP_LIMIT ; // is black
+
+}
+
+/*    Pololu Code
     // Convert the sensors to the right measure and publish it - we are using the same values as the Pololu library
     pub[Back] = n.advertise<std_msgs::UInt16>("/lineSensorB_LinePosition", 1);
     pub[Right] = n.advertise<std_msgs::UInt16>("/lineSensorR_LinePosition", 1);
@@ -126,17 +141,3 @@ int main(int argc, char **argv)
         //ROS_INFO_STREAM( (int) values[0] << (int) values[1]);
     }
     */
-    ros::spin();
-    return 0;
-}
-
-void callback(const sensor_msgs::ImageConstPtr &msg, std::uint16_t &value, ros::Publisher &pub)
-{
-    
-    value = (std::uint16_t) sqrt(pow( (double) msg->data[0], 2) + pow( (double) msg->data[1], 2) + pow( (double) msg->data[2], 2));
-    
-    std_msgs::UInt16 data;
-    data.data = (std::uint16_t)  (420.0 - (double) value) / (420.0 - 40) * 1000 ;  // We need to invert the value to mimic a phototransirtors
-    
-    pub.publish(data);
-}
