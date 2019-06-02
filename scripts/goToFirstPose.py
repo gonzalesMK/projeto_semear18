@@ -25,14 +25,12 @@ class goToFirstPoseServer(object):
         motorControl.setVelocity([1,1,1,1])
 
         # 1) Get through the green line
-        rospy.loginfo("1")
+        rospy.loginfo("1) Get Through the Green Line")
         r = rospy.Rate(100)
         while(not rospy.is_shutdown()):
-            rospy.loginfo( linesensors.readLines() )            
             sensors = linesensors.readLines()
             
             if( sensors[ int( Sides.LEFT) ] == 2 and sensors[ int(Sides.RIGHT) ] == 2 ):
-                rospy.loginfo( "Passou da linha" )            
                 linesensors.reset()
                 break
                        
@@ -49,11 +47,9 @@ class goToFirstPoseServer(object):
         motorControl.align(error)        
         
         # 2) Align with the Next Line (Black)
-        rospy.loginfo("2")
+        rospy.loginfo("2) Align with the Next Line Black")
         is_stable = 0
         while(not rospy.is_shutdown()):
-            rospy.loginfo( linesensors.readLines() )            
-
             sensors = linesensors.readLines()
             
             error[int(Wheels.FL)] = sensors[int(Sides.LEFT)]
@@ -73,9 +69,8 @@ class goToFirstPoseServer(object):
             r.sleep()
         
         # 3 ) Go to the right following the line
+        rospy.loginfo("3) Go to the Right Following the Line")
         while(not rospy.is_shutdown()):
-            rospy.loginfo( linesensors.readLines() )            
-
             sensors = linesensors.readLines()
             
             error[int(Wheels.FL)] = sensors[int(Sides.LEFT)]  + 2
@@ -92,9 +87,8 @@ class goToFirstPoseServer(object):
         
         # 4) Final Alignment
         is_stable = 0
+        rospy.loginfo("4) Final Alignment")
         while(not rospy.is_shutdown()):
-            rospy.loginfo( linesensors.readLines() )            
-
             sensors = linesensors.readLines()
             
             error[int(Wheels.FL)] = sensors[int(Sides.LEFT)]
@@ -106,15 +100,15 @@ class goToFirstPoseServer(object):
             
             if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
                 is_stable += 1
-                if( is_stable == 100):
+                if( is_stable == 30):
                     break
             else:
                 is_stable = 0
                        
             r.sleep()
 
-            motorControl.stop()
-            self._as.set_succeeded()
+        motorControl.stop()
+        self._as.set_succeeded()
 
 if __name__ == '__main__':
     rospy.init_node('goToFirstPose')

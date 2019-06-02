@@ -108,4 +108,20 @@ class MotorControl(object):
         self.pub_motorBL.publish(vel_array[int(Wheels.BL)])
         self.pub_motorBR.publish(vel_array[int(Wheels.BR)])
 
-    def stop(self)
+    def stop(self):
+
+        self.pub_motorFL.publish(0)
+        self.pub_motorFR.publish(0)
+        self.pub_motorBL.publish(0)
+        self.pub_motorBR.publish(0)
+
+        self.pub_motorLineFL.publish(0)
+        self.pub_motorLineFR.publish(0)
+        self.pub_motorLineBL.publish(0)
+        self.pub_motorLineBR.publish(0)
+
+        self.pub_encoderEnable.publish(False)
+        self.pub_lineEnable.publish(False)
+
+        self._velocity_mode = False
+        self._align_mode = False    

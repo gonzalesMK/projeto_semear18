@@ -4,7 +4,8 @@ import roslib; #roslib.load_manifest('smach_tutorials')
 import rospy
 import smach
 import smach_ros
-from lineSensors import *
+
+from projeto_semear.msg import goToFirstPoseAction
 # Check SMACH ROS description file to understand each state 
 
 class start(smach.State):
@@ -197,10 +198,11 @@ def main():
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('start', start(), 
-                               transitions={'failed':'failed', 
-                                            'success':'firstAlignment'},
-                               remapping={'robot':'robot'})
+        smach.StateMachine.add('firstOne',
+                               smach_ros.SimpleActionState('goToFirstPose', goToFirstPoseAction),
+                               transitions= {'succeeded':'firstAlignment',
+                                             'preempted':'failed',
+                                             'aborted':'failed'})
 
         smach.StateMachine.add('recognizeContainers', recognizeContainers(), 
                                transitions={'failedRecognize':'failed', 
