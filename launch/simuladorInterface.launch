@@ -1,0 +1,12 @@
+<launch>
+
+	<master auto="start"/>
+	<param name ="/use_sim_time" value="true"/>
+
+	<node name="sensorInterface" pkg="projeto_semear" type="convert_colorsensor" respawn="false" />
+
+  	<node name="motorInterface" pkg="projeto_semear" type="arduinoMotorConversion" respawn="false" output="screen"/>   
+
+    <node name="EncoderInterface" pkg="projeto_semear" type="raspEncoderConversion" respawn="false" output="screen"/>   
+
+</launch>   
