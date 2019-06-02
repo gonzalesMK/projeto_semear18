@@ -219,6 +219,18 @@ target_link_libraries(pid_demo
 )
 add_dependencies(pid_demo ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(arduinoMotorConversion simulation_interface_code/arduinoMotorConversion.cpp)
+target_link_libraries(arduinoMotorConversion
+  ${catkin_LIBRARIES}
+)
+add_dependencies(arduinoMotorConversion ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(raspEncoderConversion simulation_interface_code/raspEncoderConversion.cpp)
+target_link_libraries(raspEncoderConversion
+  ${catkin_LIBRARIES}
+)
+add_dependencies(raspEncoderConversion ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 #add_executable(publishEncoder rasp/publishEncoder.cpp)
 #target_link_libraries(publishEncoder
 # ${catkin_LIBRARIES}

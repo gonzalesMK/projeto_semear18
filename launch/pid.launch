@@ -5,7 +5,7 @@
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
-            <remap from="encoder_enable" to="/encoder_enable" />
+            <remap from="pid_enable" to="/encoder_enable" />
     </node>
 
 	<node name="controller" pkg="pid" type="controller" ns="motorFL">
@@ -13,7 +13,7 @@
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
-            <remap from="encoder_enable" to="/encoder_enable" />
+            <remap from="pid_enable" to="/encoder_enable" />
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorBR">
@@ -21,7 +21,7 @@
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
-            <remap from="encoder_enable" to="/encoder_enable" />
+            <remap from="pid_enable" to="/encoder_enable" />
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorBL">
@@ -29,39 +29,39 @@
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
-            <remap from="encoder_enable" to="/encoder_enable" />
+            <remap from="pid_enable" to="/encoder_enable" />
     </node>
 
     <node name="controller" pkg="pid" type="controller" ns="motorSensorFR">
             <rosparam file="$(find projeto_semear)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
-            <remap from="control_effort" to="pwm" />
+            <remap from="control_effort" to="/motorFR/pwm" />
             <remap from="state" to="error" />
-            <remap from="encoder_enable" to="/pid_enable" />
+            <remap from="pid_enable" to="/pid_enable" />
     </node>
 
 	<node name="controller" pkg="pid" type="controller" ns="motorSensorFL">
             <rosparam file="$(find projeto_semear)/param/pidSensor.yaml" command="load" />
             <remap from="setpoint" to="/desired_pose" />
-            <remap from="control_effort" to="pwm" />
+            <remap from="control_effort" to="/motorFL/pwm" />
             <remap from="state" to="error" />
-            <remap from="encoder_enable" to="/pid_enable" />
+            <remap from="pid_enable" to="/pid_enable" />
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorSensorBR">
             <rosparam file="$(find projeto_semear)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
-            <remap from="control_effort" to="pwm" />
+            <remap from="control_effort" to="/motorBR/pwm" />
             <remap from="state" to="error" />
-            <remap from="encoder_enable" to="/pid_enable" />
+            <remap from="pid_enable" to="/pid_enable" />
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorSensorBL">
             <rosparam file="$(find projeto_semear)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
-            <remap from="control_effort" to="pwm" />
+            <remap from="control_effort" to="/motorBL/pwm" />
             <remap from="state" to="error" />
-            <remap from="encoder_enable" to="/pid_enable" />
+            <remap from="pid_enable" to="/pid_enable" />
     </node>
 
 </launch>   

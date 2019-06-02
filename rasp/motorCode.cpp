@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
 
 #include <iostream>
 #include <stdio.h>
@@ -19,7 +19,7 @@
 
 char vel[4];
 
-void motor_cb(const std_msgs::Int32ConstPtr &msg, char &var){
+void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var){
 
    var = (char) msg->data;
 }
@@ -30,10 +30,10 @@ int main(int argc, char *argv[])
    ros::NodeHandle node;
    
    // Create 4 topics to receive motor speed
-   ros::Subscriber motor_sub1 = node.subscribe<std_msgs::Int32>("/motorFR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[0])) );
-   ros::Subscriber motor_sub2 = node.subscribe<std_msgs::Int32>("/motorFL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[1])) );
-   ros::Subscriber motor_sub3 = node.subscribe<std_msgs::Int32>("/motorBR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[2])) );
-   ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Int32>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[3])) );
+   ros::Subscriber motor_sub1 = node.subscribe<std_msgs::Float64>("/motorFR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[0])) );
+   ros::Subscriber motor_sub2 = node.subscribe<std_msgs::Float64>("/motorFL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[1])) );
+   ros::Subscriber motor_sub3 = node.subscribe<std_msgs::Float64>("/motorBR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[2])) );
+   ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Float64>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[3])) );
 
    // Open arduino
    std::FILE *file = std::fopen("/dev/ttyACM0", "w");
