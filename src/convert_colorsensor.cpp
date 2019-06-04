@@ -25,7 +25,9 @@ enum SensorsPosition
     F1,
     F2,
     B1,
-    B2
+    B2,
+    CL,
+    CR
 
 };
 enum LineSensors
@@ -36,10 +38,10 @@ enum LineSensors
     Back
 };
 
-static bool values[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-
+static bool values[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 void callback(const sensor_msgs::ImageConstPtr &msg, bool &value);
+void callback2(const sensor_msgs::ImageConstPtr &msg, bool &value);
 
 int main(int argc, char **argv)
 {
@@ -49,6 +51,7 @@ int main(int argc, char **argv)
 
     // Publishers
     ros::Publisher pubPololu = n.advertise<std_msgs::UInt8>("/pololuSensor", 1);
+    ros::Publisher pubContainer = n.advertise<std_msgs::UInt8>("/containerSensors", 1);
 
     // Subscribe to all the lineSensors in the base from the simulation
     ros::Subscriber subB1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorB1", 1, boost::bind(callback, _1, boost::ref(values[B1])));
@@ -60,28 +63,44 @@ int main(int argc, char **argv)
     ros::Subscriber subF1 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF1", 1, boost::bind(callback, _1, boost::ref(values[F1])));
     ros::Subscriber subF2 = n.subscribe<sensor_msgs::Image>("/AMR/lineSensorF2", 1, boost::bind(callback, _1, boost::ref(values[F2])));
 
+    ros::Subscriber subCL = n.subscribe<sensor_msgs::Image>("/AMR/containerSensorL", 1, boost::bind(callback2, _1, boost::ref(values[CL])));
+    ros::Subscriber subCR = n.subscribe<sensor_msgs::Image>("/AMR/containerSensorR", 1, boost::bind(callback2, _1, boost::ref(values[CR])));
+
     std_msgs::UInt8 msg;
     ros::Rate rate(100);
 
-    while( ros::ok() ){
-        msg.data = 0 ;
-        
-        for(int i = 0; i < 8; i++){
+    while (ros::ok())
+    {
+        msg.data = 0;
+
+        for (int i = 0; i < 8; i++)
+        {
             msg.data |= (values[i] << i); // 1 if is black
         }
-        pubPololu.publish(msg);   
+        pubPololu.publish(msg);
+
+        msg.data = 0;
+        msg.data |= (values[8] << 0 ); 
+        msg.data |= (values[9] << 1 );
+        pubContainer.publish(msg);
+        
         ros::spinOnce();
         rate.sleep();
     }
-    
+
     return 0;
 }
 
 void callback(const sensor_msgs::ImageConstPtr &msg, bool &value)
 {
 
-    value = ( sqrt(pow((double)msg->data[0], 2) + pow((double)msg->data[1], 2) + pow((double)msg->data[2], 2))) < LINE_TOP_LIMIT ; // is black
+    value = (sqrt(pow((double)msg->data[0], 2) + pow((double)msg->data[1], 2) + pow((double)msg->data[2], 2))) < LINE_TOP_LIMIT; // is black
+}
 
+void callback2(const sensor_msgs::ImageConstPtr &msg, bool &value)
+{
+
+    value = (sqrt(pow((double)msg->data[0], 2) + pow((double)msg->data[1], 2) + pow((double)msg->data[2], 2))) > 100; // is black
 }
 
 /*    Pololu Code

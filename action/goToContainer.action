@@ -1,5 +1,6 @@
 #goal definition
-int container_number
+#goal definition
+std_msgs/Int8 container_number
 ---
 #result definition
 ---
