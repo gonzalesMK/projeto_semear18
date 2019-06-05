@@ -32,6 +32,7 @@ class ContainerSensors(object):
     def __init__(self):
 
         self._subscribers = rospy.Subscriber( "/containerSensors", UInt8, self.__callback)
+        self.sensor = [0,0]
 
     def __callback(self, msg):
         """

@@ -35,8 +35,7 @@ class MotorControl(object):
         
         self.pub_lineEnable = rospy.Publisher('/pid_enable', Bool, queue_size=10)    
         self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)    
-
-        rospy.Rate(5).sleep()  
+        rospy.Rate(1).sleep()  
 
         self._velocity_mode = False
         self._align_mode = False

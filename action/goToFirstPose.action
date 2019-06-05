@@ -1,5 +1,6 @@
 #goal definition
 ---
 #result definition
+std_msgs/Int8 final_pose
 ---
 #feedback

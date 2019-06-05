@@ -19,9 +19,11 @@
  * 
  * One can turn the publish on by setting the PID enable topic to TRUE
  */
-bool enable = false;
+bool volatile enable = false;
+
 void pid_cb(std_msgs::Bool bool_msg)
-{
+{   
+    //ROS_INFO_STREAM("Encoder Enable: *********************************************************" << (int) bool_msg.data);
     enable = bool_msg.data;
 }
 
@@ -52,12 +54,13 @@ int main(int argc, char *argv[])
     ros::Subscriber motor_sub3 = node.subscribe<std_msgs::Float64>("/motorBR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(msg3)));
     ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Float64>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(msg4)));
 
-    ros::Rate rate(800);
+    ros::Rate rate(10);
 
     msg1.data=0;
     msg2.data=0;
     msg3.data=0;
     msg4.data=0;
+
     while (ros::ok())
     {
         if (enable)
@@ -69,7 +72,9 @@ int main(int argc, char *argv[])
         }
         ros::spinOnce();
 
+        //  ROS_INFO_STREAM("Encoder Enable: " << (int) enable);
         rate.sleep();
+        
     }
 
 }

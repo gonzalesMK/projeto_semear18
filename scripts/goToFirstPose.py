@@ -6,6 +6,7 @@ from projeto_semear.msg import goToFirstPoseAction, goToFirstPoseFeedback, goToF
 from std_msgs.msg import Float64, Bool
 from lineSensors import LineSensor, Sides
 from motorControlLib import MotorControl, Wheels
+from utils import Positions
 
 class goToFirstPoseServer(object):
     # Messages to Publish Feedback/result
@@ -15,17 +16,17 @@ class goToFirstPoseServer(object):
     def __init__(self, name):
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, goToFirstPoseAction, execute_cb=self.execute_cb, auto_start = False)
-        self._as.start()
 
     def execute_cb(self, goal):
-        
         linesensors = LineSensor()
         motorControl = MotorControl()
-        
+
+        rospy.loginfo("Wait")        
         motorControl.setVelocity([1,1,1,1])
 
         # 1) Get through the green line
         rospy.loginfo("1) Get Through the Green Line")
+        
         r = rospy.Rate(100)
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
@@ -108,9 +109,13 @@ class goToFirstPoseServer(object):
             r.sleep()
 
         motorControl.stop()
-        self._as.set_succeeded()
+
+        self._result.final_pose.data = int(Positions.GreenIntersection)
+        self._as.set_succeeded(self._result)
 
 if __name__ == '__main__':
-    rospy.init_node('goToFirstPose')
-    server = goToFirstPoseServer(rospy.get_name())
+    rospy.init_node('goToFirstPoseNode')
+    server = goToFirstPoseServer('goToFirstPose')
+    rospy.Rate(1).sleep()  
+    server._as.start()
     rospy.spin()

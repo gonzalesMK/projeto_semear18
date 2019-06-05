@@ -15,8 +15,7 @@ class goToContainerServer(object):
     def __init__(self, name):
         self._action_name = name
         self._as = actionlib.SimpleActionServer(self._action_name, goToContainerAction, execute_cb=self.execute_cb, auto_start = False)
-        self._as.start()
-
+ 
     def execute_cb(self, goal):
         
         linesensors = LineSensor()
@@ -28,6 +27,7 @@ class goToContainerServer(object):
         # 1) Go straight Ahead Until Back sensors find blackline
         rospy.loginfo("goToContainer: 1) Go straight Ahead Until Back sensors find blackline ")
         r = rospy.Rate(100)
+        
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             # rospy.loginfo("Front: {} BACK: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)]))
@@ -102,4 +102,5 @@ class goToContainerServer(object):
 if __name__ == '__main__':
     rospy.init_node('goToContainer')
     server = goToContainerServer(rospy.get_name())
+    server._as.start()
     rospy.spin()
