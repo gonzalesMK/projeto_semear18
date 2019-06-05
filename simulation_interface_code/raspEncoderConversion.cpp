@@ -6,10 +6,6 @@
 #include <iostream>
 #include <stdio.h>
 
-#include <pigpio.h>
-
-#include "projeto_semear/rotary_encoder.h"
-
 #include <boost/bind.hpp>
 
 // http://wiki.ros.org/pid

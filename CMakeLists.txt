@@ -77,8 +77,8 @@ include_directories(
 # Declare a C++ library
 add_library(motor_library src/kine_control.cpp
 )
-add_library(rotary_encoder rasp/rotary_encoder.cpp
-)
+# add_library(rotary_encoder rasp/rotary_encoder.cpp
+# )
 
 # Link Library with respective dependencies
 target_link_libraries(motor_library ${catkin_LIBRARIES})
