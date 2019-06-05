@@ -264,12 +264,6 @@ def main():
                                    
                                })
 
-            
-
-        
-        
-        
-        
         
         smach.StateMachine.add('dropContainer', dropContainer(), 
                                transitions={'failed':'failed', 

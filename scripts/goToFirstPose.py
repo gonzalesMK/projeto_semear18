@@ -69,8 +69,8 @@ class goToFirstPoseServer(object):
                        
             r.sleep()
         
-        # 3 ) Go to the right following the line
-        rospy.loginfo("3) Go to the Right Following the Line")
+        # 3 ) Go to the left following the line
+        rospy.loginfo("3) Go to the Left Following the Line")
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             

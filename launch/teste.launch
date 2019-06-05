@@ -5,6 +5,5 @@
 
     <node name="goToFirstPose" pkg="projeto_semear" type="goToFirstPose.py" respawn="false" output="screen"/>   
     <node name="goToContainer" pkg="projeto_semear" type="goToContainer.py" respawn="false" output="screen"/>   
-    <node name="main" pkg="projeto_semear" type="main.py" respawn="false" output="screen"/>   
 
 </launch>   
