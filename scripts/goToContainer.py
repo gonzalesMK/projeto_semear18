@@ -3,9 +3,9 @@ import rospy
 import actionlib
 from projeto_semear.msg import goToContainerAction, goToContainerFeedback, goToContainerResult
 from std_msgs.msg import Float64, Bool
-from lineSensors import LineSensor, Sides
-from containerSensorsLib import ContainerSensors
-from motorControlLib import MotorControl, Wheels
+from projeto_semear.lineSensors import LineSensor, Sides
+from projeto_semear.containerSensorsLib import ContainerSensors
+from projeto_semear.motorControlLib import MotorControl, Wheels
 
 class goToContainerServer(object):
     # Messages to Publish Feedback/result
@@ -25,12 +25,12 @@ class goToContainerServer(object):
         motorControl.setVelocity([1,1,1,1])
 
         # 1) Go straight Ahead Until Back sensors find blackline
-        rospy.loginfo("goToContainer: 1) Go straight Ahead Until Back sensors find blackline ")
+        rospy.logdebug("goToContainer: 1) Go straight Ahead Until Back sensors find blackline ")
         r = rospy.Rate(100)
         
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
-            # rospy.loginfo("Front: {} BACK: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)]))
+            # rospy.logdebug("Front: {} BACK: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)]))
             if( sensors[ int( Sides.BACK) ] == 0 ):
                 linesensors.reset()
                 break
@@ -48,11 +48,11 @@ class goToContainerServer(object):
         motorControl.align(error)        
         
         # 2) Keep going until find container
-        rospy.loginfo("goToContainer: 2) Keep going until find container")
+        rospy.logdebug("goToContainer: 2) Keep going until find container")
 
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
-            # rospy.loginfo("LEFT: {} RIGHT: {}".format( containerSensors.sensor[int(Sides.LEFT)], containerSensors.sensor[int(Sides.RIGHT)]))
+            # rospy.logdebug("LEFT: {} RIGHT: {}".format( containerSensors.sensor[int(Sides.LEFT)], containerSensors.sensor[int(Sides.RIGHT)]))
 
             error[int(Wheels.FL)] = + sensors[int(Sides.FRONT)] - 2
             error[int(Wheels.FR)] = - sensors[int(Sides.FRONT)] - 2
@@ -76,10 +76,10 @@ class goToContainerServer(object):
         
         # 4) Final Alignment
         is_stable = 0
-        rospy.loginfo("goToContainer: 4) Final Alignment")
+        rospy.logdebug("goToContainer: 4) Final Alignment")
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
-            # rospy.loginfo("Front: {} BACK: {} Stable: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)], is_stable))
+            # rospy.logdebug("Front: {} BACK: {} Stable: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)], is_stable))
             error[int(Wheels.FL)] = + sensors[int(Sides.FRONT)] 
             error[int(Wheels.FR)] = - sensors[int(Sides.FRONT)] 
             error[int(Wheels.BL)] = - sensors[int(Sides.BACK)]  
@@ -96,7 +96,7 @@ class goToContainerServer(object):
             r.sleep()
 
         motorControl.stop()
-        rospy.loginfo("goToContainer: 5) Success")
+        rospy.logdebug("goToContainer: 5) Success")
         self._as.set_succeeded()
 
 if __name__ == '__main__':

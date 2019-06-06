@@ -3,9 +3,9 @@ import rospy
 import actionlib
 from projeto_semear.msg import goFromContainerToIntersectionAction, goFromContainerToIntersectionFeedback, goFromContainerToIntersectionResult
 from std_msgs.msg import Float64, Bool
-from lineSensors import LineSensor, Sides
-from containerSensorsLib import ContainerSensors
-from motorControlLib import MotorControl, Wheels
+from projeto_semear.lineSensors import LineSensor, Sides
+from projeto_semear.containerSensorsLib import ContainerSensors
+from projeto_semear.motorControlLib import MotorControl, Wheels
 
 class goFromContainerToIntersectionServer(object):
     # Messages to Publish Feedback/result
@@ -24,12 +24,12 @@ class goFromContainerToIntersectionServer(object):
         motorControl.setVelocity([-1,-1,-1,-1])
 
         # 1) Go straight Ahead Until Back sensors find blackline
-        rospy.loginfo("goFromContainerToIntersection: 1) Go back until lateral sensors find blackline ")
+        rospy.logdebug("goFromContainerToIntersection: 1) Go back until lateral sensors find blackline ")
         r = rospy.Rate(100)
         
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
-            # rospy.loginfo("Front: {} BACK: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)]))
+            # rospy.logdebug("Front: {} BACK: {}".format(sensors[int(Sides.FRONT)], sensors[int(Sides.BACK)]))
             if( sensors[ int( Sides.LEFT) ] == 0 and sensors[ int(Sides.RIGHT) ] == 0 ):
                 linesensors.reset()
                 break
@@ -43,7 +43,7 @@ class goFromContainerToIntersectionServer(object):
         error[int(Wheels.BL)] = sensors[int(Sides.LEFT)]
         error[int(Wheels.BR)] = sensors[int(Sides.RIGHT)] 
         is_stable = 0
-        rospy.loginfo("goFromContainerToIntersection: 2) Final Alignment")
+        rospy.logdebug("goFromContainerToIntersection: 2) Final Alignment")
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             
@@ -65,7 +65,7 @@ class goFromContainerToIntersectionServer(object):
 
         motorControl.stop()
         
-        rospy.loginfo("goFromContainerToIntersection: 3) Success")
+        rospy.logdebug("goFromContainerToIntersection: 3) Success")
         
         self._as.set_succeeded()
 
