@@ -35,7 +35,7 @@ class MotorControl(object):
         
         self.pub_lineEnable = rospy.Publisher('/pid_enable', Bool, queue_size=10)    
         self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)    
-        rospy.Rate(1).sleep()  
+        rospy.Rate(2).sleep()  
 
         self._velocity_mode = False
         self._align_mode = False
@@ -122,5 +122,6 @@ class MotorControl(object):
         self.pub_encoderEnable.publish(False)
         self.pub_lineEnable.publish(False)
 
+        # We could publish 0 To the PWM topics in order to stop the robot definitively
         self._velocity_mode = False
         self._align_mode = False    

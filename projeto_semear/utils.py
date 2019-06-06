@@ -13,9 +13,15 @@ class Colors(Enum):
     Red = 0
     Green = 1
     Blue = 2
-    Unknown = 0
+    Unknown = 3
     def __int__(self):
         return self.value
+
+    def __eq__(self, other):
+        return int(self) == int(other)
+    
+    def __ne__(self, other):
+        return int(self) != int(other)
 
 class Positions(Enum):
     StartPosition = 0
@@ -31,6 +37,7 @@ class Positions(Enum):
     BlueIntersection = 10
     GreenDock = 11
     BlueDock = 12
+    Unkown = 13
 
     def __int__(self):
         return self.value

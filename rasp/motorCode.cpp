@@ -21,7 +21,7 @@ char vel[4];
 
 void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var){
 
-   var = (char) msg->data;
+   var = (char) msg->data; 
 }
 
 int main(int argc, char *argv[])

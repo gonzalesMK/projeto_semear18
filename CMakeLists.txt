@@ -25,6 +25,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 # find_library(PIGPIO_LIBRARY pygpio /path)
 
+catkin_python_setup()
+
 add_message_files(
   FILES
   PololuLineSensor.msg
@@ -55,7 +57,9 @@ add_action_files(
   goFromGreenToBlueIntersection.action
   goFromBlueToGreenIntersection.action
   goToBlueDock.action
+  goToDock.action
   goToGreenDock.action
+  changeIntersection.action
   moveEletroima.action
   setEletroima.action
   navigation.action
@@ -78,6 +82,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+
+
+catkin_install_python(PROGRAMS scripts/main.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 # Declare a C++ library
 add_library(motor_library src/kine_control.cpp
