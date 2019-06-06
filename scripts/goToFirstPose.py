@@ -4,9 +4,9 @@ import rospy
 import actionlib
 from projeto_semear.msg import goToFirstPoseAction, goToFirstPoseFeedback, goToFirstPoseResult
 from std_msgs.msg import Float64, Bool
-from lineSensors import LineSensor, Sides
-from motorControlLib import MotorControl, Wheels
-from utils import Positions
+from projeto_semear.lineSensors import LineSensor, Sides
+from projeto_semear.motorControlLib import MotorControl, Wheels
+from projeto_semear.utils import Positions
 
 class goToFirstPoseServer(object):
     # Messages to Publish Feedback/result
@@ -21,11 +21,10 @@ class goToFirstPoseServer(object):
         linesensors = LineSensor()
         motorControl = MotorControl()
 
-        rospy.loginfo("Wait")        
         motorControl.setVelocity([1,1,1,1])
 
         # 1) Get through the green line
-        rospy.loginfo("1) Get Through the Green Line")
+        rospy.logdebug("1) Get Through the Green Line")
         
         r = rospy.Rate(100)
         while(not rospy.is_shutdown()):
@@ -48,7 +47,7 @@ class goToFirstPoseServer(object):
         motorControl.align(error)        
         
         # 2) Align with the Next Line (Black)
-        rospy.loginfo("2) Align with the Next Line Black")
+        rospy.logdebug("2) Align with the Next Line Black")
         is_stable = 0
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
@@ -70,7 +69,7 @@ class goToFirstPoseServer(object):
             r.sleep()
         
         # 3 ) Go to the left following the line
-        rospy.loginfo("3) Go to the Left Following the Line")
+        rospy.logdebug("3) Go to the Left Following the Line")
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             
@@ -88,7 +87,7 @@ class goToFirstPoseServer(object):
         
         # 4) Final Alignment
         is_stable = 0
-        rospy.loginfo("4) Final Alignment")
+        rospy.logdebug("4) Final Alignment")
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             
@@ -110,7 +109,7 @@ class goToFirstPoseServer(object):
 
         motorControl.stop()
 
-        self._result.final_pose.data = int(Positions.GreenIntersection)
+        self._result.finalPose = int(Positions.GreenIntersection)
         self._as.set_succeeded(self._result)
 
 if __name__ == '__main__':
