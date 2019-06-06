@@ -1,5 +1,5 @@
 #goal definition
-int8 containerPose
+int8 containerColor
 ---
 #result definition
 ---

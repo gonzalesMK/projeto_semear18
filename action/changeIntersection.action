@@ -1,6 +1,7 @@
 #goal definition
-int8 containerPose
+int8 robotPose
 ---
 #result definition
+int8 robotPose
 ---
 #feedback
