@@ -53,6 +53,9 @@ add_action_files(
   goToContainer.action
   goFromContainerToIntersection.action
   goFromGreenToBlueIntersection.action
+  goFromBlueToGreenIntersection.action
+  goToBlueDock.action
+  goToGreenDock.action
   moveEletroima.action
   setEletroima.action
   navigation.action
