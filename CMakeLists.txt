@@ -51,6 +51,8 @@ add_action_files(
   FILES 
   goToFirstPose.action
   goToContainer.action
+  goFromContainerToIntersection.action
+  goFromGreenToBlueIntersection.action
   moveEletroima.action
   setEletroima.action
   navigation.action
