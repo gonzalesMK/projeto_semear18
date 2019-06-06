@@ -23,7 +23,7 @@ double vel[4];
 void motor_cb(const std_msgs::Float64ConstPtr &msg, double &var)
 {
 
-   var = msg->data / 100;
+   var = msg->data / 50;
 }
 
 int main(int argc, char *argv[])
