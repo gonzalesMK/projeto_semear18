@@ -14,6 +14,8 @@ class Colors(Enum):
     Green = 1
     Blue = 2
     Unknown = 3
+    Empty = 4
+    
     def __int__(self):
         return self.value
 

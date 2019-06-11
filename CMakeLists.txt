@@ -54,8 +54,7 @@ add_action_files(
   goToFirstPose.action
   goToContainer.action
   goFromContainerToIntersection.action
-  goFromGreenToBlueIntersection.action
-  goFromBlueToGreenIntersection.action
+  goFromDockToIntersection.action
   goToBlueDock.action
   goToDock.action
   goToGreenDock.action

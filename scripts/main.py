@@ -6,14 +6,11 @@ import smach
 import smach_ros
 
 from projeto_semear.msg import goToFirstPoseAction
-
 from projeto_semear.msg import goToContainerAction
-
 from projeto_semear.msg import goFromContainerToIntersectionAction
-
 from projeto_semear.msg import changeIntersectionAction
-
 from projeto_semear.msg import goToDockAction
+from projeto_semear.msg import goFromDockToIntersectionAction
 
 
 from enum import Enum
@@ -66,14 +63,15 @@ class strategyStep(smach.State):
         for i in range(4):  # search for first Color first
             if userdata.containersList[i + firstStackNumber ][0] == firstColor :
                 userdata.containerColor = firstColor
-                userdata.containerPose = Positions( i + firstStackNumber + 1)
+                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
                 userdata.pose = userdata.pose
+                rospy.loginfo("Strategy Step: Picked container {}".format(firstStackNumber))
                 return 'pick'
         
         for i in range(4): # if no first Color container was found, look for the second Color
             if userdata.containersList[i+firstStackNumber][0] == secondColor :
                 userdata.containerColor = secondColor
-                userdata.containerPose = Positions( i + firstStackNumber + 1)
+                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
                 userdata.pose = userdata.pose
                 return 'pick'
 
@@ -84,14 +82,14 @@ class strategyStep(smach.State):
         for i in range(4):  
             if userdata.containersList[i + firstStackNumber ][0] == firstColor :
                 userdata.containerColor = firstColor
-                userdata.containerPose = Positions( i + firstStackNumber + 1)
+                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
                 userdata.pose = userdata.pose
                 return 'changePosition'
         
         for i in range(4):
             if userdata.containersList[i+firstStackNumber][0] == secondColor :
                 userdata.containerColor = secondColor
-                userdata.containerPose = Positions( i + firstStackNumber + 1)
+                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
                 userdata.pose = userdata.pose
                 return 'changePosition'
         
@@ -118,12 +116,23 @@ class recognizeContainers(smach.State):
 class pickContainer(smach.State):
     def __init__(self):
         smach.State.__init__(self, 
-                            input_keys=[],
-                            output_keys=[],
+                            input_keys=['containersList','containerPose',],
+                            output_keys=['containersList'],
                             outcomes=['preempted', 'succeeded','aborted'])
     
-    
     def execute(self, userdata):
+        color = userdata.containersList[userdata.containerPose-1].pop(0)
+        
+        if not userdata.containersList[userdata.containerPose-1] :
+            userdata.containersList[userdata.containerPose-1].append(Colors.Empty)
+
+        if color == Colors.Green:
+            userdata.containersList[int(Positions.GreenDock)-3].append(color) 
+        elif color == Colors.Blue:
+            userdata.containersList[int(Positions.BlueDock)-3].append(color) 
+        else:
+            rospy.logerr("The color to pick the container is wrong")
+        
         return 'succeeded'
 
 class whereToGo(smach.State):
@@ -193,7 +202,7 @@ def main():
                         'pose':'robotPose',
                         'containersList':'containersList',
                         'containerColor':'containertColor',
-                        'containerPose':'containertPose',
+                        'containerPose':'containerPose',
                     }
         )
 
@@ -214,7 +223,7 @@ def main():
             input_keys=['robotPose','containersList','containerColor','containerPose'],
             output_keys=['robotPose','containersList','containerColor','containerPose'])
 
-        sis2 = smach_ros.IntrospectionServer('server2', pick_and_drop_sm, '/IEEE_OPEN/navigation')
+        sis2 = smach_ros.IntrospectionServer('server2', pick_and_drop_sm, '/IEEE_OPEN/pickAndDrop')
         sis2.start()
         with pick_and_drop_sm:
 
@@ -233,6 +242,10 @@ def main():
                     transitions= {  'succeeded':'goFromContainerToIntersection',
                                     'preempted':'failed',
                                     'aborted':'failed'},
+                    remapping={
+                            'containersList':'containersList',
+                            'containerPose':'containerPose',
+                        }
             )
 
             smach.StateMachine.add('goFromContainerToIntersection', 
@@ -243,8 +256,7 @@ def main():
                                     'aborted':'failed'},
             )
 
-            smach.StateMachine.add(
-                'whereToGo', 
+            smach.StateMachine.add('whereToGo', 
                 whereToGo(), 
                 transitions={
                     'dock': 'goToDock',
@@ -258,7 +270,7 @@ def main():
                     smach_ros.SimpleActionState('goToDock',
                                                 goToDockAction,
                                                 goal_slots=['containerColor']), 
-                    transitions= {  'succeeded':'succeeded',
+                    transitions= {  'succeeded':'goFromDockToIntersection',
                                     'preempted':'failed',
                                     'aborted':'failed'},
                     remapping={ 'containerColor':'containerColor'}
@@ -274,12 +286,21 @@ def main():
                                 'preempted':'failed',
                                 'aborted':'failed'},
                 remapping={ 'robotPose':'robotPose'}
-        )
+            )
+            
+            smach.StateMachine.add('goFromDockToIntersection', 
+                    smach_ros.SimpleActionState('goFromDockToIntersection',
+                                                goFromDockToIntersectionAction,
+                                                goal_slots=['containerColor']), 
+                    transitions= {  'succeeded':'succeeded',
+                                    'preempted':'failed',
+                                    'aborted':'failed'},
+                    remapping={ 'containerColor':'containerColor'}
+            )   
 
-        
         smach.StateMachine.add("pickAndDrop", pick_and_drop_sm,
                     transitions={
-                        'succeeded':'succeeded',
+                        'succeeded':'strategyStep',
                         'failed':'failed'
                     },
                     remapping={

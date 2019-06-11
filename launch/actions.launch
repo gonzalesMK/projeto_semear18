@@ -4,6 +4,7 @@
     <node name="goToContainer" pkg="projeto_semear" type="goToContainer.py" respawn="false" output="screen"/>   
     
     <node name="goToDock"  pkg="projeto_semear" type="goToDock.py" respawn="false" output="screen"/>   
+    <node name="goFromDockToIntersection"  pkg="projeto_semear" type="goFromDockToIntersection.py" respawn="false" output="screen"/>   
 
     <node name="changeIntersection" pkg="projeto_semear" type="changeIntersection.py" respawn="false" output="screen"/>   
 
