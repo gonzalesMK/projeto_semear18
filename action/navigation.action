@@ -1,9 +1,0 @@
-#goal definition
-projeto_semear/Pose goal_pose
----
-#result definition
-bool succeed
----
-#feedback
-uint32 code
-uint32[] path
