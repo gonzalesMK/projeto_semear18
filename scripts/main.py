@@ -21,7 +21,7 @@ from projeto_semear.utils import Positions, Colors
 container_list = [
     # Mais alto ----------------------------> Mais baixo 
     [Colors.Green, Colors.Blue, Colors.Red, Colors.Blue], # 1
-    [Colors.Green, Colors.Green, Colors.Green, Colors.Green], #2
+    [Colors.Green, Colors.Green, Colors.Green, Colors.Green], #2    
     [Colors.Red, Colors.Green, Colors.Blue, Colors.Green], # 3 
     [Colors.Blue, Colors.Green, Colors.Blue, Colors.Green], # 4
     [Colors.Blue, Colors.Blue, Colors.Blue, Colors.Blue], #5 
@@ -40,6 +40,8 @@ class strategyStep(smach.State):
 
     def execute(self, userdata):
         containersAreKnown = True
+        
+        rospy.Rate(1).sleep() ## Remove in real application, only for debbug 
         
         rospy.loginfo("Strategy Step: The pose of the robot is {}".format(userdata.pose))
 
@@ -143,7 +145,7 @@ class whereToGo(smach.State):
                             outcomes=['intersection', 'dock'])
     
     def execute(self, userdata):
-        
+        rospy.Rate(1).sleep() ## Remove in real application, only for debbug 
         rospy.loginfo("Pose: {} Color: {}".format(userdata.robotPose, userdata.containerColor))
 
         if (userdata.robotPose == Positions.GreenIntersection and userdata.containerColor == Colors.Green) or \
@@ -210,7 +212,7 @@ def main():
                 smach_ros.SimpleActionState('changeIntersection',
                                             changeIntersectionAction,
                                             goal_slots=['robotPose'],
-                                            output_keys=['robotPose']
+                                            result_slots=['robotPose']
                                             ), 
                 transitions= {  'succeeded':'strategyStep',
                                 'preempted':'failed',
@@ -280,7 +282,7 @@ def main():
                 smach_ros.SimpleActionState('changeIntersection',
                                             changeIntersectionAction,
                                             goal_slots=['robotPose'],
-                                            output_keys=['robotPose']
+                                            result_slots=['robotPose']
                                             ), 
                 transitions= {  'succeeded':'goToDock',
                                 'preempted':'failed',

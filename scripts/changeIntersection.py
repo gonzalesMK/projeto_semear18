@@ -85,9 +85,12 @@ class changeIntersectionServer(object):
 
         motorControl.stop()
         
-        rospy.logdebug("changeIntersection: 4) Success")
+        
         
         self._result.robotPose = int(Positions.BlueIntersection) if goal.robotPose == Positions.GreenIntersection else int(Positions.GreenIntersection)
+
+        rospy.loginfo("changeIntersection: 4) Success. New pose is: {}".format(self._result.robotPose))
+
         self._as.set_succeeded(self._result)
 
 if __name__ == '__main__':
