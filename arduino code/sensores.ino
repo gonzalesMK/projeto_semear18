@@ -186,60 +186,60 @@ void loop()
 void serialEvent()
 {
 
-  int ch = (int)Serial.read();
+  char ch = (char) Serial.read();
 
-  if (-255 < ch || ch < 255)
+  if (-63 < ch || ch < 63)
   {
     PWM = ch;
   }
 
   switch (ch)
   {
-  case 256: // Liga Eletroima
+  case 64: // Liga Eletroima
     digitalWrite(ELETROIMA_PIN, HIGH);
     break;
 
-  case 257: // Desliga Eletroima
+  case 65: // Desliga Eletroima
     digitalWrite(ELETROIMA_PIN, LOW);
     break;
 
-  case 258: // Liga controle do servo e pede por posição
+  case 66: // Liga controle do servo e pede por posição
     servo_pose = -1;
 
     while (servo_pose == -1)
     {
       if (Serial.available())
       {
-        servo_pose = (int)Serial.read();
+        servo_pose = (uint8_t) Serial.read();
       }
     }
 
     servo.write(servo_pose);
     break;
 
-  case 259: // ligar o feedback do encoder, fim de curso e motor da garra
+  case 67: // ligar o feedback do encoder, fim de curso e motor da garra
     publish_encoder = true;
     break;
 
-  case 260: // Desliga feedback do encoder, fim de curso e motor da garra
+  case 68: // Desliga feedback do encoder, fim de curso e motor da garra
     publish_encoder = false;
     PWM = 0;
     analogWrite(ENABLE, PWM);
     break;
 
-  case 261: // Liga sensores de linha
+  case 69: // Liga sensores de linha
     publish_sensors = true;
     break;
 
-  case 262: // Desliga sensores de linha
+  case 70: // Desliga sensores de linha
     publish_sensors = false;
     break;
 
-  case 263:
+  case 71:
     publish_containers_sensors = true;
     break;
 
-  case 264:
+  case 72:
     publish_containers_sensors = false;
     break;
   }
