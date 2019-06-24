@@ -23,7 +23,7 @@
  *  256: Ligar o Eletroima
  *  257: Desliga Eletroima
  *  258: Liga controle do servo. Sequentemente, você precisa enviar a posição do servo
- *  259: Ligar o feedback do encoder, fim de curso e motor da garra
+ *  259: Ligar o feedback do encoder, fim de curso e motor da garra. 
  *  260: Desligar o feedback do encoder, fim de curso e o motor da garra
  *  261: Ligar os sensores de linha
  *  262: Desligar sensores de linha
@@ -188,7 +188,7 @@ void serialEvent()
 
   char ch = (char) Serial.read();
 
-  if (-63 < ch || ch < 63)
+  if (-63 =< ch || ch =< 63)
   {
     PWM = ch;
   }
