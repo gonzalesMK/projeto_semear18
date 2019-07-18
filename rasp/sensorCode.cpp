@@ -1,5 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/UInt8.h>
+#include <std_msgs/Int64.h>
 #include <std_msgs/Bool.h>
 
 #include <stdio.h>   // Standard input/output definitions
@@ -8,7 +10,10 @@
 #include <errno.h>   // Error number definitions
 #include <termios.h> // POSIX terminal control definitions
 #include <string.h>  // String function definitions
+#include <sstream>
 #include <sys/ioctl.h>
+
+#include <poll.h> // Poll funcionallity
 
 #include <iostream>
 #include <stdio.h>
@@ -25,13 +30,15 @@
  * 
  * The arduino Receives one char in the range [-127, 127] for each motor
  */
-const uint8_t ELETROIMA_ON_CODE = 64 ;
-const uint8_t ELETROIMA_OFF_CODE = 64 ;
-const uint8_t SERVO_CODE = 66 ;
-const uint8_t CLAW_ON_CODE = 67 ;
-const uint8_t CLAW_OFF_CODE = 68 ;
-const uint8_t LINESENSOR_CODE = 69 ;
-const uint8_t CONTAINERSENSOR_CODE = 71 ;
+const uint8_t ELETROIMA_ON_CODE = 64;
+const uint8_t ELETROIMA_OFF_CODE = 65;
+const uint8_t SERVO_ON_CODE = 66;
+const uint8_t CLAW_ON_CODE = 67;
+const uint8_t CLAW_OFF_CODE = 68;
+const uint8_t LINESENSOR_ON_CODE = 69;
+const uint8_t LINESENSOR_OFF_CODE = 70;
+const uint8_t CONTAINERSENSOR_ON_CODE = 71;
+const uint8_t CONTAINERSENSOR_OFF_CODE = 72;
 
 int fd;
 
@@ -49,47 +56,69 @@ void setElectromagnet_cb(const std_msgs::BoolConstPtr &msg)
     if (setElectromagnet)
     {
         write(fd, &ELETROIMA_ON_CODE, 1);
+        ROS_INFO_STREAM("Turning On electromagnet: " << ELETROIMA_ON_CODE);
     }
     else
     {
-        write(fd, &ELETROIMA_OFF_CODE, 1); // oi gonza, tudo bem com você?
+        write(fd, &ELETROIMA_OFF_CODE, 1);
+        ROS_INFO_STREAM("Turning Off electromagnet: " << ELETROIMA_OFF_CODE);
     }
 }
+/* Position of the gear and pinion
+*
+*   One of {0,1,2,3,4,5}
+*/
 
-void clawPose_cb(const std_msgs::Float64ConstPtr &msg) // pena de urubu, pena de galinha
+void clawPose_cb(const std_msgs::Float64ConstPtr &msg)
 
 {
     if (turnOnClaw)
     {
         clawPose = (int8_t)msg->data;
-        if (clawPose > -64 and clawPose < 64) // se vc já deu o cu dê uma risadinha
+        if (clawPose > -64 && clawPose < 64)
+        {
             write(fd, &clawPose, 1);
+            ROS_INFO_STREAM("Moving Gear and Pinion: " << (int) clawPose);
+        }
         else
         {
-            ROS_ERROR_STREAM("Sending ILEGAL claw position. should be between [-63,63], but is: " << clawPose);
+            ROS_ERROR_STREAM("Not Sending ILEGAL claw position. should be between [-63,63], but is: " << (int) clawPose);
         }
+    }
+    else
+    {
+        ROS_INFO_STREAM("Not moving Gear and Pinion: " << (int) clawPose);
     }
 }
 
-void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg) // comi o cu de quem tá lendo
+void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg)
 {
     turnOnClaw = msg->data;
-    if( turnOnClaw)
+    if (turnOnClaw)
+    {
         write(fd, &CLAW_ON_CODE, 1);
+        ROS_INFO_STREAM("Turning On Gear and Pinion: " << (int) CLAW_ON_CODE);
+    }
     else
-        write(fd, &CLAW_OFF_CODE , 1);
+    {
+        write(fd, &CLAW_OFF_CODE, 1);
+        ROS_INFO_STREAM("Turning Off Gear and Pinion: " << CLAW_OFF_CODE);
+    }
 }
+
 void setLineFollower_cb(const std_msgs::BoolConstPtr &msg)
 {
     setLineFollower = msg->data;
 
     if (setLineFollower)
     {
-        write(fd, &setOnCodes[2], 1);
+        write(fd, &LINESENSOR_ON_CODE, 1);
+        ROS_INFO_STREAM("Turning On setLineFollower: " << LINESENSOR_ON_CODE);
     }
     else
     {
-        write(fd, &setOffCodes[2], 1);
+        write(fd, &LINESENSOR_OFF_CODE, 1);
+        ROS_INFO_STREAM("Turning Off setLineFollower: " << LINESENSOR_OFF_CODE);
     }
 }
 
@@ -99,40 +128,53 @@ void setContainer_cb(const std_msgs::BoolConstPtr &msg)
 
     if (setContainer)
     {
-        write(fd, &setOnCodes[3], 1);
+        write(fd, &CONTAINERSENSOR_ON_CODE, 1);
+        ROS_INFO_STREAM("Turning On setContainer: " << CONTAINERSENSOR_ON_CODE);
     }
     else
     {
-        write(fd, &setOffCodes[3], 1);
+        write(fd, &CONTAINERSENSOR_OFF_CODE, 1);
+        ROS_INFO_STREAM("Turning Off setContainer: " << CONTAINERSENSOR_OFF_CODE);
     }
 }
 
 void servoPose_cb(const std_msgs::Float64ConstPtr &msg)
 {
     servoPose = (uint8_t)msg->data;
-    if (turnOnClaw)
-    {
-        clawPose = (int8_t)msg->data;
 
-        write(fd, &setOnCodes[1], 1);
-        ros::Duration(0.005).sleep();
-        write(fd, &clawPose, 1);
-    }
+    write(fd, &SERVO_ON_CODE, 1);
+    ROS_INFO_STREAM("Turning On Servo: " << SERVO_ON_CODE);
+
+    ros::Duration(0.005).sleep();
+
+    write(fd, &servoPose, 1);
+    ROS_INFO_STREAM("Servo Pose: " << servoPose);
 }
 
 int main(int argc, char *argv[])
 {
 
-    // Configure Serial communication =====================
+    ros::init(argc, argv, "SensorArduinoInterface");
+    ros::NodeHandle node;
+
+    // Configure Serial communication       =====================
     struct termios toptions;
 
-    char str[] = "/dev/ttyACM0";
-    fd = open(str, O_RDWR | O_NONBLOCK); //fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
-
-    if (fd == -1)
+    char str[] = "/dev/ttyUSB0";
+    ros::Duration dur(1);
+    while (ros::ok())
     {
-        ROS_ERROR_STREAM("serialport_init: Unable to open port " << str);
-        return -1;
+        fd = open(str, O_RDWR | O_NONBLOCK); //fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
+
+        if (fd == -1)
+        {
+            ROS_ERROR_STREAM("serialport_init: Unable to open port " << str);
+            dur.sleep();
+        }
+        else
+        {
+            break;
+        }
     }
 
     //int iflags = TIOCM_DTR;
@@ -145,7 +187,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    speed_t brate = B9600;
+    speed_t brate = B115200;
     cfsetispeed(&toptions, brate);
     cfsetospeed(&toptions, brate);
 
@@ -168,7 +210,7 @@ int main(int argc, char *argv[])
 
     // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
     toptions.c_cc[VMIN] = 0;  // Minimun numbers of bytes to receive before stop waiting (blocking the thread) in read() in case queue is empty
-    toptions.c_cc[VTIME] = 0; // Time to wait in the queue to check if there are more bits comming to the buffer
+    toptions.c_cc[VTIME] = 1; // Time to wait in the queue to check if there are more bits comming to the buffer
 
     tcsetattr(fd, TCSANOW, &toptions);
     if (tcsetattr(fd, TCSAFLUSH, &toptions) < 0)
@@ -178,38 +220,81 @@ int main(int argc, char *argv[])
     }
 
     // wait for reboot of the arduino
-    dur.sleep();
-    dur.sleep();
-    dur.sleep();
+    ROS_INFO("Finished Serial Communication Setup - Waiting for reboot");
 
+    dur.sleep();
+    ROS_INFO("Rebooted");
     // Ended Configure Serial communication =====================
-
-    // ROS configurations ====================================
-    ros::init(argc, argv, "SensorArduinoInterface");
-    ros::NodeHandle node;
 
     // Create 4 topics to receive motor speed
     ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/setElectromagnet", 1, setElectromagnet_cb);
-    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawPose", 1, clawPose_cb);
+    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawVel", 1, clawPose_cb);
     ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/turnOnClaw", 1, turnOnClaw_cb);
-    ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/setLineFollowerSensors", 1, setLineFollower_cb);
+    ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/setPololuSensors", 1, setLineFollower_cb);
     ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/setContainerSensors", 1, setContainer_cb);
     ros::Subscriber subServo = node.subscribe<std_msgs::Float64>("/setServoPose", 1, servoPose_cb);
 
-    ros::init(argc, argv, "Testing Arduino");
-    ros::NodeHandle node;
-    ros::Duration dur(1000);
-    // Ended ROS configurations ====================================
+    ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/clawEncoder", 1);
+    ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
+    ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);
+
+    struct pollfd arduino_fds[1];
+    arduino_fds[0].fd = fd;
+    arduino_fds[0].events = POLLIN;
+
+    int timeout = 0; // ms
+    int nread = 0;
+    char b[50];
+
+    //ros::Duration dur2(0.1);
+    //int tmp = 1;
+    std_msgs::UInt8 msg;
+    std_msgs::Int64 msg64;
+    // std::ostringstream oss;
     while (ros::ok())
     {
-        int n = write(fd, b, 4);
-        if (n != 4)
+
+        int tmp = poll(arduino_fds, 1, timeout);
+
+        if (tmp > 0)
         {
-            perror("serialport_write: couldn't write whole string\n");
-            return -1;
+            if (arduino_fds[0].revents & POLLIN)
+            {
+                nread = read(arduino_fds[0].fd, b, 32);
+
+                if (nread > 0)
+                {
+                    int i = 0;
+
+                   // ROS_INFO_STREAM("Buffer " << nread << ": " << (int)b[0] << ":" << (int)b[1] << ":" << (int)b[2] << ":" << (int)b[3] << ":" << (int)b[4] << ":" << (int)b[5] << ":" << (int)b[6] << ":");
+                    if (setLineFollower)
+                    {
+                        msg.data = b[i++];
+                        pubLineSensors.publish(msg);
+                    }
+
+                    if (setContainer)
+                    {
+                        msg.data = b[i++];
+                        pubContainers.publish(msg);
+                    }
+
+                    if (turnOnClaw)
+                    {
+                        msg.data = b[i++];
+
+                        std::string s(&b[i], nread - i);
+                        ROS_INFO_STREAM("DEBUG STRING " << s);
+                        msg64.data = std::stoi(s);
+                        pubEncoder.publish(msg64);
+                    }
+                }
+            }
         }
-        dur.sleep();
+
+        ros::spinOnce();
     }
 
+    ROS_INFO("Closing communication");
     close(fd);
 }

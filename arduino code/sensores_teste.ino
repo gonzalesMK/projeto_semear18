@@ -23,7 +23,7 @@
  *  256: Ligar o Eletroima
  *  257: Desliga Eletroima
  *  258: Liga controle do servo. Sequentemente, você precisa enviar a posição do servo
- *  259: Ligar o feedback do encoder, fim de curso e motor da garra. 
+ *  259: Ligar o feedback do encoder, fim de curso e motor da garra
  *  260: Desligar o feedback do encoder, fim de curso e o motor da garra
  *  261: Ligar os sensores de linha
  *  262: Desligar sensores de linha
@@ -72,7 +72,7 @@
 #define ELETROIMA_PIN 4
 
 // MOTOR GARRA
-volatile long int encoder_tick;
+volatile long int encoder_tick = 5;
 volatile int PWM = 0;
 
 void encoder1A_cb()
@@ -104,14 +104,6 @@ void setup()
 {
   Serial.begin(9600);
 
-  // POLOLU
-  qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
-  qtr.setEmitterPin(CONTROL_PIN);
-
-  pinMode(DIGI1, INPUT);
-  pinMode(DIGI2, INPUT);
-
   // MOTOR GARRA
   pinMode(encoder1A, INPUT);
   pinMode(encoder1B, INPUT);
@@ -121,11 +113,6 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(encoder1A), encoder1A_cb, RISING); // D2
   attachInterrupt(digitalPinToInterrupt(encoder1B), encoder1B_cb, RISING); // D3
 
-  // SERVO
-  servo.attach(SERVO_PIN);
-
-  // ELETROIMA
-  pinMode(ELETROIMA_PIN, OUTPUT);
 }
 
 int servo_pose;
@@ -136,45 +123,23 @@ bool publish_containers_sensors = false;
 void loop()
 {
 
+  if (publish_encoder)
+  {
+    Serial.print(encoder_tick, DEC);
+    Serial.print((bool)PINB & FIMCURSOBITS, DEC);
+
+  }
+
   if (publish_sensors)
   {
-    qtr.readLineBlack(sensorValues);
-
-    byte sensorsValuesByte = 0;
-    for (uint8_t i = 0; i < SensorCount; i++)
-    {
-      sensorsValuesByte |= ((sensorValues[i] > IS_BLACK) << i);
-    }
+    byte sensorsValuesByte = 1;
     Serial.write(sensorsValuesByte);
   }
 
   if (publish_containers_sensors)
   {
-    Serial.write(digitalRead(DIGI1));
-    Serial.write(digitalRead(DIGI2));
-  }
-
-  if (publish_encoder)
-  {
-    Serial.write((bool)PINB & FIMCURSOBITS, DEC);
-    Serial.print(encoder_tick, DEC);
-
-    if (PWM > 0)
-    {
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-    }
-    else if (PWM < 0)
-    {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-    }
-    else
-    {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, LOW);
-    }
-    analogWrite(ENABLE, abs(PWM));
+    Serial.write(2);
+    Serial.write(3);
   }
 }
 
@@ -186,9 +151,9 @@ void loop()
 void serialEvent()
 {
 
-  char ch = (char)Serial.read();
+  char ch = (char) Serial.read();
 
-  if (-63 = < ch || ch = < 63)
+  if (-63 < ch || ch < 63)
   {
     PWM = ch;
   }
@@ -210,11 +175,11 @@ void serialEvent()
     {
       if (Serial.available())
       {
-        servo_pose = (uint8_t)Serial.read();
+        servo_pose = (uint8_t) Serial.read();
       }
     }
 
-    servo.write(servo_pose);
+    Serial.write(10);
     break;
 
   case 67: // ligar o feedback do encoder, fim de curso e motor da garra
@@ -224,9 +189,7 @@ void serialEvent()
   case 68: // Desliga feedback do encoder, fim de curso e motor da garra
     publish_encoder = false;
     PWM = 0;
-    // analogWrite(ENABLE, PWM);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
+    analogWrite(ENABLE, PWM);
     break;
 
   case 69: // Liga sensores de linha

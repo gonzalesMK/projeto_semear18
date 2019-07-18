@@ -98,6 +98,13 @@ target_link_libraries(raspEncoderConversion
 )
 add_dependencies(raspEncoderConversion ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(sensorCode rasp/sensorCode.cpp)
+target_link_libraries(sensorCode
+  ${catkin_LIBRARIES}
+)
+add_dependencies(sensorCode ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
 #add_executable(publishEncoder rasp/publishEncoder.cpp)
 #target_link_libraries(publishEncoder
 # ${catkin_LIBRARIES}
@@ -109,3 +116,4 @@ add_dependencies(raspEncoderConversion ${${PROJECT_NAME}_EXPORTED_TARGETS})
 #target_link_libraries(motorCode
 # ${catkin_LIBRARIES}
 #)
+
