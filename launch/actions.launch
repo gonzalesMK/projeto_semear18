@@ -10,4 +10,6 @@
 
     <node name="goFromContainerToIntersection" pkg="projeto_semear" type="goFromContainerToIntersection.py" respawn="false" output="screen"/>   
 
+    <node name="goToTrain"  pkg="projeto_semear" type="goToTrain.py" respawn="false" output="screen"/>   
+
 </launch>   

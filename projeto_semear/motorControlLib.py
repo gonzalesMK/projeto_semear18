@@ -108,6 +108,7 @@ class MotorControl(object):
         self.pub_motorBR.publish(vel_array[int(Wheels.BR)])
 
     def stop(self):
+        self.setVelocity([0,0,0,0])
 
         self.pub_motorFL.publish(0)
         self.pub_motorFR.publish(0)
@@ -118,6 +119,8 @@ class MotorControl(object):
         self.pub_motorLineFR.publish(0)
         self.pub_motorLineBL.publish(0)
         self.pub_motorLineBR.publish(0)
+
+        rospy.Rate(10).sleep()  
 
         self.pub_encoderEnable.publish(False)
         self.pub_lineEnable.publish(False)

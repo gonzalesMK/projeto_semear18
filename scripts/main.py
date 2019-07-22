@@ -157,7 +157,11 @@ class whereToGo(smach.State):
 
 def main():
     rospy.init_node('smach_example_state_machine')
-
+    rospy.loginfo("Hey")
+    rospy.Rate(1).sleep()  
+    rospy.loginfo("Hey")
+    
+    rospy.loginfo("uop")
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['succeeded', 'failed'])
     

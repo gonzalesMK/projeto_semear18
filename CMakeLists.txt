@@ -49,6 +49,7 @@ add_action_files(
   changeIntersection.action
   moveEletroima.action
   setEletroima.action
+  goToTrain.action
 )
     
 generate_messages(

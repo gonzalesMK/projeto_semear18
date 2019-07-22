@@ -1,8 +1,10 @@
 <launch>
-
-    <include file="$(find projeto_semear)/launch/pid.launch"/>
+    <param name ="/use_sim_time" value="true"/>
     <include file="$(find projeto_semear)/launch/simuladorInterface.launch"/>
+    
+    <include file="$(find projeto_semear)/launch/pid.launch"/>
+    
     <include file="$(find projeto_semear)/launch/actions.launch"/>
 
-    <node name="main" pkg="projeto_semear" type="main.py" respawn="false" output="screen"/>   
+<!-- <node name="main" pkg="projeto_semear" type="main.py" respawn="false" output="screen"/>    -->
 </launch>   
