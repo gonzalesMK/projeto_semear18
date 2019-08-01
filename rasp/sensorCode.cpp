@@ -4,12 +4,8 @@
 #include <std_msgs/Int64.h>
 #include <std_msgs/Bool.h>
 
-#include <stdio.h>   // Standard input/output definitions
-#include <unistd.h>  // UNIX standard function definitions
-#include <fcntl.h>   // File control definitions
-#include <errno.h>   // Error number definitions
-#include <termios.h> // POSIX terminal control definitions
-#include <string.h>  // String function definitions
+#include "projeto_semear/arduino_interface.h"
+
 #include <sstream>
 #include <sys/ioctl.h>
 
@@ -70,7 +66,6 @@ void setElectromagnet_cb(const std_msgs::BoolConstPtr &msg)
 */
 
 void clawPose_cb(const std_msgs::Float64ConstPtr &msg)
-
 {
     if (turnOnClaw)
     {
@@ -157,83 +152,19 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "SensorArduinoInterface");
     ros::NodeHandle node;
 
-    // Configure Serial communication       =====================
-    struct termios toptions;
-
     char str[] = "/dev/ttyUSB0";
-    ros::Duration dur(1);
-    while (ros::ok())
-    {
-        fd = open(str, O_RDWR | O_NONBLOCK); //fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
-
-        if (fd == -1)
-        {
-            ROS_ERROR_STREAM("serialport_init: Unable to open port " << str);
-            dur.sleep();
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    //int iflags = TIOCM_DTR;
-    //ioctl(fd, TIOCMBIS, &iflags);     // turn on DTR
-    //ioctl(fd, TIOCMBIC, &iflags);    // turn off DTR
-
-    if (tcgetattr(fd, &toptions) < 0)
-    {
-        ROS_ERROR_STREAM("serialport_init: Couldn't get term attributes " << str);
-        return -1;
-    }
-
-    speed_t brate = B115200;
-    cfsetispeed(&toptions, brate);
-    cfsetospeed(&toptions, brate);
-
-    // Configure Serial to Arduino protocol (8N1)
-    toptions.c_cflag &= ~PARENB; // PARENB: Enable parity generation on output and parity checking for input
-    toptions.c_cflag &= ~CSTOPB; // CSTOPB: Set two stop bits, rather than one.
-    toptions.c_cflag &= ~CSIZE;  // CSIZE: Character size mask.  Values are CS5, CS6, CS7, or CS8.
-    toptions.c_cflag |= CS8;
-
-    // Disable all kind of flow control
-    toptions.c_cflag &= ~CRTSCTS; // CRTSCTS: (not in Portable Operating System Interface) Enable RTS/CTS (hardware flow control) - There is no RTS/CTS in arduino
-    //toptions.c_cflag &= ~HUPCL; // disable hang-up-on-close to avoid reset
-
-    toptions.c_cflag |= CREAD | CLOCAL;          // CREAD: turn on READ || CLOCAL: Ignore modem control lines
-    toptions.c_iflag &= ~(IXON | IXOFF | IXANY); // IXON : software flow control on input, IXOFF: software flow control on output  -- TURN OF software flow control
-
-    // Set the communication in RAW MODE
-    toptions.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-    toptions.c_oflag &= ~OPOST;
-
-    // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
-    toptions.c_cc[VMIN] = 0;  // Minimun numbers of bytes to receive before stop waiting (blocking the thread) in read() in case queue is empty
-    toptions.c_cc[VTIME] = 1; // Time to wait in the queue to check if there are more bits comming to the buffer
-
-    tcsetattr(fd, TCSANOW, &toptions);
-    if (tcsetattr(fd, TCSAFLUSH, &toptions) < 0)
-    {
-        ROS_ERROR_STREAM("serialport_init: Couldn't set term attributes " << str);
-        return -1;
-    }
-
-    // wait for reboot of the arduino
-    ROS_INFO("Finished Serial Communication Setup - Waiting for reboot");
-
-    dur.sleep();
-    ROS_INFO("Rebooted");
-    // Ended Configure Serial communication =====================
+    Arduino::Arduino arduino(str);
+    fd = arduino.fd;
 
     // Create 4 topics to receive motor speed
-    ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/setElectromagnet", 1, setElectromagnet_cb);
+    ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/turnOnElectromagnet", 1, setElectromagnet_cb);
     ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawVel", 1, clawPose_cb);
     ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/turnOnClaw", 1, turnOnClaw_cb);
-    ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/setPololuSensors", 1, setLineFollower_cb);
-    ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/setContainerSensors", 1, setContainer_cb);
+    ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/turnOnPololuSensors", 1, setLineFollower_cb);
+    ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/turnOnContainerSensors", 1, setContainer_cb);
     ros::Subscriber subServo = node.subscribe<std_msgs::Float64>("/setServoPose", 1, servoPose_cb);
 
+    // Publisher for the information acquired from the arduino
     ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/clawEncoder", 1);
     ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
     ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);

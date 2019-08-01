@@ -135,7 +135,7 @@ bool publish_containers_sensors = false;
 
 void loop()
 {
-
+  // Publish sensor readings
   if (publish_sensors)
   {
     qtr.readLineBlack(sensorValues);
@@ -148,12 +148,14 @@ void loop()
     Serial.write(sensorsValuesByte);
   }
 
+  // Publish container sensors readings
   if (publish_containers_sensors)
   {
     Serial.write(digitalRead(DIGI1));
     Serial.write(digitalRead(DIGI2));
   }
 
+  // Publish encoder readings and Write to the motor
   if (publish_encoder)
   {
     Serial.write((bool)PINB & FIMCURSOBITS, DEC);

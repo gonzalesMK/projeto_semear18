@@ -1,12 +1,12 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Bool.h>
 
-#include <iostream>
-#include <stdio.h>
+#include "projeto_semear/arduino_interface.h"
 
 #include <boost/bind.hpp>
 
-// #include <termio.h> 
+// #include <termio.h>
 
 /* Interface ROS -> Arduino 
  *
@@ -18,37 +18,44 @@
  */
 
 char vel[4];
+char stop[4] = {0, 0, 0, 0};
 
-void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var){
+bool turnOnBaseMotor = false;
 
-   var = (char) msg->data; 
+void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var)
+{
+
+    var = (char)msg->data;
 }
 
 int main(int argc, char *argv[])
 {
-   ros::init(argc, argv, "MotorArduinoInterface");
-   ros::NodeHandle node;
-   
-   // Create 4 topics to receive motor speed
-   ros::Subscriber motor_sub1 = node.subscribe<std_msgs::Float64>("/motorFR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[0])) );
-   ros::Subscriber motor_sub2 = node.subscribe<std_msgs::Float64>("/motorFL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[1])) );
-   ros::Subscriber motor_sub3 = node.subscribe<std_msgs::Float64>("/motorBR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[2])) );
-   ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Float64>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[3])) );
+    ros::init(argc, argv, "MotorArduinoInterface");
+    ros::NodeHandle node;
 
-   // Open arduino
-   std::FILE *file = std::fopen("/dev/ttyACM0", "w");
+    // Create 4 topics to receive motor speed
+    ros::Subscriber motor_sub1 = node.subscribe<std_msgs::Float64>("/motorFR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[0])));
+    ros::Subscriber motor_sub2 = node.subscribe<std_msgs::Float64>("/motorFL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[1])));
+    ros::Subscriber motor_sub3 = node.subscribe<std_msgs::Float64>("/motorBR/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[2])));
+    ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Float64>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[3])));
 
+    // Open arduino
+    char str[] = "/dev/ttyUSB1";
 
-   while( ros::ok() ){
+    Arduino::Arduino arduino(str);
 
-      std::fprintf( file,"%c", vel[0]);
-      std::fprintf( file,"%c", vel[1]);
-      std::fprintf( file,"%c", vel[2]);
-      std::fprintf( file,"%c", vel[3]);
+    ros::Rate rate(50);
 
-      ros::spinOnce();
-      sleep(10);
-   }
+    while (ros::ok())
+    {
 
-   std::fclose(file);
+        ros::spinOnce();
+
+        write(arduino.fd, vel, 4);
+
+        rate.sleep();
+    }
+
+    ROS_INFO("Closing communication - Arduino Motor");
+    close(arduino.fd);
 }

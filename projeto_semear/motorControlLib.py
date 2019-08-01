@@ -32,9 +32,15 @@ class MotorControl(object):
         self.pub_motorLineFR = rospy.Publisher('/motorSensorFR/error', Float64, queue_size=10)    
         self.pub_motorLineBL = rospy.Publisher('/motorSensorBL/error', Float64, queue_size=10)    
         self.pub_motorLineBR = rospy.Publisher('/motorSensorBR/error', Float64, queue_size=10)
+
+        self.pub_motorPWM_FL = rospy.Publisher('/motorFL/pwm', Float64, queue_size=10)    
+        self.pub_motorPWM_FR = rospy.Publisher('/motorBL/pwm', Float64, queue_size=10)    
+        self.pub_motorPWM_BL = rospy.Publisher('/motorFR/pwm', Float64, queue_size=10)    
+        self.pub_motorPWM_BR = rospy.Publisher('/motorBR/pwm', Float64, queue_size=10)
         
         self.pub_lineEnable = rospy.Publisher('/pid_enable', Bool, queue_size=10)    
-        self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)    
+        self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)   
+
         rospy.Rate(2).sleep()  
 
         self._velocity_mode = False
@@ -125,6 +131,11 @@ class MotorControl(object):
         self.pub_encoderEnable.publish(False)
         self.pub_lineEnable.publish(False)
 
-        # We could publish 0 To the PWM topics in order to stop the robot definitively
+        # Publish 0 To the PWM topics in order to stop the robot definitively
+        self.pub_motorPWM_FL.publish(0)
+        self.pub_motorPWM_FR.publish(0)
+        self.pub_motorPWM_BL.publish(0)
+        self.pub_motorPWM_BR.publish(0)
+        
         self._velocity_mode = False
         self._align_mode = False    
