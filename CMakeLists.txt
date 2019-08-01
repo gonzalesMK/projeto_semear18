@@ -70,6 +70,12 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+add_library(arduino_library src/arduino_interface.cpp)
+
+# Link Library with respective dependencies
+target_link_libraries(arduino_library ${catkin_LIBRARIES})
+# add_dependencies(arduino_library ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 
 catkin_install_python(PROGRAMS scripts/main.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
