@@ -39,12 +39,13 @@ const uint8_t CONTAINERSENSOR_OFF_CODE = 72;
 int fd;
 
 bool setElectromagnet = false;
-int8_t clawPose = 0;
+int8_t clawPWM = 0;
 bool turnOnClaw = false;
 bool setLineFollower = false;
 bool setContainer = false;
 uint8_t servoPose = 0;
 
+// Turn On/Off the claw's electromagnet
 void setElectromagnet_cb(const std_msgs::BoolConstPtr &msg)
 {
     setElectromagnet = msg->data;
@@ -60,32 +61,30 @@ void setElectromagnet_cb(const std_msgs::BoolConstPtr &msg)
         ROS_INFO_STREAM("Turning Off electromagnet: " << ELETROIMA_OFF_CODE);
     }
 }
-/* Position of the gear and pinion
-*
-*   One of {0,1,2,3,4,5}
-*/
 
-void clawPose_cb(const std_msgs::Float64ConstPtr &msg)
+// Send position command to the claw's DC motor  
+void clawPWM_cb(const std_msgs::Float64ConstPtr &msg)
 {
     if (turnOnClaw)
     {
-        clawPose = (int8_t)msg->data;
-        if (clawPose > -64 && clawPose < 64)
+        clawPWM = (int8_t)msg->data;
+        if (clawPWM > -64 && clawPWM < 64)
         {
-            write(fd, &clawPose, 1);
-            ROS_INFO_STREAM("Moving Gear and Pinion: " << (int) clawPose);
+            write(fd, &clawPWM, 1);
+            ROS_INFO_STREAM("Moving Gear and Pinion: " << (int) clawPWM);
         }
         else
         {
-            ROS_ERROR_STREAM("Not Sending ILEGAL claw position. should be between [-63,63], but is: " << (int) clawPose);
+            ROS_ERROR_STREAM("Not Sending ILEGAL claw PWM. should be between [-63,63], but is: " << (int) clawPWM);
         }
     }
     else
     {
-        ROS_INFO_STREAM("Not moving Gear and Pinion: " << (int) clawPose);
+        ROS_INFO_STREAM("Not moving Gear and Pinion: " << (int) clawPWM);
     }
 }
 
+// Turn On/Off the claw's DC motor interface
 void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg)
 {
     turnOnClaw = msg->data;
@@ -101,6 +100,7 @@ void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg)
     }
 }
 
+// Turn on/Off the infrared sensors in the base
 void setLineFollower_cb(const std_msgs::BoolConstPtr &msg)
 {
     setLineFollower = msg->data;
@@ -117,6 +117,7 @@ void setLineFollower_cb(const std_msgs::BoolConstPtr &msg)
     }
 }
 
+// Turn on/Off the infrared sensors in the container
 void setContainer_cb(const std_msgs::BoolConstPtr &msg)
 {
     setContainer = msg->data;
@@ -133,6 +134,7 @@ void setContainer_cb(const std_msgs::BoolConstPtr &msg)
     }
 }
 
+// Send position command to the Servo motor  
 void servoPose_cb(const std_msgs::Float64ConstPtr &msg)
 {
     servoPose = (uint8_t)msg->data;
@@ -146,6 +148,7 @@ void servoPose_cb(const std_msgs::Float64ConstPtr &msg)
     ROS_INFO_STREAM("Servo Pose: " << servoPose);
 }
 
+
 int main(int argc, char *argv[])
 {
 
@@ -156,15 +159,13 @@ int main(int argc, char *argv[])
     Arduino::Arduino arduino(str);
     fd = arduino.fd;
 
-    // Create 4 topics to receive motor speed
     ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/turnOnElectromagnet", 1, setElectromagnet_cb);
-    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawVel", 1, clawPose_cb);
+    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawPWM", 1, clawPWM_cb);
     ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/turnOnClaw", 1, turnOnClaw_cb);
     ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/turnOnPololuSensors", 1, setLineFollower_cb);
     ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/turnOnContainerSensors", 1, setContainer_cb);
     ros::Subscriber subServo = node.subscribe<std_msgs::Float64>("/setServoPose", 1, servoPose_cb);
 
-    // Publisher for the information acquired from the arduino
     ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/clawEncoder", 1);
     ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
     ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);
@@ -177,11 +178,8 @@ int main(int argc, char *argv[])
     int nread = 0;
     char b[50];
 
-    //ros::Duration dur2(0.1);
-    //int tmp = 1;
     std_msgs::UInt8 msg;
     std_msgs::Int64 msg64;
-    // std::ostringstream oss;
     while (ros::ok())
     {
 
@@ -215,7 +213,7 @@ int main(int argc, char *argv[])
                         msg.data = b[i++];
 
                         std::string s(&b[i], nread - i);
-                        ROS_INFO_STREAM("DEBUG STRING " << s);
+                        //ROS_INFO_STREAM("DEBUG STRING " << s);
                         msg64.data = std::stoi(s);
                         pubEncoder.publish(msg64);
                     }
