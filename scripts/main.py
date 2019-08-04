@@ -115,7 +115,17 @@ class recognizeContainers(smach.State):
         if(True):
             return 'success'
 
+
 class pickContainer(smach.State):
+    """ This state picks and raises the container
+    
+        Inputs: 
+            containersList: 
+            containerPose:
+        Output: 
+            containersList: w/out the picked container
+            
+    """
     def __init__(self):
         smach.State.__init__(self, 
                             input_keys=['containersList','containerPose',],

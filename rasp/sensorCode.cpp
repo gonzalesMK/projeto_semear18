@@ -159,14 +159,17 @@ int main(int argc, char *argv[])
     Arduino::Arduino arduino(str);
     fd = arduino.fd;
 
-    ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/turnOnElectromagnet", 1, setElectromagnet_cb);
-    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/setClawPWM", 1, clawPWM_cb);
-    ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/turnOnClaw", 1, turnOnClaw_cb);
+    ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/claw/enableElectromagnet", 1, setElectromagnet_cb);
+    ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/claw/pwm", 1, clawPWM_cb);
+    ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/claw/enableFB", 1, turnOnClaw_cb);
+    ros::Subscriber subServo = node.subscribe<std_msgs::Float64>("/claw/servoPose", 1, servoPose_cb);
+    
+    ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/claw/height", 1);
+    
     ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/turnOnPololuSensors", 1, setLineFollower_cb);
     ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/turnOnContainerSensors", 1, setContainer_cb);
-    ros::Subscriber subServo = node.subscribe<std_msgs::Float64>("/setServoPose", 1, servoPose_cb);
 
-    ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/clawEncoder", 1);
+
     ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
     ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);
 
@@ -214,7 +217,7 @@ int main(int argc, char *argv[])
 
                         std::string s(&b[i], nread - i);
                         //ROS_INFO_STREAM("DEBUG STRING " << s);
-                        msg64.data = std::stoi(s);
+                        msg64.data = std::stoi(s) * ;
                         pubEncoder.publish(msg64);
                     }
                 }

@@ -19,14 +19,16 @@ class LineSensor(object):
 
     In our robot, we have 1 pololu's sensor - with 2 phototransitorseach - in each of the following: Left, Front, Right and Back of the robot.
 
-    This class should subscribe a topics that advertise UInt8 -each bit is a sensor reading
-
     The output of the readLine() is an array with the line position for each pair of sensor:
         -2 : line is in front/right of the robot, and all the sensors are out of the line
         -1 : line is in front/right of the robot, and the front sensor is over the line
         0 : the robot is over the line
         1 : contrary of -1
         2 : contrty of -2
+    
+    Subscribe:
+        /pololuSensor: UInt8
+            each bit of this 8bits int is a sensor reading True (1) or False (0)
     
     """
     def __init__(self):
@@ -57,7 +59,7 @@ class LineSensor(object):
 
     def reset(self, resetToMinimun=True):
         """
-        Reset the tracking of the line. 
+        Reset the tracking of the line. This is useful to start alinging with a new line
 
         Parameters
         ----------
