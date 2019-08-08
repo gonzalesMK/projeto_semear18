@@ -20,10 +20,10 @@ class GearAndPinionPoses(Enum):
         return self.value
 
 class ServoPose(Enum):
-    Left = 10
-    Right = 170
-    Center = 100
-
+    Left = 0
+    Center = 90
+    Right = 180
+    
     def __int__(self):
         return self.value
 
@@ -49,9 +49,7 @@ class Claw(object):
         /claw/pid_enable  : Bool
             turn on the Controller
         
-        
-        
-        
+       
     Subscribe to:
         /claw/limitSwitch: Bool
             the upperlimit of the Gear and Pinion. True is activated (the Gear is in the lmit position)
@@ -81,14 +79,15 @@ class Claw(object):
         rospy.Subscriber("/claw/limitSwitch", Bool, self.__clawSwitchCB)
         
         self.pubServoPose = rospy.Publisher("/claw/servoPose", Float64, queue_size=1) # Control the Position of the Servo Motor
-        
-        self.pubClawDesiredVel = rospy.Publisher("/claw/desired_vel", Float64, 1)
-        self.pubClawControllerEnable = rospy.Publisher('/claw/pid_enable', Bool, queue_size=10)    
-        self.pubClawControllerError = rospy.Publisher('/claw/error', Bool, queue_size=10)    
         self.pubClawPWM = rospy.Publisher("/claw/PWM", Float64, 1)
         self.pubTurnOnClawFeedback = rospy.Publisher("/claw/turnOnFB", Bool, 1)# Turn on the Gear and Pinion arduino interface
         self.pubTurnOnElectro = rospy.Publisher("/claw/turnOnElectromagnet", Bool, 1)# Turn on the Electromagnet
-
+        
+        
+        #self.pubClawDesiredVel = rospy.Publisher("/claw/desired_vel", Float64, 1)
+        #self.pubClawControllerEnable = rospy.Publisher('/claw/pid_enable', Bool, queue_size=10)    
+        #self.pubClawControllerError = rospy.Publisher('/claw/error', Bool, queue_size=10)    
+        
 
         self.__precision = 0.01 
         self.__limitVel = 0.1
@@ -123,6 +122,18 @@ class Claw(object):
 
         return vel    
 
+    def __clipRackPose(self, pose):
+        """
+            Set limits for the Rack pose
+        """
+        if pose < 0 : 
+            pose = 0
+        
+        if pose > self.__limitRackPose:
+            pose = self.__limitRackPose
+
+        return pose    
+
     def __turnOnGearAndPinion(self):
         """
             Turn on the Encoder Feedback from the arduino
@@ -132,8 +143,6 @@ class Claw(object):
         self.pubTurnOnClawFeedback.publish(True)
         self.pubClawControllerEnable(True) 
 
-
-        
     def __turnOffGearAndPinion(self):
         """
             Turn off the Encoder Feedback from the arduino
@@ -153,7 +162,7 @@ class Claw(object):
             Target: should be one of GearAndPinionPoses
         """
         self.__turnOnGearAndPinion()
-
+        target = self.__clipRackPose(target)
         error = self.gearAndPinionHeight - target
 
         while( np.abs(error) > self.__precision):
@@ -166,7 +175,6 @@ class Claw(object):
                 self.pubClawDesiredVel(self.__slowVel)
             
             self.timer.sleep()
-
 
     def setGearAndPinionPosePID(self, target):
         """
@@ -207,6 +215,7 @@ class Claw(object):
         """
         #TODO: here
         pass
+ 
     def resetGearAndPinionPose(self):
         """
             Resets the height of the Gear and Pinion. This is useful to reference the Gear and Pinion to the original position and 

@@ -35,9 +35,9 @@ add_message_files(
 )
 
 # Generate services in the 'srv' folder
-add_service_files(
-  FILES
-)
+#add_service_files(
+#  FILES
+#)
 
 add_action_files(
   FILES 
@@ -105,9 +105,10 @@ target_link_libraries(raspEncoderConversion
 )
 add_dependencies(raspEncoderConversion ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(sensorCode rasp/sensorCode.cpp)
+add_executable(sensorCode src/sensorCode.cpp)
 target_link_libraries(sensorCode
   ${catkin_LIBRARIES}
+  arduino_library
 )
 add_dependencies(sensorCode ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -119,8 +120,9 @@ add_dependencies(sensorCode ${${PROJECT_NAME}_EXPORTED_TARGETS})
 #)
 #add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#add_executable(motorCode rasp/motorCode.cpp)
-#target_link_libraries(motorCode
-# ${catkin_LIBRARIES}
-#)
+add_executable(motorCode src/motorCode.cpp)
+target_link_libraries(motorCode
+ ${catkin_LIBRARIES}
+  arduino_library
+ )
 
