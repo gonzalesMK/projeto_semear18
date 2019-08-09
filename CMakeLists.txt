@@ -41,7 +41,6 @@ add_message_files(
 
 add_action_files(
   FILES 
-  goToFirstPose.action
   goToContainer.action
   goFromContainerToIntersection.action
   goFromDockToIntersection.action

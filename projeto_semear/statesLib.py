@@ -7,15 +7,15 @@ from std_msgs.msg import Float64, Bool
 from projeto_semear.lineSensors import LineSensor, Sides
 from projeto_semear.containerSensorsLib import ContainerSensors
 from projeto_semear.motorControlLib import MotorControl, Wheels
-from projeto_semear.utils import Colors
+from projeto_semear.utils import Colors, Positions
 
 class changeIntersection(object):
 
     def __init__(self):
             smach.State.__init__(self, 
                 outcomes=['succeeded', 'aborted'],
-                input_keys=[],
-                output_keys=[])
+                input_keys=['robotPose'],
+                output_keys=['robotPose'])
 
     def execute(self, userdata):
         
@@ -87,9 +87,9 @@ class changeIntersection(object):
         
         
         
-        self._result.robotPose = int(Positions.BlueIntersection) if userdata.robotPose == Positions.GreenIntersection else int(Positions.GreenIntersection)
+        userdata.robotPose = int(Positions.BlueIntersection) if userdata.robotPose == Positions.GreenIntersection else int(Positions.GreenIntersection)
 
-        rospy.loginfo("changeIntersection: 4) Success. New pose is: {}".format(self._result.robotPose))
+        rospy.loginfo("changeIntersection: 4) Success. New pose is: {}".format(userdata.robotPose))
 
         return 'succeeded'
 
@@ -531,6 +531,6 @@ class goToFirstPose(smach.State):
 
         motorControl.stop()
 
-        self._result.finalPose = int(Positions.GreenIntersection)
-        self._as.set_succeeded(self._result)
+        userdata.finalPose = int(Positions.GreenIntersection)
+        return "succeeded"
 
