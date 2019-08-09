@@ -5,7 +5,6 @@ import rospy
 import smach
 import smach_ros
 
-from projeto_semear.msg import goToFirstPoseAction
 from enum import Enum
 # Check SMACH ROS description file to understand each state 
 
