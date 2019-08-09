@@ -7,6 +7,7 @@ from projeto_semear.lineSensors import LineSensor, Sides
 from projeto_semear.containerSensorsLib import ContainerSensors
 from projeto_semear.motorControlLib import MotorControl, Wheels
 from projeto_semear.utils import Colors
+
 class goToDockServer(object):
     # Messages to Publish Feedback/result
     _feedback = goToDockFeedback()

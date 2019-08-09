@@ -6,5 +6,5 @@
     
     <include file="$(find projeto_semear)/launch/actions.launch"/>
 
-<!-- <node name="main" pkg="projeto_semear" type="main.py" respawn="false" output="screen"/>    -->
+    <node name="main" pkg="projeto_semear" type="main.py" respawn="false" output="screen"/>   
 </launch>   

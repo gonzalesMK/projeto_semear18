@@ -5,13 +5,13 @@ import rospy
 import smach
 import smach_ros
 
-from projeto_semear.msg import goToFirstPoseAction
 from projeto_semear.msg import goToContainerAction
 from projeto_semear.msg import goFromContainerToIntersectionAction
 from projeto_semear.msg import changeIntersectionAction
 from projeto_semear.msg import goToDockAction
 from projeto_semear.msg import goFromDockToIntersectionAction
 
+from projeto_semear.statesLib import goToFirstPose
 
 from enum import Enum
 from projeto_semear.utils import Positions, Colors
@@ -168,10 +168,6 @@ class whereToGo(smach.State):
 def main():
     rospy.init_node('smach_example_state_machine')
     rospy.loginfo("Hey")
-    rospy.Rate(1).sleep()  
-    rospy.loginfo("Hey")
-    
-    rospy.loginfo("uop")
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['succeeded', 'failed'])
     
@@ -186,13 +182,8 @@ def main():
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('goToFirstPose',
-                smach_ros.SimpleActionState('goToFirstPose',
-                                            goToFirstPoseAction,
-                                            result_slots=['finalPose']
-                                            ),
+        smach.StateMachine.add('goToFirstPose', goToFirstPose(),
                 transitions={ 'succeeded':'strategyStep',
-                              'preempted':'failed',
                               'aborted':'failed'
                             },
                 remapping={'finalPose':'robotPose'}

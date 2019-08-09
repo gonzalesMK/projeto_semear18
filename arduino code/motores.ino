@@ -37,8 +37,8 @@ void setup()
     pinMode(IN4B, OUTPUT);
     pinMode(ENABLE4, OUTPUT);
 
-    Serial.begin(9600);
-    Serial.setTimeout(100);
+    Serial.begin(115200);
+    
 }
 
 void loop()
@@ -47,6 +47,10 @@ void loop()
 
 void serialEvent()
 {
+    if( Seria.available() < 4){
+        return;
+    }
+
     Serial.readBytes(PWM, 4)
 
     digitalWrite(IN1A, PWM[0] > 0);
