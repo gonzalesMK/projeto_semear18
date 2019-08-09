@@ -9,7 +9,7 @@ from projeto_semear.containerSensorsLib import ContainerSensors
 from projeto_semear.motorControlLib import MotorControl, Wheels
 from projeto_semear.utils import Colors, Positions
 
-class changeIntersection(object):
+class changeIntersection(smach.State):
 
     def __init__(self):
             smach.State.__init__(self, 
@@ -85,8 +85,6 @@ class changeIntersection(object):
 
         motorControl.stop()
         
-        
-        
         userdata.robotPose = int(Positions.BlueIntersection) if userdata.robotPose == Positions.GreenIntersection else int(Positions.GreenIntersection)
 
         rospy.loginfo("changeIntersection: 4) Success. New pose is: {}".format(userdata.robotPose))
@@ -158,7 +156,10 @@ class goFromContainerToIntersection(smach.State):
 class goFromDockToIntersection(smach.State):
     def __init__(self):
             smach.State.__init__(self, 
-            outcomes=['succeeded', 'aborted'])
+            outcomes=['succeeded', 'aborted'],
+            input_keys=['containerColor'],
+            output_keys=[])
+
 
     def execute(self, userdata):
         
@@ -223,8 +224,6 @@ class goFromDockToIntersection(smach.State):
                 break
                         
             r.sleep()
-
-
 
         # 4)
         rospy.logdebug("goFromDockToIntersection: 4) Final Alignment")

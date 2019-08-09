@@ -41,14 +41,8 @@ add_message_files(
 
 add_action_files(
   FILES 
-  goToContainer.action
-  goFromContainerToIntersection.action
-  goFromDockToIntersection.action
-  goToDock.action
-  changeIntersection.action
   moveEletroima.action
   setEletroima.action
-  goToTrain.action
 )
     
 generate_messages(

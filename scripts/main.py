@@ -5,13 +5,12 @@ import rospy
 import smach
 import smach_ros
 
-from projeto_semear.msg import goToContainerAction
-from projeto_semear.msg import goFromContainerToIntersectionAction
-from projeto_semear.msg import changeIntersectionAction
-from projeto_semear.msg import goToDockAction
-from projeto_semear.msg import goFromDockToIntersectionAction
-
 from projeto_semear.statesLib import goToFirstPose
+from projeto_semear.statesLib import goToContainer
+from projeto_semear.statesLib import goFromContainerToIntersection
+from projeto_semear.statesLib import changeIntersection
+from projeto_semear.statesLib import goFromDockToIntersection
+from projeto_semear.statesLib import goToDock
 
 from enum import Enum
 from projeto_semear.utils import Positions, Colors
@@ -164,10 +163,9 @@ class whereToGo(smach.State):
         
         return 'intersection'
 
-
 def main():
     rospy.init_node('smach_example_state_machine')
-    rospy.loginfo("Hey")
+
     # Create a SMACH state machine
     sm = smach.StateMachine(outcomes=['succeeded', 'failed'])
     
@@ -213,14 +211,8 @@ def main():
                     }
         )
 
-        smach.StateMachine.add('changeIntersection',
-                smach_ros.SimpleActionState('changeIntersection',
-                                            changeIntersectionAction,
-                                            goal_slots=['robotPose'],
-                                            result_slots=['robotPose']
-                                            ), 
+        smach.StateMachine.add('changeIntersection', changeIntersection(),
                 transitions= {  'succeeded':'strategyStep',
-                                'preempted':'failed',
                                 'aborted':'failed'},
                 remapping={ 'robotPose':'robotPose'}
         )
@@ -234,14 +226,9 @@ def main():
         sis2.start()
         with pick_and_drop_sm:
 
-            smach.StateMachine.add('goToContainer',
-                    smach_ros.SimpleActionState('goToContainer',
-                                                goToContainerAction,
-                                                goal_slots=['containerPose']),
+            smach.StateMachine.add('goToContainer', goToContainer(),
                     transitions= {  'succeeded':'pickContainer',
-                                    'preempted':'failed',
                                     'aborted':'failed'},
-                    remapping={ 'containerPose':'containerPose'}
             )
 
             smach.StateMachine.add('pickContainer', 
@@ -255,11 +242,8 @@ def main():
                         }
             )
 
-            smach.StateMachine.add('goFromContainerToIntersection', 
-                    smach_ros.SimpleActionState('goFromContainerToIntersection',
-                                                goFromContainerToIntersectionAction), 
+            smach.StateMachine.add('goFromContainerToIntersection', goFromContainerToIntersection(), 
                     transitions= {  'succeeded':'whereToGo',
-                                    'preempted':'failed',
                                     'aborted':'failed'},
             )
 
@@ -273,34 +257,20 @@ def main():
                     'containerColor':'containerColor'}
             )
             
-            smach.StateMachine.add('goToDock', 
-                    smach_ros.SimpleActionState('goToDock',
-                                                goToDockAction,
-                                                goal_slots=['containerColor']), 
+            smach.StateMachine.add('goToDock', goToDock(),
                     transitions= {  'succeeded':'goFromDockToIntersection',
-                                    'preempted':'failed',
                                     'aborted':'failed'},
                     remapping={ 'containerColor':'containerColor'}
             )   
 
-            smach.StateMachine.add('changeIntersection',
-                smach_ros.SimpleActionState('changeIntersection',
-                                            changeIntersectionAction,
-                                            goal_slots=['robotPose'],
-                                            result_slots=['robotPose']
-                                            ), 
-                transitions= {  'succeeded':'goToDock',
-                                'preempted':'failed',
-                                'aborted':'failed'},
-                remapping={ 'robotPose':'robotPose'}
-            )
+            smach.StateMachine.add('changeIntersection', changeIntersection(),
+            transitions= {  'succeeded':'goToDock',
+                            'aborted':'failed'},
+            remapping={ 'robotPose':'robotPose'}
+                    )
             
-            smach.StateMachine.add('goFromDockToIntersection', 
-                    smach_ros.SimpleActionState('goFromDockToIntersection',
-                                                goFromDockToIntersectionAction,
-                                                goal_slots=['containerColor']), 
+            smach.StateMachine.add('goFromDockToIntersection', goFromDockToIntersection(),
                     transitions= {  'succeeded':'succeeded',
-                                    'preempted':'failed',
                                     'aborted':'failed'},
                     remapping={ 'containerColor':'containerColor'}
             )   
