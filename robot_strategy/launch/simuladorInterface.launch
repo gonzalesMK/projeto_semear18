@@ -1,0 +1,12 @@
+<launch>
+
+	<master auto="start"/>
+	<param name ="/use_sim_time" value="true"/>
+
+	<node name="sensorInterface" pkg="simulation_interface" type="convert_colorsensor" respawn="false" />
+
+	<node name="motorInterface" pkg="simulation_interface" type="arduinoMotorConversion" respawn="false" output="screen"/>   
+
+	<node name="EncoderInterface" pkg="simulation_interface" type="raspEncoderConversion" respawn="false" output="screen"/>   
+
+</launch>   

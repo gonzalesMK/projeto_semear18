@@ -1,2 +1,0 @@
-bool sensorA
-bool sensorB

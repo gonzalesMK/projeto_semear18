@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<robot name="wheel" 
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="PI" value="3.1415926535897931" />
+
+    <!-- Wheels -->
+    <xacro:property name="claw_radius" value="15" />
+    <xacro:property name="claw_height" value="20" />
+    <xacro:property name="claw_mass" value="1" />
+    <!-- in kg-->
+
+    <xacro:macro name="cylinder_inertia" params="m r h">
+        <inertia ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0" iyy="${m*r*r/2}" iyz = "0" izz="${m*(3*r*r+h*h)/12}" />
+    </xacro:macro>
+
+    <xacro:macro name="claw" params="parent *origin">
+
+        <joint name="claw_joint" type="revolute">
+            <parent link="${parent}"/>
+            <child link="claw_link"/>
+            <xacro:insert_block name="origin" />
+            <axis xyz="0 1 0" rpy="0 0 0" />
+            <limit effort="100" velocity="100" lower="0" upper="180"/>
+            <joint_properties damping="0.0" friction="0.0"/>
+        </joint>
+
+        <link name="claw_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/base_superior.dae" />
+                </geometry>
+            </visual>
+
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <mesh filename="package://robot_description/meshes/base_superior.dae" />
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass value="${claw_mass}" />
+                <origin xyz="0 0 0" />
+                <cylinder_inertia m="${claw_mass}" r="${claw_radius}" h="${claw_height}" />
+            </inertial>
+        </link>
+
+        <!-- Transmission is important to link the joints and the controller (see summit_xl_control/config/summit_xl_control.yaml)-->
+        <transmission name="claw_joint_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="claw_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="claw_joint_motor">
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+        <gazebo reference="claw_link">
+            <mu1 value="1.0"/>
+            <mu2 value="1.0"/>
+            <kp value="10000000.0" />
+            <kd value="1.0" />
+            <fdir1 value="1 0 0"/>
+            <turnGravityOff>false</turnGravityOff>
+        </gazebo>
+
+    </xacro:macro>
+</robot>
