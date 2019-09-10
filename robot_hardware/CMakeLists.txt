@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(robot_interface)
+project(robot_hardware)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -58,7 +58,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(arduino_library src/arduino_interface.cpp)
+add_library(arduino_library src/arduinoInterfaceLib.cpp)
 
 # Link Library with respective dependencies
 target_link_libraries(arduino_library ${catkin_LIBRARIES})
@@ -74,7 +74,7 @@ target_link_libraries(sensorCode ${${PROJECT_NAME}_EXPORTED_TARGETS})
 #add_executable(publishEncoder rasp/publishEncoder.cpp)
 #target_link_libraries(publishEncoder
 # ${catkin_LIBRARIES}
-#  rotary_encoder
+#  encoderLib
 #)
 #add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
 

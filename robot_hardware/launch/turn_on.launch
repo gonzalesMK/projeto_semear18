@@ -1,0 +1,9 @@
+<launch>
+    
+    <node name="publishEncoder" pkg="robot_hardware" type="publishEncoder" respawn="false" output="screen"/>   
+
+    <node name="motorCode" pkg="robot_hardware" type="motorCode" respawn="false" output="screen"/>   
+
+    <node name="sensorCode" pkg="robot_hardware" type="sensorCode" respawn="false" output="screen"/>   
+
+</launch>   

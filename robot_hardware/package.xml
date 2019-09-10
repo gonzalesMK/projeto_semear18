@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>robot_interface</name>
+  <name>robot_hardware</name>
   <version>0.0.0</version>
   <description>The projeto_semear package</description>
 

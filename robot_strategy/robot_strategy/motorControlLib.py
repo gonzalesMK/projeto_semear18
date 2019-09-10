@@ -5,8 +5,8 @@ from std_msgs.msg import Float64, Bool
 import numpy as np
 from enum import Enum
 from lineSensors import Sides
-
-class Wheels(Enum):
+from enum import IntEnum
+class Wheels(IntEnum):
     FL = 0
     FR = 1
     BL = 2

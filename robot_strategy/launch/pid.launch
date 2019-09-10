@@ -1,5 +1,4 @@
 <launch>
-
 	<node name="controller" pkg="pid" type="controller" ns="motorFR">
             <rosparam file="$(find robot_strategy)/param/pid.yaml" command="load" />
 			<remap from="setpoint" to="desired_vel" />

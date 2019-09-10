@@ -2,7 +2,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 
-#include "robot_interface/arduino_interface.h"
+#include "robot_hardware/arduinoInterfaceLib.h"
 
 #include <boost/bind.hpp>
 

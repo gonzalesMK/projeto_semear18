@@ -4,7 +4,7 @@
 #include <std_msgs/Int64.h>
 #include <std_msgs/Bool.h>
 
-#include "robot_interface/arduino_interface.h"
+#include "robot_hardware/arduinoInterfaceLib.h"
 
 #include <sstream>
 #include <sys/ioctl.h>
@@ -18,14 +18,6 @@
 
 // #include <termio.h>
 
-/* Interface ROS -> Arduino 
- *
- * This code receives the PWM command from the topic <motor>/pwm and sends it to the arduino. Check the arduino code for more details on this.
- * 
- * The arduino in the Linux system is recognized as a TTY file. 
- * 
- * The arduino Receives one char in the range [-127, 127] for each motor
- */
 
 /* Esse código é responsável pelos seguintes sensores/atuadores:
  *

@@ -47,7 +47,10 @@ void loop()
 
 void serialEvent()
 {
-    
+    if( Serial.available() < 4){
+        return;
+    }
+
     Serial.readBytes(PWM, 4)
 
     digitalWrite(IN1A, PWM[0] > 0);

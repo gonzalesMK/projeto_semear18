@@ -2,7 +2,7 @@
 
 #include <pigpio.h>
 
-#include "projeto_semear/rotary_encoder.h"
+#include "robot_hardware/encoderLib.h"
 
 /*
 

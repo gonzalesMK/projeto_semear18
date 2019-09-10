@@ -7,7 +7,7 @@
 
 #include <pigpio.h>
 
-#include "projeto_semear/rotary_encoder.h"
+#include "projeto_semear/encoderLib.h"
 
 #include <boost/bind.hpp>
 
