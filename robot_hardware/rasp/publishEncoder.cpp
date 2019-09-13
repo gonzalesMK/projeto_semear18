@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
     if (gpioInitialise() < 0)
         return 1;
 
-    re_decoder dec1(7, 8);
-    re_decoder dec2(9, 10);
+    re_decoder dec1(37,33); // GPIO 26 | GPIO 13
+    re_decoder dec2(31, 29); // GPIO 6 | GPIO 5
     re_decoder dec3(11, 12);
     re_decoder dec4(13, 14);
 

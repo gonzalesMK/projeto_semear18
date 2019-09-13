@@ -151,8 +151,8 @@ void loop()
 
   if (publish_containers_sensors)
   {
-    Serial.write(digitalRead(DIGI1));
-    Serial.write(digitalRead(DIGI2));
+    uint8_t sensorsValues = (uint8_t) digitalRead(DIGI1) + digitalRead(DIGI2) * 2;
+    Serial.write(sensorsValues);
   }
 
   if (publish_encoder)

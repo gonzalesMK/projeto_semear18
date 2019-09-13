@@ -1,0 +1,83 @@
+* Testes de Hardware: 
+
+	O objetivo desses testes são permitir testar o hardware da forma mais fácil possível e sem depender de nenhum outro código. Basta embarcar
+os códigos no arduino e usar o monitor serial para enviar comandos e checar se funciona! 
+
+I) Para testar a placa dos sensores
+
+	1)Encoder - testar_encoder_motorDC_garra.ino : esse código serve para conferir se: 
+		a) Os encoders do motor DC estão sendo lidos 
+		b) O motor está girando
+		c) O número de contagens do encoder por volta está certo
+
+	2)Infravermelho - testar_infravermelhos_base.ino : esse código serve para conferir se:
+		a) Os infravermelhos estão sendo lidos
+		b) A constante que separa o Branco do Preto está correta
+
+ 	3)Servo - testar_servo.ino : esse código serve para conferir:
+		a) Se o servo está respondendo			
+		b) A rotação máxima para cada lado do servo motor
+		
+	4)Eletroima - testar_eletroima.ino: serve para conferir se
+		a) O eletroima está funcionando (ligando e desligando)
+
+	5)Software - testar_placa_sensores_completa.ino:  é possível debugar a interface que o ROS estará utilizando para controlar o arduino...
+						esse código tem todas as funções dos códigos anteriores juntas
+
+II ) Para testar a placa dos motores:
+	
+	1)Motores - testar_motores_base.ino: esse código serve para conferir:
+		a) Se os motores das bases estão indo para as direções corretas
+		b) Qual o sentido de cada motor
+
+
+III ) Para testar a Raspberry Pi:
+
+	1) Encoders - checkEncoders.py :
+		"""
+		roslaunch robot_hardware turn_on.launch
+		rosrun robot_harware checkEncoders.py		
+                """
+		a) Esse código ajudará testar se todas as leituras do encoder estão sendo lidas
+		b) Também pode testar o delay e a frequência do controle da roda: a roda deve ficar instável quando K vai aumentando conforme menor a frequencia e maior o delay
+
+
+* Testes de Interface
+
+	O objetivo desses testes são permitir checar a interface entre o ROS e o Arduino em si. Ou seja, além de embarcar o código '.ino' no arduino,
+é necessário rodar o código equivalente em ROS para que ele controle o Arduino.
+	A intenção é que todas as partes do robô possam ser controladas a partir do código ROS. A vantagem é pode checar o delay dos movimentos e da leitura
+
+I) Placa dos Sensores -
+	1) robot_harware/testar_movimento_garra.cpp
+           robot_harware/testar_enable_garra.cpp 
+           robot_harware/testar_sensores_garra.cpp : o primeiro controla a movimentação lateral e de altura da garra (servo + motor DC), o segundo controla os Enables (liga e desliga os atuadores)
+							e o terceiro publica a leitura dos sensores
+		"""
+		roslaunch robot_hardware turn_on.launch
+		rosrun robot_hardware testar_movimento_garra		
+   (outra tela) rosrun robot_hardware testar_enable_garra
+   (outra tela) rosrun robot_hardware testar_sensores_garra
+   (outra tela) rosrun teleop_twist_keyboard teleop_twist_keyboard.py 
+		"""
+			 
+
+	2) Placa dos Motores -
+
+* Testes de otimizaçao
+	
+	1) PID para entrar na área dos containers
+
+	2) PID para andar lateralmente entre as docas e os containers
+
+	3) Altura de pegar container
+
+	4) Altura de depositar container
+
+* Códigos finais:
+	
+	1) sensorCode.ino : código completo para ser utilizado durante a competição. Colocar no arduino da placa dos sensores
+
+	1) motorCode.ino : código completo para ser utilizado durante a competição. Colocar no arduino da placa dos motores
+
+	

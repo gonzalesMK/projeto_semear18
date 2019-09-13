@@ -57,7 +57,7 @@
  *  Exemplo:   
  *      Caso o motor tenha sido ativado (enviando previamente 67), o PWM e o sentido podem ser controlados enviando valores entre {-62, ..., 62}
  *   
- * O feedback dos motores são 2 Serial.print. Primeiro, envia-se um LONG INT com os ticks do motor e, posteriormente, um BOOL para avisar se algum fim de curso foi ativado.
+ * O feedback dos motores são 2 Serial.write. Primeiro, envia-se um LONG INT com os ticks do motor e, posteriormente, um BOOL para avisar se algum fim de curso foi ativado.
  *
  * O feedback dos sensores são os 6 sensores da pololu seguido pelos 2 sensores digitais
  */
@@ -103,15 +103,16 @@ void clawPWM_cb(const std_msgs::Float64ConstPtr &msg)
 {
     if (turnOnClaw)
     {
-        clawPWM = (int8_t)msg->data;
-        if (clawPWM > -63 && clawPWM < 63)
+
+        if (abs(msg->data) < 255)
         {
+	    clawPWM = (int8_t)msg->data/4;            
             write(fd, &clawPWM, 1);
             ROS_INFO_STREAM("Moving Gear and Pinion: " << (int) clawPWM);
         }
         else
         {
-            ROS_ERROR_STREAM("Not Sending ILEGAL claw PWM. should be between [-63,63], but is: " << (int) clawPWM);
+            ROS_ERROR_STREAM("Not Sending ILEGAL claw PWM. should be between [-255,255], but is: " << msg->data);
         }
     }
     else
@@ -175,6 +176,10 @@ void servoPose_cb(const std_msgs::UInt8ConstPtr &msg)
 {
     servoPose = (uint8_t) msg->data;
 
+    if( servoPose > 180 or servoPose < 0){
+
+	ROS_ERROR_STREAM("O valor de servoPose deve estar em [0, 180], mas é : " << servoPose);
+    }
     write(fd, &SERVO_ON_CODE, 1);
     ROS_INFO_STREAM("Turning On Servo: " << SERVO_ON_CODE);
 

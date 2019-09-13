@@ -84,3 +84,25 @@ target_link_libraries(motorCode
   arduino_library
  )
 
+add_executable(testar_movimento_garra test/testar_movimento_garra.cpp)
+target_link_libraries(testar_movimento_garra
+ ${catkin_LIBRARIES}
+ )
+
+
+add_executable(testar_enable_garra test/testar_enable_garra.cpp)
+target_link_libraries(testar_enable_garra
+ ${catkin_LIBRARIES}
+ )
+
+
+add_executable(testar_movimento_base test/testar_movimento_base.cpp)
+target_link_libraries(testar_movimento_base
+ ${catkin_LIBRARIES}
+ )
+
+add_executable(testar_sensores_garra test/testar_sensores_garra.cpp)
+target_link_libraries(testar_sensores_garra
+ ${catkin_LIBRARIES}
+ )
+
