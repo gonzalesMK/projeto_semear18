@@ -6,6 +6,9 @@ import numpy as np
 from enum import Enum
 from lineSensors import Sides
 from enum import IntEnum
+
+
+        
 class Wheels(IntEnum):
     FL = 0
     FR = 1
@@ -17,12 +20,13 @@ class Wheels(IntEnum):
 
 class MotorControl(object):
     MEDIUM_VEL = 1
-    def __init__(self):
+    def __init__(self, Kp=30):
 
+        self.Kp = Kp
         # This PID is to control velocity
         self.pub_motorFL = rospy.Publisher('/motorFL/desired_vel', Float64, queue_size=10)    
-        self.pub_motorBL = rospy.Publisher('/motorBL/desired_vel', Float64, queue_size=10)    
         self.pub_motorFR = rospy.Publisher('/motorFR/desired_vel', Float64, queue_size=10)    
+        self.pub_motorBL = rospy.Publisher('/motorBL/desired_vel', Float64, queue_size=10)    
         self.pub_motorBR = rospy.Publisher('/motorBR/desired_vel', Float64, queue_size=10)
 
         self.pub_encoderEnable = rospy.Publisher('/encoder_enable', Bool, queue_size=10)  
@@ -34,11 +38,12 @@ class MotorControl(object):
         self.pub_motorLineBR = rospy.Publisher('/motorSensorBR/error', Float64, queue_size=10)
 
         self.pub_motorPWM_FL = rospy.Publisher('/motorFL/pwm', Float64, queue_size=10)    
-        self.pub_motorPWM_FR = rospy.Publisher('/motorBL/pwm', Float64, queue_size=10)    
-        self.pub_motorPWM_BL = rospy.Publisher('/motorFR/pwm', Float64, queue_size=10)    
+        self.pub_motorPWM_FR = rospy.Publisher('/motorFR/pwm', Float64, queue_size=10)    
+        self.pub_motorPWM_BL = rospy.Publisher('/motorBL/pwm', Float64, queue_size=10)    
         self.pub_motorPWM_BR = rospy.Publisher('/motorBR/pwm', Float64, queue_size=10)
         
-        self.pub_lineEnable = rospy.Publisher('/pid_enable', Bool, queue_size=10)    
+        self.pub_lineEnable = rospy.Publisher( '/pid_enable', Bool, queue_size=10)
+        self.sub_lineEnable = rospy.Subscriber('/pid_enable', Bool, self.__pid_enable_cb)    
         self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)   
 
         rospy.Rate(2).sleep()  
@@ -46,12 +51,24 @@ class MotorControl(object):
         self._velocity_mode = False
         self._align_mode = False
 
+    def __pid_enable_cb(self, msg):
+        """ We had a problem while publishing the pid_enable topic. Sometimes it would just not arrive... 
+       
+        So, now, we're going to publish the enable topic until we got a response
+        """
+        self._velocity_mode = True
+
+
     def setVelocityControlMode(self):
         
-        self.pub_encoderEnable.publish(True)
-        self.pub_lineEnable.publish(False)
+        self._velocity_mode = False
+        
+        while (not rospy.is_shutdown()) and (not self._velocity_mode): 
+            self.pub_encoderEnable.publish(True)
+            self.pub_lineEnable.publish(False)
+            rospy.Rate(0.5).sleep()  
 
-        self._velocity_mode = True
+        #self._velocity_mode = True
         self._align_mode = False
 
     def setAlignControlMode(self, target=0, side=Sides.LEFT):
@@ -82,6 +99,12 @@ class MotorControl(object):
         self.pub_motorLineFR.publish(error_array[int(Wheels.FR)])
         self.pub_motorLineBL.publish(error_array[int(Wheels.BL)])
         self.pub_motorLineBR.publish(error_array[int(Wheels.BR)])
+
+        # self.pub_motorPWM_FL.publish(error_array[int(Wheels.FL)] * - self.Kp )
+        # self.pub_motorPWM_FR.publish(error_array[int(Wheels.FR)] * - self.Kp )
+        # self.pub_motorPWM_BL.publish(error_array[int(Wheels.BL)] * - self.Kp )
+        # self.pub_motorPWM_BR.publish(error_array[int(Wheels.BR)] * - self.Kp )
+
 
     def setPIDVelocity(self, vel_array, base_vel, side= Sides.FRONT):
         if not self._velocity_mode:
@@ -114,7 +137,13 @@ class MotorControl(object):
         self.pub_motorBR.publish(vel_array[int(Wheels.BR)])
 
     def stop(self):
-        self.setVelocity([0,0,0,0])
+        self.pub_motorPWM_FL.publish(0)
+        self.pub_motorPWM_FR.publish(0)
+        self.pub_motorPWM_BL.publish(0)
+        self.pub_motorPWM_BR.publish(0)
+        
+        self.pub_encoderEnable.publish(False)
+        self.pub_lineEnable.publish(False)
 
         self.pub_motorFL.publish(0)
         self.pub_motorFR.publish(0)
@@ -127,9 +156,6 @@ class MotorControl(object):
         self.pub_motorLineBR.publish(0)
 
         rospy.Rate(10).sleep()  
-
-        self.pub_encoderEnable.publish(False)
-        self.pub_lineEnable.publish(False)
 
         # Publish 0 To the PWM topics in order to stop the robot definitively
         self.pub_motorPWM_FL.publish(0)

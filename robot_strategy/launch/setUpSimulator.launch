@@ -1,0 +1,13 @@
+<launch>
+    <param name ="/use_sim_time" value="true"/>
+
+    <node name="sensorInterface" pkg="simulation_interface" type="convert_colorsensor" respawn="false" />
+
+	<node name="motorInterface" pkg="simulation_interface" type="arduinoMotorConversion" respawn="false" output="screen"/>   
+
+	<node name="EncoderInterface" pkg="simulation_interface" type="raspEncoderConversion" respawn="false" output="screen"/>   
+
+    <include file="$(find robot_hardware)/launch/pid.launch"/>
+    
+    <!-- <node name="main" pkg="robot_strategy" type="main.py" respawn="false" output="screen"/>    -->
+</launch>   

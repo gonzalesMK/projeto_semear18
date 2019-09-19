@@ -1,8 +1,0 @@
-<launch>
-    <param name ="/use_sim_time" value="true"/>
-    <include file="$(find robot_strategy)/launch/simuladorInterface.launch"/>
-    
-    <include file="$(find robot_strategy)/launch/pid.launch"/>
-    
-    <node name="main" pkg="robot_strategy" type="main.py" respawn="false" output="screen"/>   
-</launch>   

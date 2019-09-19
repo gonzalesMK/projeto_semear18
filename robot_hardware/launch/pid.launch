@@ -1,6 +1,6 @@
 <launch>
 	<node name="controller" pkg="pid" type="controller" ns="motorFR">
-            <rosparam file="$(find robot_strategy)/param/pid.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pid.yaml" command="load" />
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
@@ -8,7 +8,7 @@
     </node>
 
 	<node name="controller" pkg="pid" type="controller" ns="motorFL">
-            <rosparam file="$(find robot_strategy)/param/pid.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pid.yaml" command="load" />
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
@@ -16,7 +16,7 @@
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorBR">
-            <rosparam file="$(find robot_strategy)/param/pid.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pid.yaml" command="load" />
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
@@ -24,7 +24,7 @@
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorBL">
-            <rosparam file="$(find robot_strategy)/param/pid.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pid.yaml" command="load" />
 			<remap from="setpoint" to="desired_vel" />
             <remap from="control_effort" to="pwm" />
             <remap from="state" to="encoderVelocity" />
@@ -32,7 +32,7 @@
     </node>
 
     <node name="controller" pkg="pid" type="controller" ns="motorSensorFR">
-            <rosparam file="$(find robot_strategy)/param/pidSensor.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
             <remap from="control_effort" to="/motorFR/pwm" />
             <remap from="state" to="error" />
@@ -40,7 +40,7 @@
     </node>
 
 	<node name="controller" pkg="pid" type="controller" ns="motorSensorFL">
-            <rosparam file="$(find robot_strategy)/param/pidSensor.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pidSensor.yaml" command="load" />
             <remap from="setpoint" to="/desired_pose" />
             <remap from="control_effort" to="/motorFL/pwm" />
             <remap from="state" to="error" />
@@ -48,7 +48,7 @@
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorSensorBR">
-            <rosparam file="$(find robot_strategy)/param/pidSensor.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
             <remap from="control_effort" to="/motorBR/pwm" />
             <remap from="state" to="error" />
@@ -56,7 +56,7 @@
     </node>
     
     <node name="controller" pkg="pid" type="controller" ns="motorSensorBL">
-            <rosparam file="$(find robot_strategy)/param/pidSensor.yaml" command="load" />
+            <rosparam file="$(find robot_hardware)/param/pidSensor.yaml" command="load" />
 			<remap from="setpoint" to="/desired_pose" />
             <remap from="control_effort" to="/motorBL/pwm" />
             <remap from="state" to="error" />

@@ -63,6 +63,11 @@ I) Placa dos Sensores -
 			 
 
 	2) Placa dos Motores -
+				"""
+				roslaunch robot_hardware turn_on.launch
+				rosrun robot_hardware testar_movimento_base		
+(outra tela) 	rosrun teleop_twist_keyboard teleop_twist_keyboard.py 
+				"""
 
 * Testes de otimizaçao
 	
