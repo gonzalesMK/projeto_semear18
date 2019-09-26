@@ -51,7 +51,7 @@ void keyboard_cb(const geometry_msgs::TwistConstPtr &vel)
     pubMotorBR.publish(Wbr);
     pubMotorBL.publish(Wbl);
 
-    /ROS_INFO_STREAM(" Wfr: " << Wfr <<" Wfl: " << Wfl <<" Wbr: "<< Wbr << " Wbl: "<< Wbl);
+    // ROS_INFO_STREAM(" Wfr: " << Wfr <<" Wfl: " << Wfl <<" Wbr: "<< Wbr << " Wbl: "<< Wbl);
 }
 
 
