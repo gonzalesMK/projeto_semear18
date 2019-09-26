@@ -7,7 +7,7 @@
 
 #include <pigpio.h>
 
-#include "projeto_semear/encoderLib.h"
+#include "robot_hardware/encoderLib.h"
 
 #include <boost/bind.hpp>
 
