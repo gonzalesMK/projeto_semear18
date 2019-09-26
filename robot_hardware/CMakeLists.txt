@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 # find_package(OpenCV REQUIRED)
-# find_library(PIGPIO_LIBRARY pygpio /path)
+find_library(PIGPIO_LIBRARY pygpio ~/Documents/pigpio-master)
 
 # catkin_python_setup()
 

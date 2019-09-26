@@ -93,3 +93,5 @@ OBSERVAÇÕES:
 	para rodar o PIGPIO na rasp é necessario entrar no modo sudo: "sudo su" -> "source devel/setup.bash"
 
 	para resolver o problema de arquivos no futuro: "find /your/dir -type f -exec touch {} +"
+
+	para ler temperatura /opt/vc/bin/vcgencmd measure_temp
