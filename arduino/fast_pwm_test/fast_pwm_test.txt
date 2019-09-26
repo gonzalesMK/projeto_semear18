@@ -42,52 +42,39 @@ void setup()
     pinMode(IN4B, OUTPUT);
     pinMode(ENABLE4, OUTPUT);
 
-    Serial.begin(115200);
-
     digitalWrite(IN1A, 1);
     digitalWrite(IN1B, 0);
-    analogWrite(ENABLE1, 0);
-
     digitalWrite(IN2A, 1);
     digitalWrite(IN2B, 0);
-    analogWrite(ENABLE2, 0);
-
     digitalWrite(IN3A, 1);
     digitalWrite(IN3B, 0);
-    analogWrite(ENABLE3, 0);
-
     digitalWrite(IN4A, 1);
     digitalWrite(IN4B, 0);
-    analogWrite(ENABLE4, 0);
+    
+    
+    TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM10);
+    // TCCR1A &= (~_BV(WGM11)) & (~_BV(COM1A0)) & (~_BV(COM1B0)) ; 
+    
+    TCCR1B =  _BV(WGM12) | _BV(CS12) | _BV(CS10); // _BV(ICNC1) noise filter
+
+    
+    // COM0A1 = 1 e COM0A0 = 0 -> NON-INVERTING FAST-PWM on OC0A pin
+    // COM0B1 = 1 e COM0B0 = 0 -> NON-INVERTING FAST-PWM on OC0B pin
+    
+    // WGM02 = 1 e WGM01 = 1 e WGM00 = 1 -> Fast PWM, control TOP = OCRA e TOV Flag is SET on TOP
+    //              or 
+    // WGM02 = 0 e WGM01 = 1 e WGM00 = 1 -> Fast PWM, control TOP = 0xFF e TOV Flag is SET on MAX  <-
+    TCCR0A = _BV(COM0B1) | _BV(COM0A1) | _BV( WGM01) | _BV(WGM00);
+    TCCR0B = _BV(CS02) | _BV(CS00);
+
+    OCR1A = 255;
+    OCR1B = 255;
+    OCR0A = 255;
+    OCR0B = 255;
+
     
 }
 
 void loop()
 {
-
-}
-
-void serialEvent()
-{
-    if( Serial.available() < 4){
-        return;
-    }
-
-    Serial.readBytes(PWM, 4);
-
-    digitalWrite(IN1A, PWM[0] > 0);
-    digitalWrite(IN1B, PWM[0] < 0);
-    analogWrite(ENABLE1, (unsigned char)abs(PWM[0]) * 2);
-
-    digitalWrite(IN2A, PWM[1] > 0);
-    digitalWrite(IN2B, PWM[1] < 0);
-    analogWrite(ENABLE2, (unsigned char)abs(PWM[1]) * 2);
-
-    digitalWrite(IN3A, PWM[2] > 0);
-    digitalWrite(IN3B, PWM[2] < 0);
-    analogWrite(ENABLE3, (unsigned char)abs(PWM[2]) * 2);
-
-    digitalWrite(IN4A, PWM[3] > 0);
-    digitalWrite(IN4B, PWM[3] < 0);
-    analogWrite(ENABLE4, (unsigned char)abs(PWM[3]) * 2);
 }

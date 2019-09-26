@@ -36,7 +36,7 @@ III ) Para testar a Raspberry Pi:
 	1) Encoders - checkEncoders.py :
 		"""
 		roslaunch robot_hardware turn_on.launch
-		rosrun robot_harware checkEncoders.py		
+		rosrun robot_harwdare checkEncoders.py		
                 """
 		a) Esse código ajudará testar se todas as leituras do encoder estão sendo lidas
 		b) Também pode testar o delay e a frequência do controle da roda: a roda deve ficar instável quando K vai aumentando conforme menor a frequencia e maior o delay
@@ -63,6 +63,9 @@ I) Placa dos Sensores -
 			 
 
 	2) Placa dos Motores -
+		roslaunch robot_hardware turn_on.launch
+		rosrun robot_hardware testar_movimento_base
+(outra tela) rosrun teleop_twist_keyboard teleop_twist_keyboard.py 
 
 * Testes de otimizaçao
 	
@@ -81,3 +84,7 @@ I) Placa dos Sensores -
 	1) motorCode.ino : código completo para ser utilizado durante a competição. Colocar no arduino da placa dos motores
 
 	
+OBSERVAÇÕES:
+	para rodar o PIGPIO na rasp é necessario entrar no modo sudo: "sudo su" -> "source devel/setup.bash"
+
+	para resolver o problema de arquivos no futuro: "find /your/dir -type f -exec touch {} +"

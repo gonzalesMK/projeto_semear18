@@ -59,6 +59,7 @@ include_directories(
 )
 
 add_library(arduino_library src/arduinoInterfaceLib.cpp)
+add_library(encoderLib rasp/encoderLib.cpp)
 
 # Link Library with respective dependencies
 target_link_libraries(arduino_library ${catkin_LIBRARIES})
@@ -69,13 +70,12 @@ target_link_libraries(sensorCode
   ${catkin_LIBRARIES}
   arduino_library
 )
-target_link_libraries(sensorCode ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#add_executable(publishEncoder rasp/publishEncoder.cpp)
-#target_link_libraries(publishEncoder
-# ${catkin_LIBRARIES}
-#  encoderLib
-#)
+add_executable(publishEncoder rasp/publishEncoder.cpp)
+target_link_libraries(publishEncoder
+ ${catkin_LIBRARIES}
+  encoderLib
+)
 #add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(motorCode src/motorCode.cpp)

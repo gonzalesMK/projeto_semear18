@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
 
     re_decoder dec1(37,33); // GPIO 26 | GPIO 13
     re_decoder dec2(31, 29); // GPIO 6 | GPIO 5
-    re_decoder dec3(11, 12);
-    re_decoder dec4(13, 14);
+    re_decoder dec3(32, 36); // GPIO 12 | GPIO 16 
+    re_decoder dec4(16, 18); // GPIO 23| GPIO 24    
 
     //    sleep(1000);
 

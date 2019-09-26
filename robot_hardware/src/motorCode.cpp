@@ -25,7 +25,11 @@ bool turnOnBaseMotor = false;
 void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var)
 {
 
-    var = (char)msg->data;
+    double temp = abs( msg->data ) > 120 ? 120 * ( msg->data / fabs( msg->data ) ) : msg->data ;  
+
+    var = (char) temp;
+   // ROS_INFO_STREAM("Received: " << msg->data << " " << ( msg->data / fabs( msg->data )) << " Now: " << (int) var);
+    
 }
 
 int main(int argc, char *argv[])
@@ -51,6 +55,7 @@ int main(int argc, char *argv[])
 
         ros::spinOnce();
 
+        //ROS_INFO_STREAM( (int) vel[0] << " " << (int) vel[1] << " " << (int) vel[2] << " " << (int) vel[3] << " ");
         write(arduino.fd, vel, 4);
 
         rate.sleep();
