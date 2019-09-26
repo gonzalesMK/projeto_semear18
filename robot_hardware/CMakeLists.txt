@@ -75,6 +75,7 @@ add_executable(publishEncoder rasp/publishEncoder.cpp)
 target_link_libraries(publishEncoder
  ${catkin_LIBRARIES}
   encoderLib
+  PIGPIO_LIBRARY
 )
 #add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
