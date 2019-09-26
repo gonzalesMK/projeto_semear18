@@ -1,0 +1,8 @@
+Kp: 40.0
+Ki: 0
+Kd: 6.0
+upper_limit: 100
+lower_limit: -100
+windup_limit: 50
+max_loop_frequency: 20.0
+min_loop_frequency: 19.0

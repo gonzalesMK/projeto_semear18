@@ -2,11 +2,11 @@
 import rospy
 import actionlib
 from std_msgs.msg import Float64, Bool
-from projeto_semear.motorControlLib import MotorControl, Wheels
+from robot_strategy.motorControlLib import MotorControl, Wheels
 
 from geometry_msgs.msg import Twist
 
-from projeto_semear.lineSensors import Sides
+from robot_strategy.lineSensors import Sides
 
 import numpy as np
 
@@ -35,10 +35,10 @@ def cmdvel_cb(msg):
     w_module = np.sqrt(x**2 + y**2) / DIAMETRO
     conversao = LDIAG/DIAMETRO
 
-    vel[int(Wheels.FL)] = ((w_module)*np.sin(np.pi / 4 + theta) + (yaw) * conversao) * np.pi; # Rad/s
-    vel[int(Wheels.FR)] = ((w_module)*np.cos(np.pi / 4 + theta) - (yaw) * conversao) * np.pi; # Rad/s
-    vel[int(Wheels.BL)] = ((w_module)*np.cos(np.pi / 4 + theta) + (yaw) * conversao) * np.pi; # Rad/s
-    vel[int(Wheels.BR)] = ((w_module)*np.sin(np.pi / 4 + theta) - (yaw) * conversao) * np.pi; # Rad/s
+    vel[int(Wheels.FL)] = ((w_module)*np.sin(np.pi / 4 + theta) + (yaw) * conversao) * np.pi/10; # Rad/s
+    vel[int(Wheels.FR)] = ((w_module)*np.cos(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10; # Rad/s
+    vel[int(Wheels.BL)] = ((w_module)*np.cos(np.pi / 4 + theta) + (yaw) * conversao) * np.pi/10; # Rad/s
+    vel[int(Wheels.BR)] = ((w_module)*np.sin(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10; # Rad/s
 
     if isinstance(motorControl, MotorControl):
         motorControl.setVelocity(vel)        
