@@ -10,6 +10,7 @@ from robot_strategy.lineSensors import Sides
 
 import numpy as np
 
+from functools import partial
 """
 Interface to control the robot base with the teleop_twist_keyboard
 
@@ -18,11 +19,9 @@ x=0
 y=0
 yaw=0
 
-motorControl=0
 
-def cmdvel_cb(msg):
-    global motorControl
-    vel = [0,0,0,0]
+def cmdvel_cb(motorControl, msg):
+    vel = np.array([0,0,0,0])
 
     LDIAG = 0.116383204
     DIAMETRO = 0.099060
@@ -35,20 +34,22 @@ def cmdvel_cb(msg):
     w_module = np.sqrt(x**2 + y**2) / DIAMETRO
     conversao = LDIAG/DIAMETRO
 
-    vel[int(Wheels.FL)] = ((w_module)*np.sin(np.pi / 4 + theta) + (yaw) * conversao) * np.pi/10; # Rad/s
-    vel[int(Wheels.FR)] = ((w_module)*np.cos(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10; # Rad/s
-    vel[int(Wheels.BL)] = ((w_module)*np.cos(np.pi / 4 + theta) + (yaw) * conversao) * np.pi/10; # Rad/s
-    vel[int(Wheels.BR)] = ((w_module)*np.sin(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10; # Rad/s
+    vel[int(Wheels.FL)] = ( ((w_module)*np.sin(np.pi / 4 - theta) + (yaw) * conversao) * np.pi/10 ); # Rad/s
+    vel[int(Wheels.FR)] = ( ((w_module)*np.cos(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10 ); # Rad/s
+    vel[int(Wheels.BL)] = ( ((w_module)*np.cos(np.pi / 4 - theta) + (yaw) * conversao) * np.pi/10 ); # Rad/s
+    vel[int(Wheels.BR)] = ( ((w_module)*np.sin(np.pi / 4 + theta) - (yaw) * conversao) * np.pi/10 ); # Rad/s
 
-    if isinstance(motorControl, MotorControl):
-        motorControl.setVelocity(vel)        
+    #if isinstance(motorControl, MotorControl):
+    
+    motorControl.align(vel)        
 
 
 if __name__ == '__main__':
     rospy.init_node('testeMotor')
     
     motorControl = MotorControl()
+    motorControl.setParams(Kp=10, Kd=0, freq=100, momentum=0.6)
 
-    rospy.Subscriber( "/cmd_vel", Twist, cmdvel_cb)
+    rospy.Subscriber( "/cmd_vel", Twist, partial(cmdvel_cb, motorControl))
     
     rospy.spin()

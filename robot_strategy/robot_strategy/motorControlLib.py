@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 import rospy
 from std_msgs.msg import Float64, Bool
 import numpy as np
 from enum import Enum
 from lineSensors import Sides
 from enum import IntEnum
+import copy
 
+"""
+    FL = 0
+    FR = 1
+    BL = 2
+    BR = 3
 
-        
+"""
 class Wheels(IntEnum):
     FL = 0
     FR = 1
@@ -20,9 +26,17 @@ class Wheels(IntEnum):
 
 class MotorControl(object):
     MEDIUM_VEL = 1
-    def __init__(self, Kp=30):
+    def __init__(self, Kp=20.0, Kd=0.0, freq=100.0, momentum=0.1):
+        """
+            momentum é a porcentagem do derivativo que deve ser mantida depois de 1 segundo 
 
+        """
         self.Kp = Kp
+        self.Kd = Kd
+        self.pid_on = False
+        self.freq = freq
+        self.momentum =  momentum
+
         # This PID is to control velocity
         self.pub_motorFL = rospy.Publisher('/motorFL/desired_vel', Float64, queue_size=10)    
         self.pub_motorFR = rospy.Publisher('/motorFR/desired_vel', Float64, queue_size=10)    
@@ -81,6 +95,7 @@ class MotorControl(object):
 
         self.pub_lineTarget.publish(target)
 
+    
     def setVelocity(self, vel):
         
         if not self._velocity_mode:
@@ -92,18 +107,51 @@ class MotorControl(object):
         self.pub_motorBR.publish(vel[int(Wheels.BR)])
 
     def align(self, error_array, target=0 ):
+
+        if not self.pid_on:
+            self.pid_on = True
+            self.deltaError = np.array([0, 0, 0, 0])
+            self.pastError = copy.deepcopy(error_array)
+            return
+
         if not self._align_mode:
             self.setAlignControlMode(target)
         
-        self.pub_motorLineFL.publish(error_array[int(Wheels.FL)])
-        self.pub_motorLineFR.publish(error_array[int(Wheels.FR)])
-        self.pub_motorLineBL.publish(error_array[int(Wheels.BL)])
-        self.pub_motorLineBR.publish(error_array[int(Wheels.BR)])
+        #self.pub_motorLineFL.publish( error_array[int(Wheels.FL)])
+        #self.pub_motorLineFR.publish( error_array[int(Wheels.FR)])
+        #self.pub_motorLineBL.publish( error_array[int(Wheels.BL)])
+        #self.pub_motorLineBR.publish( error_array[int(Wheels.BR)])
+       
+        self.deltaError = (error_array - self.pastError)  + self.momentum * self.deltaError
+        
 
-        # self.pub_motorPWM_FL.publish(error_array[int(Wheels.FL)] * - self.Kp )
-        # self.pub_motorPWM_FR.publish(error_array[int(Wheels.FR)] * - self.Kp )
-        # self.pub_motorPWM_BL.publish(error_array[int(Wheels.BL)] * - self.Kp )
-        # self.pub_motorPWM_BR.publish(error_array[int(Wheels.BR)] * - self.Kp )
+        actuation = error_array * self.Kp + self.deltaError * self.Kd
+        #rospy.loginfo("DeltaError: {} \nError Array: {} \nPast Error: {} ".format(self.deltaError, error_array, self.pastError ) )
+        #rospy.loginfo("Actuation {}".format(actuation))
+        
+        self.pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
+        self.pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
+        self.pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])
+        self.pub_motorPWM_BR.publish( actuation[int(Wheels.BR)])
+
+        self.pastError = copy.deepcopy(error_array)
+
+    def clear(self):
+        self.pid_on = False
+
+    def setParams(self, Kp=None, Kd=None, freq=None, momentum=None):
+        
+        if not (Kp is None) :
+            self.Kp = Kp
+
+        if not (Kd is None) :
+            self.Kd = Kd
+
+        if not (freq is None) :
+            self.freq = freq    
+
+        if not (momentum is None) :
+            self.momentum = momentum
 
 
     def setPIDVelocity(self, vel_array, base_vel, side= Sides.FRONT):

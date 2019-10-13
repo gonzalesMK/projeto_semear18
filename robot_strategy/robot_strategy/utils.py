@@ -87,19 +87,20 @@ def followLineSide(linesensors, motorControl, rate=100, coef=1):
             r.sleep()
 
 class Positions(Enum):
-    StartPosition = 0
-    Container1 = 1
-    Container2 = 2
-    Container3 = 3
-    Container4 = 4
-    Container5 = 5
-    Container6 = 6
-    Container7 = 7
-    Container8 = 8
-    GreenIntersection = 9
-    BlueIntersection = 10
-    GreenDock = 11
-    BlueDock = 12
+    
+    Container1 = 0
+    Container2 = 1
+    Container3 = 2
+    Container4 = 3
+    Container5 = 4
+    Container6 = 5
+    Container7 = 6
+    Container8 = 7
+    GreenDock = 8
+    BlueDock = 9
+    GreenIntersection = 10 
+    BlueIntersection = 11
+    StartPosition = 12
     Unkown = 13
 
     def __int__(self):

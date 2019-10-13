@@ -6,16 +6,16 @@ Arduino::Arduino(char* filename){
     // Configure Serial communication       =====================
     struct termios toptions;
 
-    char str[] = "/dev/ttyUSB0";
+    //char str[] = "/dev/ttyUSB0";
     ros::Duration dur(1);
     
     while (ros::ok())
     {
-        fd = open(str, O_RDWR | O_NONBLOCK); //fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
+        fd = open(filename, O_RDWR | O_NONBLOCK); //fd = open(serialport, O_RDWR | O_NOCTTY | O_NDELAY);
 
         if (fd == -1)
         {
-            ROS_ERROR_STREAM("serialport_init: Unable to open port - trying again in 1 sec " << str);
+            ROS_ERROR_STREAM("serialport_init: Unable to open port - trying again in 1 sec " << filename);
             dur.sleep();
         }
         else
@@ -30,7 +30,7 @@ Arduino::Arduino(char* filename){
 
     if (tcgetattr(fd, &toptions) < 0)
     {
-        ROS_ERROR_STREAM("serialport_init: Couldn't get term attributes " << str);
+        ROS_ERROR_STREAM("serialport_init: Couldn't get term attributes " << filename);
         return ;
     }
 
@@ -56,14 +56,14 @@ Arduino::Arduino(char* filename){
     toptions.c_oflag &= ~OPOST;
 
     // see: http://unixwiz.net/techtips/termios-vmin-vtime.html
-    toptions.c_cc[VMIN] = 0;  // Minimun numbers of bytes to receive before stop waiting (blocking the thread) in read() in case queue is empty
-    toptions.c_cc[VTIME] = 1; // Time to wait in the queue to check if there are more bits comming to the buffer
+    toptions.c_cc[VMIN] = 7;  // Minimun numbers of bytes to receive before stop waiting (blocking the thread) in read() in case queue is empty
+    toptions.c_cc[VTIME] = 0; // Time to wait in the queue to check if there are more bits comming to the buffer
 
     tcsetattr(fd, TCSANOW, &toptions);
     
     if (tcsetattr(fd, TCSAFLUSH, &toptions) < 0)
     {
-        ROS_ERROR_STREAM("serialport_init: Couldn't set term attributes " << str);
+        ROS_ERROR_STREAM("serialport_init: Couldn't set term attributes " << filename);
         return;
     }
 
@@ -77,3 +77,24 @@ Arduino::Arduino(char* filename){
     // Ended Configure Serial communication =====================
 
 }
+
+/* This piece of code executes a system comand and get its output
+string GetStdoutFromCommand(string cmd) {
+
+string data;
+FILE * stream;
+const int max_buffer = 256;
+char buffer[max_buffer];
+cmd.append(" 2>&1");
+
+stream = popen(cmd.c_str(), "r");
+if (stream) {
+while (!feof(stream))
+if (fgets(buffer, max_buffer, stream) != NULL) data.append(buffer);
+pclose(stream);
+}
+return data;
+}
+
+you should execute this command: readlink /sys/class/tty/ttyUSBx, with x the usb number
+*/

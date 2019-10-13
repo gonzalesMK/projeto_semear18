@@ -1,14 +1,24 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import UInt8
+from std_msgs.msg import UInt8, Bool
 import numpy as np
 from enum import Enum
 
+"""
+Original: 
+FRONT = 0
+BACK = 1
+LEFT = 2
+RIGHT = 3
+
+Novo
+
+"""
 class Sides(Enum):
-    LEFT = 0
-    RIGHT = 1
-    FRONT = 2
-    BACK = 3
+    FRONT =  0  
+    BACK = 1
+    LEFT =  2
+    RIGHT = 3
 
     def __int__(self):
         return self.value
@@ -33,12 +43,41 @@ class LineSensor(object):
     """
     def __init__(self):
 
-        self._subscribers = rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
         self._error = np.ones(4) * - 2
+
+        rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
+        rospy.Subscriber( "/turnOnPololuSensors", Bool, self.__enableCb)
+        self._is_on = False
+        self.pub_enable = rospy.Publisher('/turnOnPololuSensors', Bool, queue_size=10)  
+       
+        print("Turning on sensors")
+        self.pub_enable.publish(True)  
+        
+        while( not self._is_on and not rospy.is_shutdown() ):
+            print("Trying again")
+            self.pub_enable.publish(True)  
+            rospy.Rate(20).sleep()
+
+        
+
+    def __enableCb(self,msg):
+        """
+        Callback to the ROS subscriber. This one is to be sure that the enable was published
+
+        Parameters
+        ----------
+        msg : std_msgs/UInt8
+            The readings of the sensor
+        
+        """
+
+        self._is_on = msg.data
 
     def __callback(self, msg):
         """
-        Callback to the ROS subscriber
+        Callback to the ROS subscriber. 
+
+        Decodes the arduino msg
 
         Parameters
         ----------
@@ -47,8 +86,8 @@ class LineSensor(object):
         
         """
         # Check if at least one sensor is over the line 
-        sensorValueA = np.array( [ (msg.data & 1) != 0, (msg.data & 4) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
-        sensorValueB = np.array([ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
+        sensorValueA = np.array( [ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
+        sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
         onLine =  sensorValueA + sensorValueB
         
         for i in range(4):
@@ -64,7 +103,7 @@ class LineSensor(object):
         Parameters
         ----------
         resetToMinimun : boolean (default True)
-            if True, the new values are 0, otherwise they are the ( numberOfSensors - 1 ) * 1000
+            if True, the new values are -2, otherwise they are the 2
         """
 
         for i in range(len(self._error)):
@@ -76,3 +115,7 @@ class LineSensor(object):
     def readLines(self):
       
         return self._error
+    
+    def __del__(self):
+
+        self.pub_enable.publish(False)  

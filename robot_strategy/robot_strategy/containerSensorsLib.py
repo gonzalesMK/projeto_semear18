@@ -18,7 +18,7 @@ class ContainerSensors(object):
     """
     def __init__(self):
 
-        self._subscribers = rospy.Subscriber( "/containerSensors", UInt8, self.__callback)
+        self._subscribers = rospy.Subscriber( "/containerSensor", UInt8, self.__callback)
         self.sensor = [0,0]
 
     def __callback(self, msg):
@@ -32,4 +32,4 @@ class ContainerSensors(object):
         
         """
         # Check if at least one sensor is over the line 
-        self.sensor = [ (msg.data & 1) , (msg.data & 2) ]
+        self.sensor = [ not (msg.data & 1) , not (msg.data & 2) ]

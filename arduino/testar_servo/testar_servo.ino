@@ -55,7 +55,9 @@ void serialEvent(){
         pos = pos - 10;
   }
     Serial.print("Pos: ");
-    Serial.println(pos);
+    Serial.print(pos);
+    Serial.print(" | ");
+    Serial.println(myservo.read());
     
     myservo.write(pos);              
 }  

@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 # find_package(OpenCV REQUIRED)
-find_library(PIGPIO_LIBRARY pygpio ~/Documents/pigpio-master)
+find_library(PIGPIO_LIBRARY pigpio ~/Documents/pigpio-master)
 
 # catkin_python_setup()
 
@@ -63,6 +63,7 @@ add_library(encoderLib rasp/encoderLib.cpp)
 
 # Link Library with respective dependencies
 target_link_libraries(arduino_library ${catkin_LIBRARIES})
+target_link_libraries(encoderLib ${catkin_LIBRARIES} ${PIGPIO_LIBRARY})
 
 
 add_executable(sensorCode src/sensorCode.cpp)
@@ -71,11 +72,17 @@ target_link_libraries(sensorCode
   arduino_library
 )
 
+add_executable(sensorCode2 src/sensorCode2.cpp)
+target_link_libraries(sensorCode2
+  ${catkin_LIBRARIES}
+  arduino_library
+)
+
 add_executable(publishEncoder rasp/publishEncoder.cpp)
 target_link_libraries(publishEncoder
  ${catkin_LIBRARIES}
   encoderLib
-  PIGPIO_LIBRARY
+  ${PIGPIO_LIBRARY}
 )
 #add_dependencies(publishEncoder ${${PROJECT_NAME}_EXPORTED_TARGETS})
 

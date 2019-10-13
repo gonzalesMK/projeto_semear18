@@ -8,9 +8,16 @@ from robot_strategy.lineSensors import LineSensor, Sides
 from robot_strategy.containerSensorsLib import ContainerSensors
 from robot_strategy.motorControlLib import MotorControl, Wheels
 from robot_strategy.utils import Colors, Positions, finalAlignmentIntersection
+from robot_strategy.clawLib import Claw
 
 class changeIntersection(smach.State):
+    """
+        The robot changes from the Green Intersection to the Blue Intersection and vice versa
 
+        Input: robotPose - is the robot actual position
+
+        Output: robotPose - is the robot new position after the change
+    """
     def __init__(self):
             smach.State.__init__(self, 
                 outcomes=['succeeded', 'aborted'],
@@ -495,6 +502,43 @@ class goToFirstPose(smach.State):
 ################################################
 
 class strategyStep(smach.State):
+    """
+        All strategy is in this class:
+
+        1) check if all containers are known:
+
+        IF THEY ARE NOT KNOWN: 
+            A) If the container list is empty, this means that we just started the competition, and that we just perfomed the goToFirstPose.
+            Now, we should recognize containers for the first time.
+
+            B) If, some containers are already known, but not all the 32 containers, this mean that we need to go to the Blue intersection and
+            recognize all containers there.
+        
+        
+        2) Let's choose the best container to pick:
+            The strategy is: 
+                first, search for the container with the same color as the nearest dock. 
+                second, search for the container with the other color without moving from intersection
+                third, move from intersection and repeat one
+                fourth, move from intersection and repeat second
+
+        A better strategy would be to look for one color first.
+
+        INPUTS:
+            pose:
+            containersList:
+            containerColor:
+            containerPose:
+
+        OUTPUTS:
+            pose:
+            containerColor:
+            containerPose:
+            nextPose:
+
+
+
+    """
     def __init__(self):
         smach.State.__init__(self, 
                              outcomes=['containersUnknown', 'pick', 'changePosition','done', 'failed'],
@@ -502,25 +546,36 @@ class strategyStep(smach.State):
                              output_keys=['pose', 'containerColor','containerPose','nextPose'])
 
     def execute(self, userdata):
-        containersAreKnown = True
         
-        rospy.Rate(1).sleep() ## Remove in real application, only for debbug 
+        # 1) Check if the containers are known
+        known_containers = 0
+        for l in userdata.containersList:
+            known_containers = known_containers + len(l) 
+        
+        if known_containers == 0:
+            # No containers are known, this mean that we just started our strategy and that we just perfomed the goToFirstPose.
+            # Now, we recognize containers for the first time
+            return 'containersUnknown' 
+        elif known_containers < 30:
+            if userdata.pose == Positions.BlueDock :
+                return 'containersUnknown' 
+            else:
+                return  'changePosition'
+
+        # rospy.Rate(1).sleep() ## Remove in real application, only for debbug 
         
         rospy.loginfo("Strategy Step: The pose of the robot is {}".format(userdata.pose))
-
-        # Check if the containers are known in this position
-        if( not containersAreKnown ):
-            return 'containersUnknown' # If they are not, go to recognizeContainers()
+           
         
-        # If they are known, choose which one is the best to pick
+        # 2) If they are known, choose which one is the best to pick
         if( userdata.pose == Positions.GreenIntersection ):
             firstColor = int(Colors.Green)
             secondColor = int(Colors.Blue)
-            firstStackNumber = 0
+            firstStackNumber = int(Positions.Container1)
         elif( userdata.pose == Positions.BlueIntersection ):
             firstColor = int(Colors.Blue)
             secondColor = int(Colors.Green)
-            firstStackNumber = 4
+            firstStackNumber = int(Positions.Container5)
         else:
             rospy.logerr("The strategyStep was called, but the robot position is {}".format(userdata.pose))
             return 'failed'
@@ -528,7 +583,7 @@ class strategyStep(smach.State):
         for i in range(4):  # search for first Color first
             if userdata.containersList[i + firstStackNumber ][0] == firstColor :
                 userdata.containerColor = firstColor
-                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
+                userdata.containerPose = int(Positions( i + firstStackNumber))
                 userdata.pose = userdata.pose
                 rospy.loginfo("Strategy Step: Picked container {}".format(firstStackNumber))
                 return 'pick'
@@ -536,7 +591,7 @@ class strategyStep(smach.State):
         for i in range(4): # if no first Color container was found, look for the second Color
             if userdata.containersList[i+firstStackNumber][0] == secondColor :
                 userdata.containerColor = secondColor
-                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
+                userdata.containerPose = int(Positions( i + firstStackNumber))
                 userdata.pose = userdata.pose
                 return 'pick'
 
@@ -547,14 +602,14 @@ class strategyStep(smach.State):
         for i in range(4):  
             if userdata.containersList[i + firstStackNumber ][0] == firstColor :
                 userdata.containerColor = firstColor
-                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
+                userdata.containerPose = int(Positions( i + firstStackNumber))
                 userdata.pose = userdata.pose
                 return 'changePosition'
         
         for i in range(4):
             if userdata.containersList[i+firstStackNumber][0] == secondColor :
                 userdata.containerColor = secondColor
-                userdata.containerPose = int(Positions( i + firstStackNumber + 1))
+                userdata.containerPose = int(Positions( i + firstStackNumber))
                 userdata.pose = userdata.pose
                 return 'changePosition'
         
@@ -570,16 +625,27 @@ class recognizeContainers(smach.State):
         
     def execute(self, userdata):
         
-        # To-do: all the claw control and update the container's map in the robot. Using the actual position one can find the container's height to drop
-        
-        userdata.nextPosition = 0  # given the actualPosition, one can find the nextPosition
+        # install: pip install goprocam
+        from goprocam import GoProCamera
+        from goprocam import constants
+        import time
+
+        # Take the Picture
+        gpCam = GoProCamera.GoPro()
+        gpCam.downloadLastMedia(gpCam.take_photo(0), custom_filename="/tmp/filename.pic")
+
+        # Process the Picutre
+
+        userdata.nextPosition = 0  # given the actualPosition, olne can find the nextPosition
         pass
 
         if(True):
             return 'success'
-# 
+
 class pickContainer(smach.State):
     """ This state picks and raises the container
+
+        The servo pose should be already in the right side
     
         Inputs: 
             containersList: 
@@ -595,21 +661,64 @@ class pickContainer(smach.State):
                             outcomes=['preempted', 'succeeded','aborted'])
     
     def execute(self, userdata):
-        color = userdata.containersList[userdata.containerPose-1].pop(0)
+        color = userdata.containersList[userdata.containerPose].pop(0)
         
-        if not userdata.containersList[userdata.containerPose-1] :
-            userdata.containersList[userdata.containerPose-1].append(Colors.Empty)
+        if not userdata.containersList[userdata.containerPose] :
+            userdata.containersList[userdata.containerPose].append(Colors.Empty)
 
         if color == Colors.Green:
-            userdata.containersList[int(Positions.GreenDock)-3].append(color) 
+            userdata.containersList[int(Positions.GreenDock)].append(color) 
         elif color == Colors.Blue:
-            userdata.containersList[int(Positions.BlueDock)-3].append(color) 
+            userdata.containersList[int(Positions.BlueDock)].append(color) 
         else:
             rospy.logerr("The color to pick the container is wrong")
         
+        # Code to pick the container:
+        claw = Claw()
+        claw.setGearAndPinionPose( len(userdata.containerList[userdata.containerPose]) + 1 , pickContainer=True)
+        claw.controlElectromagnet(True)
+        claw.resetGearAndPinionPose()
+
+        return 'succeeded'
+
+class dropContainer(smach.State):
+    """ This state drops the container
+
+        The servo pose should be already in the right side
+    
+        Inputs: 
+            containersList: 
+            containerPose:
+        Output: 
+            containersList: w/out the picked container
+
+    """
+    def __init__(self):
+        smach.State.__init__(self, 
+                            input_keys=['containersList','containerColor',],
+                            outcomes=['preempted', 'succeeded','aborted'])
+    
+    def execute(self, userdata):
+        
+        # Code to drop the container:
+        if userdata.containerColor == Colors.Green:
+            height = len(userdata.containerList[ int(Positions.GreenDock )])
+        elif userdata.containerColor == Colors.Blue:
+            height = len(userdata.containerList[ int(Positions.BlueDock )])
+        else:
+            rospy.logerr("The color to drop the container is wrong")
+
+        claw = Claw()
+        claw.setGearAndPinionPose( height , pickContainer=True)
+        claw.controlElectromagnet(turnOn=False)
+        claw.resetGearAndPinionPose()
+
         return 'succeeded'
 
 class whereToGo(smach.State):
+    """
+        This class navigate the robot after returning from the 
+    """
     def __init__(self):
         smach.State.__init__(self, 
                             input_keys=['robotPose','containerColor'],

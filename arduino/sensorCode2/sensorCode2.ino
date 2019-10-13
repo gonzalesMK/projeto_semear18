@@ -50,20 +50,20 @@
 #define bitEncoder1A (1 << PCINT18)
 #define bitEncoder1B (1 << PCINT19)
 
-#define IN1 11
+#define IN1 12
 #define IN2 9
-#define ENABLE 12
+#define ENABLE 11
 
-#define FIMCURSO1 10
+#define FIMCURSO1 10 // esse avisa quando o eletroima foi pressionado
 #define FIMCURSO2 8
-#define FIMCURSOBITS (1 << PCINT0) | (1 << PCINT2)
+#define FIMCURSOBITS ( (1 << PCINT0) | (1 << PCINT2) )
 
 // SERVO
 #define SERVO_PIN 6
 
 // SENSORES Analógicos POLOLU de A0 até A7
 #define CONTROL_PIN 5
-#define IS_BLACK 500
+#define IS_BLACK 300
 #define FL 0
 #define FR 1
 #define BL 3
@@ -73,6 +73,14 @@
 #define RF 6
 #define RB 7
 
+#define FL_BLACK 55
+#define FR_BLACK 190
+#define RF_BLACK 75
+#define RB_BLACK 300
+#define BL_BLACK 47
+#define BR_BLACK 42
+#define LF_BLACK 42 // bigger is green
+#define LR_BLACK 45 // bigger is green
 
 // Sensores Digitais
 #define DIGI1 13
@@ -82,7 +90,7 @@
 #define ELETROIMA_PIN 4
 
 // MOTOR GARRA
-volatile long int encoder_tick;
+volatile long unsigned int encoder_tick =  2147483648;
 volatile int PWM = 0;
 
 void encoder1A_cb()
@@ -106,7 +114,8 @@ QTRSensors qtr;
 
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
-uint8_t ordering[] = {FL, FR, BL,BR, LF, LB, RF, RB};
+uint8_t ordering[] = {FL, FR, BL, BR, LF, LB, RF, RB};
+uint16_t is_black[] = {FL_BLACK, FR_BLACK, BL_BLACK, BR_BLACK, LF_BLACK, LR_BLACK, RF_BLACK, RB_BLACK}; 
 // SERVO
 Servo servo;
 
@@ -114,16 +123,26 @@ void setup()
 {
   Serial.begin(115200);
 
-  // POLOLU
-//  qtr.setTypeAnalog();
-//  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
-//  qtr.setEmitterPin(CONTROL_PIN);
+  pinMode(CONTROL_PIN, OUTPUT);
+  //digitalWrite(CONTROL_PIN, HIGH);    
+  qtr.setTypeAnalog();
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5, A6, A7}, SensorCount);
+  qtr.setEmitterPin(CONTROL_PIN);
+  qtr.emittersOff();
+  qtr.setDimmingLevel(0);
+  qtr.emittersOn();
 
   pinMode(DIGI1, INPUT);
   pinMode(DIGI2, INPUT);
 
-  pinMode(CONTROL_PIN, OUTPUT);
-  digitalWrite(CONTROL_PIN, HIGH);
+  pinMode(FIMCURSO1, INPUT);
+  pinMode(FIMCURSO2, INPUT);
+ 
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENABLE, OUTPUT);
+
+  
   // MOTOR GARRA
   pinMode(encoder1A, INPUT);
   pinMode(encoder1B, INPUT);
@@ -149,63 +168,66 @@ unsigned long time;
 void loop()
 {
   time = millis();
-  if (publish_sensors)
+
+  qtr.emittersOn();
+  
+  sensorValues[2] = analogRead(A2);
+  sensorValues[2] = analogRead(A2);
+  sensorValues[3] = analogRead(A3);
+  sensorValues[3] = analogRead(A3);
+  sensorValues[4] = analogRead(A4);
+  sensorValues[4] = analogRead(A4);
+  sensorValues[5] = analogRead(A5);
+  sensorValues[5] = analogRead(A5);
+  sensorValues[6] = analogRead(A6);
+  sensorValues[6] = analogRead(A6);
+  sensorValues[7] = analogRead(A7);
+  sensorValues[7] = analogRead(A7);
+  sensorValues[0] = analogRead(A0);
+  sensorValues[0] = analogRead(A0);
+  sensorValues[1] = analogRead(A1);
+  sensorValues[1] = analogRead(A1);
+  qtr.emittersOff();
+  
+  uint8_t alissonSensors = (uint8_t)digitalRead(DIGI1) + digitalRead(DIGI2) * 2;
+
+  if (PWM > 0)
   {
-    sensorValues[0] = analogRead(A0);
-    sensorValues[1] = analogRead(A1);
-    sensorValues[1] = analogRead(A1);
-    sensorValues[2] = analogRead(A2);
-    sensorValues[2] = analogRead(A2);
-    sensorValues[3] = analogRead(A3);
-    sensorValues[3] = analogRead(A3);
-    sensorValues[4] = analogRead(A4);
-    sensorValues[4] = analogRead(A4);
-    sensorValues[5] = analogRead(A5);
-    sensorValues[5] = analogRead(A5);
-    sensorValues[6] = analogRead(A6);
-    sensorValues[6] = analogRead(A6);
-    sensorValues[7] = analogRead(A7);
-    sensorValues[7] = analogRead(A7);
-
-    byte sensorsValuesByte = 0;
-    for (uint8_t i = 0; i < SensorCount; i++)
-    {
-        sensorsValuesByte |= ((sensorValues[ordering[i]] > IS_BLACK) << i);
-    }
-
-    Serial.write(sensorsValuesByte);
-  }
-
-  if (publish_containers_sensors)
-  {
-    uint8_t sensorsValues = (uint8_t) digitalRead(DIGI1) + digitalRead(DIGI2) * 2;
-    Serial.write(sensorsValues);
-  }
-
-  if (publish_encoder)
-  {
-    Serial.write((bool)PINB & FIMCURSOBITS);
-    Serial.print(encoder_tick, DEC);
-
-    if (PWM > 0)
-    {
-      digitalWrite(IN1, HIGH);
-      digitalWrite(IN2, LOW);
-    }
-    else if (PWM < 0)
-    {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, HIGH);
-    }
-    else
-    {
-      digitalWrite(IN1, LOW);
-      digitalWrite(IN2, LOW);
-    }
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
     analogWrite(ENABLE, abs(PWM));
   }
-   while( millis() - time < 10){}
-   
+  else if (PWM < 0)
+  {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    analogWrite(ENABLE, abs(PWM));
+  }
+  else
+  {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENABLE, 255);
+  }
+  
+  byte sensorsValuesByte = 0;
+  for (uint8_t i = 0; i < SensorCount; i++)
+  {
+    sensorsValuesByte |= ((sensorValues[ordering[i]] > IS_BLACK) << i);
+  }
+
+  Serial.write(sensorsValuesByte);
+  Serial.write(alissonSensors);
+  Serial.write( PINB & FIMCURSOBITS );
+  Serial.write( encoder_tick & 0xFF);
+  Serial.write(((encoder_tick >> 8) & 0xFF));
+  Serial.write(((encoder_tick >> 16) & 0xFF));
+  Serial.write(((encoder_tick >> 24) & 0xFF));
+  
+
+  while (millis() - time < 10)
+  {
+  }
 }
 
 /*
@@ -220,7 +242,7 @@ void serialEvent()
 
   if (-63 <= ch && ch <= 63)
   {
-    PWM = ch*4;
+    PWM = ch * 4;
   }
 
   switch (ch)
@@ -245,34 +267,6 @@ void serialEvent()
     }
 
     servo.write(servo_pose);
-    break;
-
-  case 67: // ligar o feedback do encoder, fim de curso e motor da garra
-    publish_encoder = true;
-    break;
-
-  case 68: // Desliga feedback do encoder, fim de curso e motor da garra
-    publish_encoder = false;
-    PWM = 0;
-    // analogWrite(ENABLE, PWM);
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, LOW);
-    break;
-
-  case 69: // Liga sensores de linha
-    publish_sensors = true;
-    break;
-
-  case 70: // Desliga sensores de linha
-    publish_sensors = false;
-    break;
-
-  case 71:
-    publish_containers_sensors = true;
-    break;
-
-  case 72:
-    publish_containers_sensors = false;
     break;
   }
 }

@@ -21,16 +21,30 @@ from robot_strategy.utils import Positions, Colors
 
 # Check SMACH ROS description file to understand each state 
 
+# container_list = [
+#     # Mais alto ----------------------------> Mais baixo 
+#     [Colors.Green, Colors.Blue, Colors.Red, Colors.Blue], # 1
+#     [Colors.Green, Colors.Green, Colors.Green, Colors.Green], #2    
+#     [Colors.Red, Colors.Green, Colors.Blue, Colors.Green], # 3 
+#     [Colors.Blue, Colors.Green, Colors.Blue, Colors.Green], # 4
+#     [Colors.Blue, Colors.Blue, Colors.Blue, Colors.Blue], #5 
+#     [Colors.Green, Colors.Blue, Colors.Green, Colors.Blue], # 6 
+#     [Colors.Green, Colors.Blue, Colors.Blue, Colors.Blue], # 7 
+#     [Colors.Blue, Colors.Blue, Colors.Blue, Colors.Blue], # 8  
+#     [], # Green Dock
+#     [], # Blue Dock
+# ]
+
 container_list = [
     # Mais alto ----------------------------> Mais baixo 
-    [Colors.Green, Colors.Blue, Colors.Red, Colors.Blue], # 1
-    [Colors.Green, Colors.Green, Colors.Green, Colors.Green], #2    
-    [Colors.Red, Colors.Green, Colors.Blue, Colors.Green], # 3 
-    [Colors.Blue, Colors.Green, Colors.Blue, Colors.Green], # 4
-    [Colors.Blue, Colors.Blue, Colors.Blue, Colors.Blue], #5 
-    [Colors.Green, Colors.Blue, Colors.Green, Colors.Blue], # 6 
-    [Colors.Green, Colors.Blue, Colors.Blue, Colors.Blue], # 7 
-    [Colors.Blue, Colors.Blue, Colors.Blue, Colors.Blue], # 8  
+    [], # 1
+    [], #2    
+    [], # 3 
+    [], # 4
+    [], #5 
+    [], # 6 
+    [], # 7 
+    [], # 8  
     [], # Green Dock
     [], # Blue Dock
 ]
