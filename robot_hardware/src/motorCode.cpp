@@ -27,10 +27,11 @@ class Wheels(IntEnum):
     def __int__(self):
         return self.value
 */
-#define FL 0
-#define FR 1
-#define BL 2
-#define BR 3
+#define FL 3
+#define FR 0 
+#define BL 1 
+#define BR 2  
+
 char vel[4];
 char stop[4] = {0, 0, 0, 0};
 
@@ -69,7 +70,7 @@ int main(int argc, char *argv[])
 
         ros::spinOnce();
 
-        //ROS_INFO_STREAM( (int) vel[0] << " " << (int) vel[1] << " " << (int) vel[2] << " " << (int) vel[3] << " ");
+        // ROS_INFO_STREAM("FL: " << (int) vel[0] << "FR: " << (int) vel[1] << " " << (int) vel[2] << " " << (int) vel[3] << " ");
         write(arduino.fd, vel, 4);
 
         rate.sleep();

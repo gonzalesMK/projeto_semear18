@@ -89,22 +89,22 @@ void serialEvent()
 
     Serial.readBytes(PWM, 4);
     // FL
-    digitalWrite(IN2A, PWM[1] > 0);
-    digitalWrite(IN2B, PWM[1] < 0);
-    analogWrite(ENABLE2, (unsigned char)abs(PWM[1]) * 2);
+    digitalWrite(IN2A, PWM[0] > 0);
+    digitalWrite(IN2B, PWM[0] < 0);
+    analogWrite(ENABLE2, (unsigned char)abs(PWM[0]) * 2);
     // FR 
-    digitalWrite(IN1A, PWM[0] > 0);
-    digitalWrite(IN1B, PWM[0] < 0);
-    analogWrite(ENABLE1, (unsigned char)abs(PWM[0]) * 2);
+    
+    digitalWrite(IN1A, PWM[1] > 0);
+    digitalWrite(IN1B, PWM[1] < 0);
+    analogWrite(ENABLE1, (unsigned char)abs(PWM[1]) * 2);
     // BL
-    digitalWrite(IN4A, PWM[3] > 0);
-    digitalWrite(IN4B, PWM[3] < 0);
-    analogWrite(ENABLE4, (unsigned char)abs(PWM[3]) * 2);
+    
+    digitalWrite(IN4A, PWM[2] > 0);
+    digitalWrite(IN4B, PWM[2] < 0);
+    analogWrite(ENABLE4, (unsigned char)abs(PWM[2]) * 2);
 
     // BR
-    digitalWrite(IN3A, PWM[2] > 0);
-    digitalWrite(IN3B, PWM[2] < 0);
-    analogWrite(ENABLE3, (unsigned char)abs(PWM[2]) * 2);
-
-
+    digitalWrite(IN3A, PWM[3] > 0);
+    digitalWrite(IN3B, PWM[3] < 0);
+    analogWrite(ENABLE3, (unsigned char)abs(PWM[3]) * 2);
 }

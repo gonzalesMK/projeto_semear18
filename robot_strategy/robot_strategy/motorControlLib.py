@@ -129,6 +129,9 @@ class MotorControl(object):
         #rospy.loginfo("DeltaError: {} \nError Array: {} \nPast Error: {} ".format(self.deltaError, error_array, self.pastError ) )
         #rospy.loginfo("Actuation {}".format(actuation))
         
+        if max(abs(actuation)) > 120:
+            actuation = actuation / ( max(abs(actuation)) / 120. )
+            
         self.pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
         self.pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
         self.pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])

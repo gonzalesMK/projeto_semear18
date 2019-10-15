@@ -63,7 +63,7 @@
 
 // SENSORES Analógicos POLOLU de A0 até A7
 #define CONTROL_PIN 5
-#define IS_BLACK 300
+#define IS_BLACK 100
 #define FL 0
 #define FR 1
 #define BL 3
@@ -170,23 +170,28 @@ void loop()
   time = millis();
 
   qtr.emittersOn();
+
+  sensorValues[3] = analogRead(A3);
+  sensorValues[3] = analogRead(A3);
   
   sensorValues[2] = analogRead(A2);
   sensorValues[2] = analogRead(A2);
-  sensorValues[3] = analogRead(A3);
-  sensorValues[3] = analogRead(A3);
-  sensorValues[4] = analogRead(A4);
-  sensorValues[4] = analogRead(A4);
+
   sensorValues[5] = analogRead(A5);
   sensorValues[5] = analogRead(A5);
-  sensorValues[6] = analogRead(A6);
-  sensorValues[6] = analogRead(A6);
+  sensorValues[4] = analogRead(A4);
+  sensorValues[4] = analogRead(A4);
+
   sensorValues[7] = analogRead(A7);
   sensorValues[7] = analogRead(A7);
-  sensorValues[0] = analogRead(A0);
-  sensorValues[0] = analogRead(A0);
+  sensorValues[6] = analogRead(A6);
+  sensorValues[6] = analogRead(A6);
+
   sensorValues[1] = analogRead(A1);
   sensorValues[1] = analogRead(A1);
+
+  sensorValues[0] = analogRead(A0);
+  sensorValues[0] = analogRead(A0);
   qtr.emittersOff();
   
   uint8_t alissonSensors = (uint8_t)digitalRead(DIGI1) + digitalRead(DIGI2) * 2;
@@ -225,7 +230,7 @@ void loop()
   Serial.write(((encoder_tick >> 24) & 0xFF));
   
 
-  while (millis() - time < 10)
+  while (millis() - time < 5)
   {
   }
 }

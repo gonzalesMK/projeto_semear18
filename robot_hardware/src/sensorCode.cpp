@@ -116,56 +116,6 @@ void clawPWM_cb(const std_msgs::Float64ConstPtr &msg)
     }
 }
 
-// Turn On/Off the claw's DC motor interface
-void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg)
-{
-    turnOnClaw = msg->data;
-    if (turnOnClaw)
-    {
-        write(fd, &CLAW_ON_CODE, 1);
-        ROS_INFO_STREAM("Turning On Gear and Pinion: " << (int)CLAW_ON_CODE);
-    }
-    else
-    {
-        write(fd, &CLAW_OFF_CODE, 1);
-        ROS_INFO_STREAM("Turning Off Gear and Pinion: " << (int)CLAW_OFF_CODE);
-    }
-}
-
-// Turn on/Off the infrared sensors in the base
-// void setLineFollower_cb(const std_msgs::BoolConstPtr &msg)
-// {
-//     setLineFollower = msg->data;
-
-//     if (setLineFollower)
-//     {
-//         write(fd, &LINESENSOR_ON_CODE, 1);
-//         ROS_INFO_STREAM("Turning On setLineFollower: " << (int)LINESENSOR_ON_CODE);
-//     }
-//     else
-//     {
-//         write(fd, &LINESENSOR_OFF_CODE, 1);
-//         ROS_INFO_STREAM("Turning Off setLineFollower: " << (int)LINESENSOR_OFF_CODE);
-//     }
-// }
-
-// Turn on/Off the infrared sensors in the container
-// void setContainer_cb(const std_msgs::BoolConstPtr &msg)
-// {
-//     setContainer = msg->data;
-
-//     if (setContainer)
-//     {
-//         write(fd, &CONTAINERSENSOR_ON_CODE, 1);
-//         ROS_INFO_STREAM("Turning On setContainer: " << (int)CONTAINERSENSOR_ON_CODE);
-//     }
-//     else
-//     {
-//         write(fd, &CONTAINERSENSOR_OFF_CODE, 1);
-//         ROS_INFO_STREAM("Turning Off setContainer: " << (int)CONTAINERSENSOR_OFF_CODE);
-//     }
-// }
-
 // Send position command to the Servo motor
 void servoPose_cb(const std_msgs::UInt8ConstPtr &msg)
 {
@@ -197,10 +147,9 @@ int main(int argc, char *argv[])
 
     ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/claw/enableElectromagnet", 1, setElectromagnet_cb);
     ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/claw/pwm", 1, clawPWM_cb);
-    ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/claw/enableFB", 1, turnOnClaw_cb);
     ros::Subscriber subServo = node.subscribe<std_msgs::UInt8>("/claw/servoPose", 1, servoPose_cb);
 
-    ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/claw/limitSwitch", 1);
+    ros::Publisher pubLimitSwitchs = node.advertise<std_msgs::UInt8>("/claw/limitSwitchs", 1);
     ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/claw/height", 1);
     ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
     ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);
@@ -211,7 +160,7 @@ int main(int argc, char *argv[])
     std_msgs::UInt8 msg;
     std_msgs::Int64 msg64;
     std_msgs::Bool msg_bool;
-    ros::Rate r(500);
+    ros::Rate r(1000);
 
     while (ros::ok())
     {
@@ -234,32 +183,10 @@ int main(int argc, char *argv[])
             }
             //*/
             
+            // Limit Switchs
             msg.data = b[2];
-            pubContainers.publish(msg);
+            pubLimitSwitchs.publish(msg);
 
-            /*// Limit switch
-            if (b[2] & 1)
-            {
-                msg_bool.data = true;
-                pubContainer.publish(msg_bool);
-            }
-            else
-            {
-                msg_bool.data = false;
-                pubContainer.publish(msg_bool);
-            }
-
-            if (b[2] & 4)
-            {
-                msg_bool.data = true;
-                pubFimDeCurso.publish(msg_bool);
-            }
-            else
-            {
-                msg_bool.data = false;
-                pubFimDeCurso.publish(msg_bool);
-            }
-            //*/
             // Encoder reading
             msg64.data = -((int64_t)b[3] + (int64_t)b[4] * 256 + (int64_t)b[5] * 65536 + (int64_t)b[6] * 16777216 - (int64_t)2147483648);
             pubEncoder.publish(msg64);

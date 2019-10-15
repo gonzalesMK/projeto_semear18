@@ -57,7 +57,7 @@ def cmdvel_cb(msg):
 
 
 if __name__ == '__main__':
-    rospy.init_node('testeMotor')
+    rospy.init_node('testeMotorLib')
     
     motorControl = MotorControl(Kp=0.0, Kd= 0.0, momentum= 0.)
     
@@ -70,7 +70,15 @@ if __name__ == '__main__':
     sensors = linesensors.readLines()
 
     while not rospy.is_shutdown() :
-        cm = input("Would you like to:\n(1)Go Right\n(2)Go Left\n(3) Go in front ahead'til find black line\n(4)Go back'til find black line\n(5) Go to Container \n(6)Quit\nCommand: ")
+        cm = input("Would you like to:\n"+
+        "(1)Go Right\n"+
+        "(2)Go Left\n"+
+        "(3) Go in front ahead'til find black line\n"+
+        "(4)Go back'til find black line\n"+
+        "(5) Go to Container \n"+
+        "(6) Go to First Pose\n" +
+        "(0)Quit\n"+
+        "Command: ")
         # Frontal:      
         #      2
         #      1
@@ -89,35 +97,44 @@ if __name__ == '__main__':
 
             if( cm == 1): 
                 coef = - 1
-                linesensors.reset(False)
+                linesensors.reset()
             elif (cm==2):
                 coef =  1
-                linesensors.reset()
+                linesensors.reset(False)
 
             # BR positovo e FL tbm
+            r.sleep()
 
             sensors = linesensors.readLines()
-            if sensors[int(Sides.FRONT)] !=  2 * coef :    
+            #print("RIGHT: {}  LEFT: {} FRONT: {}".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)], sensors[int(Sides.FRONT)]))
+            if sensors[int(Sides.FRONT)] !=   2 * coef :    
                 
                 while(not rospy.is_shutdown()):
                     sensors = linesensors.readLines()
                     
-                    error[int(Wheels.FL)] = - sensors[int(Sides.RIGHT)] + 2 * coef
-                    error[int(Wheels.FR)] = - sensors[int(Sides.LEFT)]  + 2 * coef
-                    error[int(Wheels.BL)] = + sensors[int(Sides.LEFT)]  + 2 * coef
-                    error[int(Wheels.BR)] = + sensors[int(Sides.RIGHT)] + 2 * coef
+                    angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
 
+                    diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+                    error[int(Wheels.FL)] = - diretional  + angular + coef * 1.5
+                    error[int(Wheels.FR)] = + diretional  - angular + coef * 1.5
+                    error[int(Wheels.BL)] = + diretional  + angular + coef * 1.5
+                    error[int(Wheels.BR)] = - diretional  - angular + coef * 1.5
+            
+                    
+                    #print("RIGHT: {}  LEFT: {} FRONT: {}".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)], sensors[int(Sides.FRONT)]))
                     motorControl.align(error)        
                     
-                    if( sensors[int(Sides.FRONT)] == 2 * coef ):
+                    if( sensors[int(Sides.FRONT)] ==  2 * coef ):
                         break
                                 
                     r.sleep()
-
+            
+            motorControl.align(error)
 
             # B) Go to the right following the line
             rospy.loginfo("Keep going'til find next black ")
-            
+                        
             # a esquerda o sensor frontal aponta -2 e a direita ele aponta 2 -> ir para direita com -2 e para esquerda com 2
 
             r = rospy.Rate(100)
@@ -130,13 +147,18 @@ if __name__ == '__main__':
             while(not rospy.is_shutdown()):
                 sensors = linesensors.readLines()
             
-                error[int(Wheels.FL)] = - sensors[int(Sides.RIGHT)]  - sensors[int(Sides.FRONT)] * 2
-                error[int(Wheels.FR)] = - sensors[int(Sides.LEFT)]   - sensors[int(Sides.FRONT)] * 2
-                error[int(Wheels.BL)] = + sensors[int(Sides.LEFT)]   - sensors[int(Sides.FRONT)] * 2
-                error[int(Wheels.BR)] = + sensors[int(Sides.RIGHT)]  - sensors[int(Sides.FRONT)] * 2
+                angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
 
+                diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+                error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)] * 1
+                error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)] * 1
+                error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)] * 1
+                error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)] * 1
+                
                 #print("RIGHT: {}  LEFT: {} FRONT: {}".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)], sensors[int(Sides.FRONT)]))
-                #print( "FL {}\tFR {}\nBL {}\tBR {}\n\n\n".format(                    - sensors[int(Sides.RIGHT)],                    - sensors[int(Sides.LEFT)],                    + sensors[int(Sides.LEFT)],                    + sensors[int(Sides.RIGHT)]) )
+                print( "FL {}\tFR {}\nBL {}\tBR {}\n\n\n".format(error[int(Wheels.FL)],                   
+                error[int(Wheels.FR)],  error[int(Wheels.BL)], error[int(Wheels.BR)]) )
                 
                 if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
                     is_stable = is_stable + 1
@@ -167,10 +189,14 @@ if __name__ == '__main__':
             while(not rospy.is_shutdown()):
                 sensors = linesensors.readLines()
                 
-                error[int(Wheels.FL)] = - sensors[int(Sides.RIGHT)]
-                error[int(Wheels.FR)] = - sensors[int(Sides.LEFT)]
-                error[int(Wheels.BL)] = + sensors[int(Sides.LEFT)]
-                error[int(Wheels.BR)] = + sensors[int(Sides.RIGHT)] 
+                angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
+
+                diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+                error[int(Wheels.FL)] = - diretional  + angular 
+                error[int(Wheels.FR)] = + diretional  - angular 
+                error[int(Wheels.BL)] = + diretional  + angular 
+                error[int(Wheels.BR)] = - diretional  - angular 
                 
                 motorControl.align(error)        
                 #print("RIGHT: {}  LEFT: {} ".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)]))
@@ -193,10 +219,10 @@ if __name__ == '__main__':
             motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6)
             motorControl.clear()
 
-            error[int(Wheels.FL)] = -1
-            error[int(Wheels.FR)] = -1
-            error[int(Wheels.BL)] = 1
-            error[int(Wheels.BR)] = 1
+            error[int(Wheels.FL)] = - 1
+            error[int(Wheels.FR)] = + 1
+            error[int(Wheels.BL)] = + 1
+            error[int(Wheels.BR)] = - 1
             motorControl.align( error )
             
             r = rospy.Rate(100)
@@ -218,16 +244,25 @@ if __name__ == '__main__':
             start = rospy.get_time() 
             is_stable = 0
             motorControl.clear()
-            while(not rospy.is_shutdown() and (rospy.get_time() - start ) < 3):
+            while(not rospy.is_shutdown() and (rospy.get_time() - start ) >0):
                 sensors = linesensors.readLines()
                 #rospy.loginfo("LEFT: {} RIGHT: {}".format( containerSensors.sensor[int(Sides.LEFT)], containerSensors.sensor[int(Sides.RIGHT)]))
-                rospy.loginfo("{}".format(rospy.get_time() - start))
-                error[int(Wheels.FL)] = + sensors[int(Sides.BACK)]   - 1
-                error[int(Wheels.FR)] = + sensors[int(Sides.FRONT)]  - 1
-                error[int(Wheels.BL)] = + sensors[int(Sides.BACK)]   + 1
-                error[int(Wheels.BR)] = + sensors[int(Sides.FRONT)]  + 1
+                #rospy.loginfo("{}".format(rospy.get_time() - start))
 
-                if( containerSensors.sensor[int(Sides.LEFT)] and False ):
+                print("RIGHT: {}  LEFT: {} FRONT: {}".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)], sensors[int(Sides.FRONT)]))
+                print( "FL {}\tFR {}\nBL {}\tBR {}\n\n\n".format(error[int(Wheels.FL)],                   
+                        error[int(Wheels.FR)],  error[int(Wheels.BL)], error[int(Wheels.BR)]) )
+
+                angular = sensors[int(Sides.FRONT)] - sensors[int(Sides.BACK)]   
+
+                diretional = (sensors[int(Sides.FRONT)] + sensors[int(Sides.BACK)] ) / 2
+
+                error[int(Wheels.FL)] = - diretional  + angular  - 1
+                error[int(Wheels.FR)] = - diretional  - angular  + 1
+                error[int(Wheels.BL)] = - diretional  + angular  + 1
+                error[int(Wheels.BR)] = - diretional  - angular  - 1
+                print()
+                if( containerSensors.sensor[int(0)] and False ):
                     is_stable += 1
 
                     error[int(Wheels.FL)] = + sensors[int(Sides.BACK)]
@@ -248,7 +283,68 @@ if __name__ == '__main__':
 
             #motorControl.align(error)    
 
-        elif( cm == 6):
+        elif (cm == 6):
+            r = rospy.Rate(100)
+            motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6)
+            motorControl.clear()
+            error = np.array([-2,+2,+2,-2])
+            # 1) Get through the green line
+            rospy.loginfo("1) Get Through the Green Line")
+            linesensors.reset(False)
+            
+            r = rospy.Rate(100)
+            while(not rospy.is_shutdown()):
+                sensors = linesensors.readLines()
+                motorControl.align(error)            
+                rospy.loginfo(sensors)
+                if( sensors[ int( Sides.LEFT) ] == - 2 and sensors[ int(Sides.RIGHT) ] == - 2 ):
+                    linesensors.reset()
+                    break
+                            
+                r.sleep()
+            
+            
+            sensors = linesensors.readLines()
+            
+            error[int(Wheels.FL)] = sensors[int(Sides.LEFT)]
+            error[int(Wheels.FR)] = sensors[int(Sides.RIGHT)]
+            error[int(Wheels.BL)] = sensors[int(Sides.LEFT)]
+            error[int(Wheels.BR)] = sensors[int(Sides.RIGHT)] 
+
+            motorControl.align(error)        
+
+            rospy.loginfo("2) Align with the Next Line Black")
+            is_stable = 0
+            linesensors.reset(False)
+            while(not rospy.is_shutdown()):
+                sensors = linesensors.readLines()
+                
+                angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
+
+                diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+                error[int(Wheels.FL)] = - diretional  + angular 
+                error[int(Wheels.FR)] = + diretional  - angular 
+                error[int(Wheels.BL)] = + diretional  + angular 
+                error[int(Wheels.BR)] = - diretional  - angular 
+                
+                motorControl.align(error)        
+                #print("RIGHT: {}  LEFT: {} ".format(sensors[int(Sides.RIGHT)], sensors[int(Sides.LEFT)]))
+                #print( "FL {}\tFR {}\nBL {}\tBR{}\n\n\n".format(                    - sensors[int(Sides.RIGHT)],                    - sensors[int(Sides.LEFT)],                    + sensors[int(Sides.LEFT)],                    + sensors[int(Sides.RIGHT)]) )
+            
+                if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
+                    is_stable += 1
+                    if( is_stable == 100):
+                        break
+                else:
+                    is_stable = 0
+                            
+                r.sleep()
+
+            motorControl.stop()
+            
+   
+        elif( cm == 0):
             motorControl.stop()
             break
 

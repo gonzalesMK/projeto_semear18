@@ -78,29 +78,36 @@ class Claw(object):
         #self._subscribers = rospy.Subscriber("/containerSensors", UInt8, self.__callback)
         #self.sensor = [0, 0]
 
+        self.__precision = 0.01  # Claw up/down moviment 
+        self.__limitVel = 0.1     
+        self.__fastVel = 254.0   # Fastest claw up/down moviment
+        self.__slowVel = 150.0   # Slowest claw up/down moviment
+        self.__controllerFreq = 50.0 
+        self.__timer = rospy.Rate(self.__controllerFreq)
+        self.startPose = 0.0     # Claw up/down position reference
+        self.is_referenced = True
+        self.upperLimit = 1   # upper limit switch 
+        self.lowerLimit = 0   # lower limit switch
+
+        self.left = 5
+        self.middle = 90
+        self.right = 165
+
+        self.servo_pose = 90  # Servo Pose
+
         rospy.Subscriber("/claw/height", Int64, self.__clawEncoderCB)
-        rospy.Subscriber("/claw/limitSwitch", Bool, self.__clawSwitchCB)
+        rospy.Subscriber("/claw/limitSwitchs", UInt8, self.__clawSwitchCB)
         
         self.pubServoPose = rospy.Publisher("/claw/servoPose", UInt8, queue_size=1) # Control the Position of the Servo Motor
         self.pubClawPWM = rospy.Publisher("/claw/pwm", Float64, queue_size=1)
         self.pubTurnOnClawFeedback = rospy.Publisher("/claw/turnOnFB", Bool, queue_size=1)# Turn on the Gear and Pinion arduino interface
-        self.pubTurnOnElectro = rospy.Publisher("/claw/turnOnElectromagnet", Bool, queue_size=1)# Turn on the Electromagnet
+        self.pubTurnOnElectro = rospy.Publisher("/claw/enableElectromagnet", Bool, queue_size=1)# Turn on the Electromagnet
         
         
         self.pubClawDesiredVel = rospy.Publisher("/claw/desired_vel", Int64, queue_size=1)
         #self.pubClawControllerEnable = rospy.Publisher('/claw/pid_enable', Bool, queue_size=10)    
         #self.pubClawControllerError = rospy.Publisher('/claw/error', Bool, queue_size=10)    
         
-
-        self.__precision = 0.01 
-        self.__limitVel = 0.1
-        self.__fastVel = 254.0
-        self.__slowVel = 70.0
-        self.__controllerFreq = 50.0
-        self.__timer = rospy.Rate(self.__controllerFreq)
-        self.startPose = 0.0
-        self.is_referenced = True
-    
     def __clawEncoderCB(self, msg):
         """
         Callback to the ROS subscriber
@@ -116,8 +123,8 @@ class Claw(object):
 
     def __clawSwitchCB(self, msg):
 
-        self.upperLimit = msg.data & 4
-        self.lowerLimit = msg.data & 1
+        self.upperLimit = msg.data & 1
+        self.lowerLimit = msg.data & 4
 
     def __clipVel(self, vel):
         """
@@ -140,7 +147,20 @@ class Claw(object):
 
         return pose    
 
-    def setGearAndPinionPose(self, target, pickContainer=False):
+    def pickContainer(self):
+
+        self.pubClawPWM.publish( - self.__fastVel )
+        timer = rospy.Rate(100)
+
+        while( not self.lowerLimit ):
+            timer.sleep()
+
+        self.pubClawPWM.publish(0)            
+        
+        rospy.loginfo("Grab it!")
+        self.controlElectromagnet()
+
+    def dropContainer(self, height):
         """
             Controls the Gear and Pinion position with care using my own control:
                 - When it goes down/iup, it needs to start fast and slow down before arriving to the target - otherwise, because of 
@@ -153,38 +173,34 @@ class Claw(object):
                 If this is set to True, the claw is going to go down'til the button in the claw is pressed by touching the desired container.
         """
         try: 
-            target = float( GearAndPinionPoses(target) )
+            pass #target = #float( GearAndPinionPoses(target) )
         except ValueError:
+            rospy.logerr("Posição não conhecida: ")
             return 
 
         if not self.is_referenced:
             rospy.logerr("A cremalheira não foi referenciada. Cuidado! Chamar a função <> antes de usar o set Pose")
 
-        error = self.gearAndPinionHeight - target
+        error = self.gearAndPinionHeight - height
 
         timer = rospy.Rate(50)
-        while( np.abs(error) > self.__precision):
-            
-            error = self.gearAndPinionHeight - target # in cm
-            rospy.loginfo(error)
-            
-            if np.abs(error) > 1:
-                self.pubClawPWM.publish( self.__fastVel * np.sign(error) )
-            else:
-                self.pubClawPWM.publish( self.__slowVel * np.sign(error) )
-            
-            timer.sleep()
+        rospy.loginfo("Error : {}".format(error))
+        #rospy.loginfo("While : {} and {}".format(np.abs(error) > self.__precision , not self.lowerLimit))
 
+        if error < 0 :
+            while( np.abs(error) > self.__precision ):
+                
+                error = self.gearAndPinionHeight - height # in cm
+                #rospy.loginfo(error)
+                
+                if np.abs(error) > 1:
+                    self.pubClawPWM.publish( self.__fastVel * np.sign(error) )
+                else:
+                    self.pubClawPWM.publish( self.__slowVel * np.sign(error) )
+                
+                timer.sleep()
 
-        if( pickContainer):
-            touched = False
-            while( not touched ):
-                #TODO: 
-                self.pubClawDesiredVel(self.__slowVel)
-                self.timer.sleep()
-                #subscribe to the right topic and wait for it to publish true:
-                pass
-
+        self.controlElectromagnet(False)
         self.pubClawPWM.publish(0)
 
     def setGearAndPinionPosePID(self, target):
@@ -211,14 +227,29 @@ class Claw(object):
             self.timer.sleep()
 
     
-    def setServoPose(self, pose):
-         """
+    def setServoMiddle(self):
+        self.pubServoPose.publish( self.middle )
+        self.pubServoPose.publish( self.middle )
+        self.pubServoPose.publish( self.middle )
+
+    def setServoPose(self, initial, end):
+        """
             Set the Servomotor pose.
 
             Pose should be the enum ServoPose to standardize the height
-         """
-         self.pubServoPose.publish( int(pose) )
+        """
+        r = rospy.Rate(30)
+        direction = np.sign(end - initial)
 
+        while not rospy.is_shutdown():
+            initial += direction
+            self.pubServoPose.publish( initial )
+            
+            r.sleep()
+            
+            if initial == end :
+                break
+            
 
     def resetGearAndPinionPose(self):
         """
@@ -227,15 +258,21 @@ class Claw(object):
 
             This pose is also useful to carry the container around
          """
+        self.pubClawPWM.publish( self.__fastVel  )
+        r = rospy.Rate(10)
+        r.sleep()        
         while( self.upperLimit ):
-            self.pubClawPWM( 62 )
+            self.pubClawPWM.publish( self.__fastVel  )
+            r.sleep()
         
-        self.pubClawPWM( 0 )
+        self.pubClawPWM.publish( 0 )
 
         """
             Resets the arduino reference for the Height again to the start position
         """
-        self.startPose = self.gearAndPinionHeight
+        r.sleep()
+        #rospy.loginfo(self.gearAndPinionHeight)
+        self.startPose += self.gearAndPinionHeight
 
         self.is_referenced = True
         
@@ -245,3 +282,5 @@ class Claw(object):
 
         
 
+    def stop(self):
+        self.pubClawPWM.publish(0)

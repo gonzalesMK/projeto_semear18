@@ -40,10 +40,10 @@ void keyboard_cb(const geometry_msgs::TwistConstPtr &vel)
     std_msgs::Float64 Wbr;
 
     // Modelo omnidirecional da base
-    Wfl.data = ((w_module)*sin(PI / 4 + theta) + (vel->angular.z)) * 10;
-    Wfr.data = ((w_module)*cos(PI / 4 - theta) - (vel->angular.z)) * 10;
-    Wbl.data = ((w_module)*cos(PI / 4 + theta) + (vel->angular.z)) * 10;
-    Wbr.data = ((w_module)*sin(PI / 4 - theta) - (vel->angular.z)) * 10;
+    Wfl.data = ((w_module)*cos(PI / 4 - theta) - (vel->angular.z)) * 20;
+    Wfr.data = ((w_module)*cos(PI / 4 + theta) + (vel->angular.z)) * 20;
+    Wbl.data = ((w_module)*cos(PI / 4 + theta) - (vel->angular.z)) * 20;
+    Wbr.data = ((w_module)*cos(PI / 4 - theta) + (vel->angular.z)) * 20;
 
     // Publicação para o motor
     pubMotorFR.publish(Wfr);
