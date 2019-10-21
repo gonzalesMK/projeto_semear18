@@ -9,11 +9,12 @@ from robot_strategy.lineSensors import LineSensor, Sides
 from robot_strategy.containerSensorsLib import ContainerSensors
 from robot_strategy.motorControlLib import MotorControl, Wheels
 from robot_strategy.utils import Colors, Positions, finalAlignmentIntersection
-from robot_strategy.clawLib import Claw
+from robot_strategy.clawLib import Claw, GearAndPinionPoses
 
 import numpy as np
 
 from functools import partial
+
 class changeIntersection(smach.State):
     """
         The robot changes from the Green Intersection to the Blue Intersection and vice versa
@@ -32,85 +33,8 @@ class changeIntersection(smach.State):
         
         linesensors = LineSensor()
         motorControl = MotorControl()
-        motorControl.setParams(Kp=30, Kd=50, freq=100, momentum=0.5)
-        error = np.array([0,0,0,0])
-       
-        if userdata.robotPose == Positions.GreenIntersection:
-            coef = -1     
-            linesensors.reset()
-        else:
-             coef =  1 #check the side: should go to the right or left
-             linesensors.reset(False)
-        # 1) Get the front sensor out of the black line 
-        rospy.loginfo("changeIntersection: 1)  Get out of blak line | robotPose: {} {} {}".format(
-            userdata.robotPose, Positions.GreenIntersection, Positions.BlueIntersection
-        ))
-        
-        motorControl.setParams(Kp=20, Kd=50, freq=100, momentum=0.6)
 
-        r = rospy.Rate(100)
-        r.sleep()
-        sensors = linesensors.readLines()
-
-
-        while (not rospy.is_shutdown() and 
-              (sensors[int(Sides.FRONT)] !=  2 * coef ) ) :
-            
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular + coef * 1.5
-            error[int(Wheels.FR)] = + diretional  - angular + coef * 1.5
-            error[int(Wheels.BL)] = + diretional  + angular + coef * 1.5
-            error[int(Wheels.BR)] = - diretional  - angular + coef * 1.5
-
-            motorControl.align(error)        
-
-            r.sleep()
-
-        # 2) Go to the right/left following the line
-        rospy.loginfo("changeIntersection: 2) Keep going'til find next black ")
-
-        r = rospy.Rate(100)
-        is_stable = 0
-        motorControl.clear()
-        motorControl.setParams(Kp=30, Kd=50, freq=100, momentum=0.5)   
-        if (coef == - 1 ):
-            linesensors.reset(False)
-        else:
-            linesensors.reset()
-
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-        
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)] * 1
-            
-            if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
-                is_stable = is_stable + 1
-                motorControl.setParams(Kp=10, Kd=25, windUp=20., Ki=0., freq=100., momentum=0.6, deadSpace=15)
-                if is_stable == 20:
-                    break
-
-            elif( sensors[int(Sides.FRONT)] != 0 and is_stable > 0):
-                is_stable = 0
-
-            motorControl.align(error)        
-
-            r.sleep()
-
-        motorControl.stop()
-        
-        userdata.robotPose = int(Positions.BlueIntersection) if userdata.robotPose == Positions.GreenIntersection else int(Positions.GreenIntersection)
-
-        rospy.loginfo("changeIntersection: 3) Success. New pose is: {}".format(userdata.robotPose))
+        userdata.robotPose = change_intersection(linesensors, motorControl, userdata.robotPose, 20)
 
         return 'succeeded'
 
@@ -126,45 +50,9 @@ class goFromContainerToIntersection(smach.State):
     
         linesensors = LineSensor()
         motorControl = MotorControl()
-        motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6, deadSpace=25)                
-        r = rospy.Rate(100)
-        error = np.array([1.,1,1,1], dtype=float)
-
-        # 2) Final Alignment
-        rospy.loginfo("goFromContainerToIntersection: 1) Go Back until lateral sensors find blackline")
-        motorControl.setParams(Kp=20., Kd=20., freq=100., momentum=0.6)        
-
-        linesensors.reset()
-        is_stable = 0
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
+      
+        container_to_intersection(linesensors, motorControl)
             
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 3.
-
-            error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)]
-            error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)]
-            error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)]
-            error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)]
-
-            rospy.loginfo(error)
-            motorControl.align(error)        
-        
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
-                is_stable += 1
-                rospy.loginfo(is_stable)
-                motorControl.setParams(Kp=15., Kd=50., freq=100., momentum=0.6)
-                if( is_stable == 20):
-                    break
-            else:
-                is_stable = 0
-                        
-            r.sleep()
-
-        rospy.loginfo("goFromContainerToIntersection: 3) Success")
-        motorControl.stop()  
-        
-        #TODO: if this code takes to long to complete, cancel it bcs smt went wrong
         return 'succeeded'
 
 class goFromDockToIntersection(smach.State):
@@ -179,97 +67,8 @@ class goFromDockToIntersection(smach.State):
         
         linesensors = LineSensor()
         motorControl = MotorControl()
-        motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6)
 
-        coef = -1 if userdata.containerColor == Colors.Green else 1 #check the side: should go to the right or left
-        error = np.array([0,0,0,0])
-
-        # 1) 
-        rospy.loginfo("goFromDockToIntersection: 1) Go straight Up Until Lateral Sensors get out of line")        
-        
-        linesensors.reset(False)
-        error = np.array([-2,+2,+2,-2])
-        error[int(Wheels.FL)] = - 2
-        error[int(Wheels.FR)] = + 2
-        error[int(Wheels.BL)] = + 2
-        error[int(Wheels.BR)] = - 2
-
-        r = rospy.Rate(100)
-        r.sleep()
-
-        while(not rospy.is_shutdown()):
-
-            sensors = linesensors.readLines()
-            motorControl.align(error)            
-    
-            if( np.abs(sensors[ int( Sides.LEFT) ]) == 2 and np.abs(sensors[ int(Sides.RIGHT) ]) ==  2 ):
-                break
-                        
-            r.sleep()
-  
-        # 2) 
-        rospy.loginfo("goFromDockToIntersection: 2) Go straight Up Until LEFT/RIGHT sensors find blackline")        
-
-        linesensors.reset(False)
-        motorControl.clear()
-        is_stable = 0
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular 
-            error[int(Wheels.FR)] = + diretional  - angular 
-            error[int(Wheels.BL)] = + diretional  + angular 
-            error[int(Wheels.BR)] = - diretional  - angular 
-            
-            motorControl.align(error)        
-        
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
-                is_stable += 1
-                if( is_stable == 100):
-                    break
-            else:
-                is_stable = 0
-                        
-            r.sleep()
-
-        motorControl.stop() 
-        
-        # 3) 
-        rospy.loginfo("goFromDockToIntersection: 3) Go to the side until find intersection, coef {}, Color {}( GREEN =={} )".format(coef, userdata.containerColor, Colors.Green))
-        
-        
-        linesensors.reset(False) if userdata.containerColor == Colors.Green else linesensors.reset() #check the side: should go to the right or left
-
-        while(not rospy.is_shutdown()): 
-            sensors = linesensors.readLines()   
-
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)] * 1
-
-            if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
-                is_stable = is_stable + 1
-                motorControl.setParams(Kp=10., Kd=25., windUp=20., Ki=10., freq=100, momentum=0.6)
-                if is_stable == 60:
-                    break
-
-            elif( sensors[int(Sides.FRONT)] != 0 and is_stable > 0):
-                is_stable = 0
-
-            motorControl.align(error)        
-
-            r.sleep()
-
-        motorControl.stop()
-        
-        rospy.loginfo("goFromDockToIntersection: 4) Success")
+        dock_to_intersection(linesensors, motorControl, userdata.containerColor, 50)
         
         return 'succeeded'
 
@@ -287,63 +86,8 @@ class goToContainer(smach.State):
         linesensors = LineSensor()
         motorControl = MotorControl()
         containerSensors = ContainerSensors()
-        error = np.array([1,1,1,1], dtype=float)
-
-        # 1) Go straight Ahead Until Back sensors find blackline
-        rospy.loginfo("goToContainer: 1) Go straight Ahead Until Back sensors find blackline ")
-        motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6)
-        motorControl.clear()
-        error[int(Wheels.FL)] = - 1
-        error[int(Wheels.FR)] = + 1
-        error[int(Wheels.BL)] = + 1
-        error[int(Wheels.BR)] = - 1
-
-        motorControl.align( error )
         
-        r = rospy.Rate(100)
-        while(not rospy.is_shutdown()):
-
-            motorControl.align( error )
-            sensors = linesensors.readLines()
-
-            if( sensors[ int( Sides.BACK) ] == 0 ):
-                linesensors.reset()
-                break
-                        
-            r.sleep()
-        motorControl.stop()
-
-        # 2) Keep going until find container
-        rospy.loginfo("goToContainer: 2) Keep going until find container ( or 3 sec)")
-        motorControl.setParams(Kp=20, Kd=50, freq=100, momentum=0.6, deadSpace=20)
-        motorControl.clear()
-
-        is_stable = 0
-        while(not rospy.is_shutdown() ):
-            sensors = linesensors.readLines()
-
-            angular = sensors[int(Sides.FRONT)] - sensors[int(Sides.BACK)]   
-            diretional = (sensors[int(Sides.FRONT)] + sensors[int(Sides.BACK)] ) / 2
-
-            angularC = int(containerSensors.sensor[1]) - int(containerSensors.sensor[0])
-            diretionalC = 2 - (int(containerSensors.sensor[0]) + int(containerSensors.sensor[1]))
-            
-            error[int(Wheels.FL)] =  + (- diretional  + angular ) * 0.5 + (- diretionalC +angularC)
-            error[int(Wheels.FR)] =  + (- diretional  - angular ) * 0.5 + (+ diretionalC -angularC)
-            error[int(Wheels.BL)] =  + (- diretional  + angular ) * 0.5 + (+ diretionalC +angularC)
-            error[int(Wheels.BR)] =  + (- diretional  - angular ) * 0.5 + (- diretionalC -angularC)
-            rospy.loginfo(error)
-            if( containerSensors.sensor[(0)] and containerSensors.sensor[(1)]):
-                is_stable += 1
-
-                if is_stable > 50:
-                    break
-
-            motorControl.align( error )
-            r.sleep()
-
-        rospy.loginfo("goToContainer: 3) Success")
-        motorControl.stop()
+        to_container(linesensors, motorControl, containerSensors)
         
         return 'succeeded'
 
@@ -360,113 +104,8 @@ class goToDock(smach.State):
         
         linesensors = LineSensor()
         motorControl = MotorControl()
-        motorControl.setParams(Kp=30, Kd=50, freq=100, momentum=0.5, deadSpace=18)
-        coef = 1 if userdata.containerColor == Colors.Green else -1 #check the side: should go to the right or left
-
-        error = np.array([0,0,0,0])
-
-        # 1) 
-        time = rospy.Time.now()
-        rospy.loginfo("goToDock: 1) Go to the Side following the line during {}s".format(1.5))
-        rospy.loginfo("robotPose: {} {} {}".format(
-            userdata.robotPose, int(Positions.GreenIntersection), int(Positions.BlueIntersection)
-        ))
-        rospy.loginfo("containerColor: {} {} {}".format(
-            userdata.containerColor , Colors.Green, Colors.Blue))
-        
-        r = rospy.Rate(100)
-        while(not rospy.is_shutdown() and 
-            ( rospy.Time.now() - time < rospy.Duration(1.5) ) ):
-            
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular + coef * 1.5
-            error[int(Wheels.FR)] = + diretional  - angular + coef * 1.5
-            error[int(Wheels.BL)] = + diretional  + angular + coef * 1.5
-            error[int(Wheels.BR)] = - diretional  - angular + coef * 1.5
-            
-            motorControl.align(error)        
-            r.sleep()
-        
-        # 2) 
-        rospy.loginfo("goToDock: 1) Align before moving down".format(time))
-        
-        is_stable = 0
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular 
-            error[int(Wheels.FR)] = + diretional  - angular 
-            error[int(Wheels.BL)] = + diretional  + angular 
-            error[int(Wheels.BR)] = - diretional  - angular 
-            
-            motorControl.align(error)        
-        
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
-                is_stable += 1
-                if( is_stable == 100):
-                    break
-            else:
-                is_stable = 0
-                        
-            r.sleep()
-
-        motorControl.stop()         
-        # 2)
-        rospy.loginfo("goToDock: 2) Go DOWN until lateral sensors get out of black line ")
-        
-
-        error = np.array([2,-2,-2,+2])
-        r = rospy.Rate(100)
-        while(not rospy.is_shutdown()):
-
-            sensors = linesensors.readLines()
-            motorControl.align(error)            
-    
-            if( np.abs(sensors[ int( Sides.LEFT) ]) ==  2 and np.abs(sensors[ int(Sides.RIGHT) ]) ==  2 ):
-                break
-                        
-            r.sleep()
-
-        # 3) 
-        rospy.loginfo("goToDock: 3) Go Down until find green line")
-        
-        motorControl.setParams(Kp=12., Kd=20., freq=100., momentum=0.6)
-
-        linesensors.reset()
-        is_stable = 0
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular 
-            error[int(Wheels.FR)] = + diretional  - angular 
-            error[int(Wheels.BL)] = + diretional  + angular 
-            error[int(Wheels.BR)] = - diretional  - angular 
-            
-            motorControl.align(error)        
-        
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
-                is_stable += 1
-                motorControl.setParams(Kp=8., Kd=20., windUp=20., Ki=10., freq=100., momentum=0.6)
-                if( is_stable == 10):
-                    break
-            else:
-                is_stable = 0
-                        
-            r.sleep()
-
-        motorControl.stop()  
-
-        rospy.loginfo("goToDock: 4) Success, coef {}".format(coef))
+       
+        to_dock(linesensors, motorControl, userdata.containerColor, 0)
         
         return "succeeded"
 
@@ -482,94 +121,7 @@ class goToFirstPose(smach.State):
     def execute(self, userdata):
         linesensors = LineSensor()
         motorControl = MotorControl(freq=100)
-        # 1) Get through the green line
-        rospy.loginfo("1) Get Through the Green Line")
-
-        linesensors.reset(False)
-        motorControl.setParams(Kp = 40)
-        error = np.array([-3,+3,+3,-3])
-
-        r = rospy.Rate(100)
-        while(not rospy.is_shutdown()):
-
-            sensors = linesensors.readLines()
-            motorControl.align(error)            
-    
-            if( sensors[ int( Sides.LEFT) ] == - 2 and sensors[ int(Sides.RIGHT) ] == - 2 ):
-                break
-                        
-            r.sleep()
-  
         
-        # 2) Align with the Next Line (Black)
-        rospy.loginfo("2) Align with the Next Line Black")
-
-        linesensors.reset(False)
-        linesensors.error = error
-        motorControl.clear()
-        motorControl.setParams(Kp=30, Kd=100, momentum=0.7)
-        is_stable = 0
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-            
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular 
-            error[int(Wheels.FR)] = + diretional  - angular 
-            error[int(Wheels.BL)] = + diretional  + angular 
-            error[int(Wheels.BR)] = - diretional  - angular 
-            
-            motorControl.align(error)        
-        
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
-                motorControl.setParams(Kp = 1, Kd= 0, Ki=0, windUp=0, momentum=0, deadSpace=15)
-                is_stable += 1
-                if( is_stable == 1):
-                    break
-            else:
-                is_stable = 0
-                        
-            r.sleep()
-
-        motorControl.stop()        
-        
-        # 3 ) Go to the left following the line
-        rospy.loginfo("3) Go to the Left Following the Line")
-
-#        linesensors.reset()
-        motorControl.clear()
-        motorControl.setParams(Kp=20, Kd=50, momentum=0.6)
-        linesensors._error[int(Sides.FRONT)] = -2
-
-        while(not rospy.is_shutdown()):
-            sensors = linesensors.readLines()
-        
-            angular = ( sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   ) * 0.5
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
-
-            error[int(Wheels.FL)] = - diretional  + angular #- sensors[int(Sides.FRONT)] * 1.5
-            error[int(Wheels.FR)] = + diretional  - angular #- sensors[int(Sides.FRONT)] * 1.5
-            error[int(Wheels.BL)] = + diretional  + angular #- sensors[int(Sides.FRONT)] * 1.5
-            error[int(Wheels.BR)] = - diretional  - angular #- sensors[int(Sides.FRONT)] * 1.5
-            
-            if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
-                is_stable = is_stable + 1
-                motorControl.setParams(Kp = 15, Kd= 0, Ki=0, windUp=0, momentum=0, deadSpace=15)
-
-                if is_stable == 20:
-                    break
-
-            elif( sensors[int(Sides.FRONT)] != 0 and is_stable > 0):
-                is_stable = 0
-
-            motorControl.align(error)        
-
-            r.sleep()
-        
-        motorControl.stop()
-
-        userdata.finalPose = int(Positions.GreenIntersection)
         return "succeeded"
 
 ################################################
@@ -841,6 +393,9 @@ def strategyPlanner(container_list, inital_pose = Positions.GreenIntersection):
         blue_value  = sum( np.array(colorsToPick) == Colors.Blue)
         best_value = Colors.Green 
         
+        if best_value == 6:
+            break
+
         if green_value > blue_value:
             best_value = Colors.Green
         elif blue_value > green_value:
@@ -905,22 +460,63 @@ def functionPlanner(colorsToPick, containersToPick, initialPose = Positions.Gree
     ln = LineSensor()
     mc = MotorControl()
     cc = Claw()
+    cs = ContainerSensors()
+    n_green = 0
+    n_blue = 0
     for color, container_number in zip(colorsToPick, containersToPick):
         
+        # Change position to stay in the right intersection
         if container_number in [0,1,5,6]:
             container_pose = Positions.GreenIntersection
         else:
             container_pose = Positions.BlueIntersection
-        
-        # Change position to stay in the right intersection
+
         if container_pose != position: 
             functionList.append(partial( change_intersection, ln, mc, position) ) 
             position = Positions.BlueIntersection if position == Positions.GreenIntersection else Positions.GreenIntersection
 
-        # Go to Container
-        functionList.append( partial( pick_container, ln, mc, cc ))
-        
+        # Go to Container | # Pick container # Go Back to Intersection
+        functionList.append( partial( pick_container, ln, cs, mc, cc, container_number ))
 
+        # Change position to stay in the right intersection 
+        if color == Colors.Green:
+            container_pose = Positions.BlueIntersection
+        else:
+            container_pose = Positions.GreenIntersection
+        
+        if container_pose != position: 
+            functionList.append(partial( change_intersection, ln, mc, position) ) 
+            position = Positions.BlueIntersection if position == Positions.GreenIntersection else Positions.GreenIntersection
+
+        # Go To Dock | Deposit Container | Go back to Intersection
+        if color == Colors.Blue:
+            n_blue += 1
+            n_container = n_blue
+        elif color == Colors.Green:
+            n_green += 1
+            n_container = n_green
+        else:
+            rospy.logerr("color of container is wrong")
+            break
+        
+        if n_container == 1 :
+            height = int( GearAndPinionPoses.container1 )
+        elif n_container == 2:
+            height = int( GearAndPinionPoses.container2 )
+        elif n_container == 3:
+            height = int( GearAndPinionPoses.container3 )
+        elif n_container == 4:
+            height = int( GearAndPinionPoses.container4 )
+        elif n_container == 5:
+            height = int( GearAndPinionPoses.container5 )
+        else:
+            rospy.logerr("There is no more height")
+            break
+
+        functionList.append( partial( drop_container, ln, cs, mc, cc, color,  ))
+
+        return functionList
+        
 def change_intersection(linesensors, motorControl, robotStartingPose, STABLE_CONSTANT=0):
         
         # linesensors = LineSensor()
@@ -1049,9 +645,9 @@ def container_to_intersection(linesensors, motorControl):
         
         return 
 
-def dock_to_intersection(linesensors, motorControl, containerColor):
+def dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONSTANT=0):
         motorControl.clear()
-        motorControl.setParams(Kp=30, Kd=100, freq=100, momentum=0.6)
+        motorControl.setParams(Kp=10, Kd=0, freq=100, momentum=0.6, deadSpace=20)
 
         coef = -1 if containerColor == Colors.Green else 1 #check the side: should go to the right or left
         error = np.array([0,0,0,0])
@@ -1100,8 +696,8 @@ def dock_to_intersection(linesensors, motorControl, containerColor):
         
             if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
                 is_stable += 1
-                #if( is_stable == 100):
-                break
+                if( is_stable >= STABLE_CONSTANT):
+                    break
             else:
                 is_stable = 0
                         
@@ -1112,8 +708,7 @@ def dock_to_intersection(linesensors, motorControl, containerColor):
         # 3) 
         rospy.loginfo("goFromDockToIntersection: 3) Go to the side until find intersection, coef {}, Color {}( GREEN =={} )".format(coef, containerColor, Colors.Green))
         
-        
-        linesensors.reset(False) if containerColor == Colors.Green else linesensors.reset() #check the side: should go to the right or left
+        linesensors._error[int(Sides.FRONT)] = 2 if containerColor == Colors.Green else -2 #check the side: should go to the right or left
 
         while(not rospy.is_shutdown()): 
             sensors = linesensors.readLines()   
@@ -1121,22 +716,21 @@ def dock_to_intersection(linesensors, motorControl, containerColor):
             angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
             diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
 
-            error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)] * 1
-            error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)] * 1
+            error[int(Wheels.FL)] = (- diretional  + angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
+            error[int(Wheels.FR)] = (+ diretional  - angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
+            error[int(Wheels.BL)] = (+ diretional  + angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
+            error[int(Wheels.BR)] = (- diretional  - angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
 
             if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
                 is_stable = is_stable + 1
                 motorControl.setParams(Kp=10., Kd=25., windUp=20., Ki=10., freq=100, momentum=0.6)
-                if is_stable == 60:
+                if is_stable >= STABLE_CONSTANT:
                     break
 
             elif( sensors[int(Sides.FRONT)] != 0 and is_stable > 0):
                 is_stable = 0
 
             motorControl.align(error)        
-
             r.sleep()
 
         motorControl.stop()
@@ -1145,11 +739,9 @@ def dock_to_intersection(linesensors, motorControl, containerColor):
         
         return 'succeeded'
 
-def to_container(linesensors, motorControl):
+def to_container(linesensors, motorControl, containerSensors):
     #TODO: the robot needs to get to the first row container and the second row of container
-    linesensors = LineSensor()
-    motorControl = MotorControl()
-    containerSensors = ContainerSensors()
+    linesensors.reset()
     error = np.array([1,1,1,1], dtype=float)
 
     # 1) Go straight Ahead Until Back sensors find blackline
@@ -1188,16 +780,16 @@ def to_container(linesensors, motorControl):
         angular = sensors[int(Sides.FRONT)] - sensors[int(Sides.BACK)]   
         diretional = (sensors[int(Sides.FRONT)] + sensors[int(Sides.BACK)] ) / 2
 
-        angularC = int(containerSensors.sensor[1]) - int(containerSensors.sensor[0])
-        diretionalC = 2 - (int(containerSensors.sensor[0]) + int(containerSensors.sensor[1]))
+        angularC = 0 #int(containerSensors.sensor[1]) - int(containerSensors.sensor[0])
+        #diretionalC = 2 - (int(containerSensors.sensor[0]) + int(containerSensors.sensor[1]))
+        diretionalC = 1 - int(containerSensors.sensor[0])
+        error[int(Wheels.FL)] =  + (- diretional  + angular ) * 0.5 - diretionalC # +angularC)
+        error[int(Wheels.FR)] =  + (- diretional  - angular ) * 0.5 + diretionalC # -angularC)
+        error[int(Wheels.BL)] =  + (- diretional  + angular ) * 0.5 + diretionalC # +angularC)
+        error[int(Wheels.BR)] =  + (- diretional  - angular ) * 0.5 - diretionalC # -angularC)
         
-        error[int(Wheels.FL)] =  + (- diretional  + angular ) * 0.5 + (- diretionalC +angularC)
-        error[int(Wheels.FR)] =  + (- diretional  - angular ) * 0.5 + (+ diretionalC -angularC)
-        error[int(Wheels.BL)] =  + (- diretional  + angular ) * 0.5 + (+ diretionalC +angularC)
-        error[int(Wheels.BR)] =  + (- diretional  - angular ) * 0.5 + (- diretionalC -angularC)
-        
-        rospy.loginfo(error)
-        if( containerSensors.sensor[(0)] and containerSensors.sensor[(1)]):
+        #rospy.loginfo(error)
+        if( containerSensors.sensor[(0)] ):
             is_stable += 1
 
             if is_stable >= 1:
@@ -1211,7 +803,7 @@ def to_container(linesensors, motorControl):
     
     return 'succeeded'        
 
-def to_dock(linesensors, motorControl, containerColor):
+def to_dock(linesensors, motorControl, containerColor, STABLE_CONSTANT=0):
     
     motorControl.clear()
     motorControl.setParams(Kp=30, Kd=50, freq=100, momentum=0.5, deadSpace=18)
@@ -1222,12 +814,6 @@ def to_dock(linesensors, motorControl, containerColor):
     # 1) 
     time = rospy.Time.now()
     rospy.loginfo("goToDock: 1) Go to the Side following the line during {}s".format(1.5))
-    
-    # rospy.loginfo("robotPose: {} {} {}".format(
-    #     userdata.robotPose, int(Positions.GreenIntersection), int(Positions.BlueIntersection)
-    # ))
-    # rospy.loginfo("containerColor: {} {} {}".format(
-    #     userdata.containerColor , Colors.Green, Colors.Blue))
     
     r = rospy.Rate(100)
     while(not rospy.is_shutdown() and 
@@ -1265,7 +851,7 @@ def to_dock(linesensors, motorControl, containerColor):
     
         if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
             is_stable += 1
-            if( is_stable == 20):
+            if( is_stable >= STABLE_CONSTANT):
                 break
         else:
             is_stable = 0
@@ -1311,7 +897,7 @@ def to_dock(linesensors, motorControl, containerColor):
         if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
             is_stable += 1
             motorControl.setParams(Kp=8., Kd=20., windUp=20., Ki=10., freq=100., momentum=0.6)
-            if( is_stable == 10):
+            if( is_stable >= STABLE_CONSTANT):
                 break
         else:
             is_stable = 0
@@ -1324,26 +910,125 @@ def to_dock(linesensors, motorControl, containerColor):
     
     return "succeeded"
 
-def firstPose():
-    # First Pose function
+def firstPose(linesensors,motorControl):
+# 1) Get through the green line
+    rospy.loginfo("1) Get Through the Green Line")
 
+    linesensors.reset(False)
+    motorControl.setParams(Kp = 40)
+    error = np.array([-3,+3,+3,-3])
+
+    r = rospy.Rate(100)
+    while(not rospy.is_shutdown()):
+
+        sensors = linesensors.readLines()
+        motorControl.align(error)            
+
+        if( sensors[ int( Sides.LEFT) ] == - 2 and sensors[ int(Sides.RIGHT) ] == - 2 ):
+            break
+                    
+        r.sleep()
+
+    
+    # 2) Align with the Next Line (Black)
+    rospy.loginfo("2) Align with the Next Line Black")
+
+    linesensors.reset(False)
+    linesensors.error = error
+    motorControl.clear()
+    motorControl.setParams(Kp=30, Kd=100, momentum=0.7)
+    is_stable = 0
+    while(not rospy.is_shutdown()):
+        sensors = linesensors.readLines()
+        
+        angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
+        diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+        error[int(Wheels.FL)] = - diretional  + angular 
+        error[int(Wheels.FR)] = + diretional  - angular 
+        error[int(Wheels.BL)] = + diretional  + angular 
+        error[int(Wheels.BR)] = - diretional  - angular 
+        
+        motorControl.align(error)        
+    
+        if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
+            motorControl.setParams(Kp = 1, Kd= 0, Ki=0, windUp=0, momentum=0, deadSpace=15)
+            is_stable += 1
+            if( is_stable == 1):
+                break
+        else:
+            is_stable = 0
+                    
+        r.sleep()
+
+    motorControl.stop()        
+    
+    # 3 ) Go to the left following the line
+    rospy.loginfo("3) Go to the Left Following the Line")
+    linesensors.reset()
+    motorControl.clear()
+    motorControl.setParams(Kp=20, Kd=50, momentum=0.6)
+    linesensors._error[int(Sides.FRONT)] = -2
+
+    while(not rospy.is_shutdown()):
+        sensors = linesensors.readLines()
+    
+        angular = ( sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   ) * 0.5
+        diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+
+        error[int(Wheels.FL)] = - diretional  + angular - sensors[int(Sides.FRONT)] * 1.5
+        error[int(Wheels.FR)] = + diretional  - angular - sensors[int(Sides.FRONT)] * 1.5
+        error[int(Wheels.BL)] = + diretional  + angular - sensors[int(Sides.FRONT)] * 1.5
+        error[int(Wheels.BR)] = - diretional  - angular - sensors[int(Sides.FRONT)] * 1.5
+        
+        if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
+            is_stable = is_stable + 1
+            motorControl.setParams(Kp = 15, Kd= 0, Ki=0, windUp=0, momentum=0, deadSpace=15)
+
+            if is_stable == 60:
+                break
+
+        elif( sensors[int(Sides.FRONT)] != 0 and is_stable > 0):
+            is_stable = 0
+
+        motorControl.align(error)        
+
+        r.sleep()
+    
+    motorControl.stop()
+
+    position = int(Positions.GreenIntersection)
+    
+    return position
     # Read container
 
     # Change Pose
 
     # Read container
-    pass
+    
 
-def pick_container(linesensors,motorControl, clawControl, containerPose):
-    to_container(linesensors, motorControl)
+def pick_container(linesensors, containersensors, motorControl, clawControl, container_number):
+    # Go To Container
+    to_container(linesensors, motorControl, containersensors)
 
     # Pick container
-    angle_to_pick = 0 if containerPose in [0,2] else 160
+    angle_to_pick = 0 if container_number in [0,2] else 160
 
     clawControl.setServoPose(initial=90, end=angle_to_pick)
     clawControl.pickContainer()
     clawControl.resetGearAndPinionPose()
     clawControl.setServoPose(initial=angle_to_pick, end=90)
 
+    # Go back to intersection
+    container_to_intersection(linesensors, motorControl)
 
-    container_to_intersection(to_container(linesensors, motorControl)
+def drop_container(linesensors, containersensors, motorControl, clawControl, containerColor, height):
+    # Go To Container
+    to_dock(linesensors, motorControl, containerColor, STABLE_CONSTANT=10)
+
+    # Drop container
+    clawControl.dropContainer(height)
+    clawControl.resetGearAndPinionPose()
+
+    # Go back to intersection
+    dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONSTANT=10)

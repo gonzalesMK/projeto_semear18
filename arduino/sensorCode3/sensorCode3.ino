@@ -39,7 +39,7 @@
  */
 
 #include <QTRSensors.h>
-
+#include <Filters.h>
 #include "Arduino.h"
 #include "pins_arduino.h"
 #include <Servo.h>
@@ -119,6 +119,16 @@ uint16_t is_black[] = {FL_BLACK, FR_BLACK, BL_BLACK, BR_BLACK, LF_BLACK, LR_BLAC
 // SERVO
 Servo servo;
 
+float filterFrequency = 5.0;
+FilterOnePole lowpassFilter0( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter1( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter2( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter3( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter4( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter5( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter6( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter7( LOWPASS, filterFrequency );
+
 void setup()
 {
   Serial.begin(115200);
@@ -189,9 +199,25 @@ void loop()
 
   sensorValues[1] = analogRead(A1);
   sensorValues[1] = analogRead(A1);
-
-  sensorValues[0] = analogRead(A0);
-  sensorValues[0] = analogRead(A0);
+  
+  lowpassFilter0.input(analogRead(A0));
+  sensorValues[0] = lowpassFilter0.output();
+  /*
+  lowpassFilter1.input(analogRead(A1));
+  sensorValues[1] = lowpassFilter1.output();
+  lowpassFilter2.input(analogRead(A2));
+  sensorValues[2] = lowpassFilter2.output();
+  lowpassFilter3.input(analogRead(A3));
+  sensorValues[3] = lowpassFilter3.output();
+  lowpassFilter4.input(analogRead(A4));
+  sensorValues[4] = lowpassFilter4.output();
+  lowpassFilter5.input(analogRead(A5));
+  sensorValues[5] = lowpassFilter5.output();
+  lowpassFilter6.input(analogRead(A6));
+  sensorValues[6] = lowpassFilter6.output();
+  lowpassFilter7.input(analogRead(A7));
+  sensorValues[7] = lowpassFilter7.output();
+  */
   qtr.emittersOff();
   
   uint8_t alissonSensors = (uint8_t)digitalRead(DIGI1) + digitalRead(DIGI2) * 2;
@@ -218,7 +244,7 @@ void loop()
   byte sensorsValuesByte = 0;
   for (uint8_t i = 0; i < SensorCount; i++)
   {
-    Serial.write( (unsigned char) floor((float)sensorValues[ordering[i]]/4));
+    Serial.write( (unsigned char) floor( (float) sensorValues[ordering[i]]/4 ));
   }
 
   Serial.write(alissonSensors);

@@ -85,7 +85,7 @@ if __name__ == '__main__':
     userdata = UserData()
 
     while not rospy.is_shutdown() :
-        """
+        #"""
             cm = input("Would you like to:\n"+
             "(1)Go Right\n"+
             "(2)Go Left\n"+
@@ -109,8 +109,8 @@ if __name__ == '__main__':
             #      0
             #     -1
             #     -2
-        # """
-        for cm in [6,11,13,12,8,14,10]:
+         #"""
+        #for cm in [6,11,13,12,8,14,10]:
             if( cm == 1 or cm==2):
                 
                 # A) Get the front sensor out of the black

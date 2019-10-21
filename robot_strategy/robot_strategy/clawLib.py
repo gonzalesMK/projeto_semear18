@@ -9,13 +9,12 @@ import numpy as np
 
 
 class GearAndPinionPoses(Enum):
-    container1 = 4.0 # This is the lowest container
-    container2 = 8.0
-    container3 = 12.0 
-    container4 = 16.0 # This is the highest container in the Dock
-    container5 = 20.0
-    container6 = 24.0
-    reset = 26.32
+    container1 = 18. # This is the lowest container
+    container2 = 14.
+    container3 = 10.0 
+    container4 = 6.0 # This is the highest container in the Dock
+    container5 = 2
+    container6 = 0
 
     def __float__(self):
         return self.value

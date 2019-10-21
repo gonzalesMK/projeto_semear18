@@ -8,7 +8,8 @@ from robot_strategy.containerSensorsLib import ContainerSensors
 from geometry_msgs.msg import Twist
 
 from robot_strategy.lineSensors import Sides, LineSensor
-from robot_strategy.statesLib import goToFirstPose, changeIntersection, goToDock, goFromDockToIntersection
+#from robot_strategy.statesLib import , changeIntersection, goToDock, goFromDockToIntersection
+from robot_strategy.statesLib import change_intersection, goToFirstPose, dock_to_intersection, to_dock, to_container, container_to_intersection, firstPose
 from robot_strategy.utils import Colors, Positions
 
 import numpy as np
@@ -79,10 +80,11 @@ if __name__ == '__main__':
 
     userdata = UserData()
 
-    goToFirstPose().execute(userdata)
-    userdata.robotPose = Positions.GreenIntersection
+    #goToFirstPose().execute(userdata)
+    firstPose(linesensors, motorControl)
+    robotPose = Positions.GreenIntersection
    
-    cm_cicle = [9, 10, 7, 9, 10, 8]
+    cm_cicle = [11, 12, 9, 10]
     cicle = -1
     while not rospy.is_shutdown() :
         
@@ -92,20 +94,24 @@ if __name__ == '__main__':
         cm = cm_cicle[cicle]
         
         if (cm == 7):
-            userdata.robotPose = Positions.GreenIntersection
-            changeIntersection().execute(userdata)
+            change_intersection(linesensors, motorControl, Positions.GreenIntersection, STABLE_CONSTANT=0)
 
         elif (cm == 8):
-            userdata.robotPose = Positions.BlueIntersection
-            changeIntersection().execute(userdata)
+            change_intersection(linesensors, motorControl, Positions.BlueIntersection, STABLE_CONSTANT=0)
 
         elif (cm == 9):
-            userdata.containerColor = Colors.Green if userdata.robotPose == Positions.GreenIntersection else Colors.Blue
-            rospy.loginfo("Go To Dock in userdata.containerColor {}".format(userdata.containerColor))
-            goToDock().execute(userdata)
+            containerColor = Colors.Green if robotPose == Positions.GreenIntersection else Colors.Blue
+            rospy.loginfo("Go To Dock in userdata.containerColor {}".format(containerColor))
+            to_dock(linesensors, motorControl, containerColor, STABLE_CONSTANT=10)
 
         elif( cm == 10):
-            goFromDockToIntersection().execute(userdata)
+            dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONSTANT=0)
+
+        elif( cm == 11):
+            to_container(linesensors, motorControl, containerSensors)
+
+        elif( cm == 12):
+            container_to_intersection(linesensors, motorControl)
 
         elif( cm == 0):
             motorControl.stop()

@@ -39,6 +39,7 @@
  */
 
 #include <QTRSensors.h>
+#include <Filters.h>
 
 #include "Arduino.h"
 #include "pins_arduino.h"
@@ -119,6 +120,8 @@ uint16_t is_black[] = {FL_BLACK, FR_BLACK, BL_BLACK, BR_BLACK, LF_BLACK, LR_BLAC
 // SERVO
 Servo servo;
 
+float filterFrequency = 10.0;
+FilterTwoPole lowpassFilter( LOWPASS_BUTTERWORTH, filterFrequency );
 void setup()
 {
   Serial.begin(115200);
@@ -191,7 +194,9 @@ void loop()
   sensorValues[1] = analogRead(A1);
 
   sensorValues[0] = analogRead(A0);
-  sensorValues[0] = analogRead(A0);
+  lowpassFilter.input(analogRead(A0));
+  sensorValues[0] = lowpassFilter.output();
+  
   qtr.emittersOff();
   
   uint8_t alissonSensors = (uint8_t)digitalRead(DIGI1) + digitalRead(DIGI2) * 2;

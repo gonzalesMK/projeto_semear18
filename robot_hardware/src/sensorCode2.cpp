@@ -189,7 +189,6 @@ int main(int argc, char *argv[])
 
     while (ros::ok())
     {
-
         nread = read(fd, b, 14);
         if (nread > 0)
         {
@@ -233,6 +232,7 @@ int main(int argc, char *argv[])
             media_movel7[2] = media_movel7[1];
             media_movel7[1] = media_movel7[0];
             media_movel7[0] = b[7];
+            
             // Line Follower
             msg.data = (media_movel0[0] + media_movel0[1] + media_movel0[2] + media_movel0[3] + media_movel0[4]) / 5;
             pubLineSensors1.publish(msg);
@@ -270,7 +270,6 @@ int main(int argc, char *argv[])
             msg64.data = -((int64_t)b[10] + (int64_t)b[11] * 256 + (int64_t)b[12] * 65536 + (int64_t)b[13] * 16777216 - (int64_t)2147483648);
             pubEncoder.publish(msg64);
         }
-
         ros::spinOnce();
         r.sleep();
     }
