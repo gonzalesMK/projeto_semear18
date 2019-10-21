@@ -1,8 +1,0 @@
-#goal definition
-geometry_msgs/Twist deslocamento
----
-#result definition
-bool succeed
----
-#feedback
-float64 distance

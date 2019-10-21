@@ -25,8 +25,8 @@ motorControl=0
 if __name__ == '__main__':
     rospy.init_node('testeMotor')
     
-    motorControl = MotorControl(kd= 0.1, Kp = 15, momentum=1)
-    rospy.loginfo(motorControl.momentum)
+    motorControl = MotorControl(Kd= 100, Kp = 20, Ki=0, windUp=10, momentum=0.7, deadSpace=15)
+    
     r = rospy.Rate(100)
 
     change = 0
@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         if change == 300:
             error = error * -1
-            #change = 301 
+            change = 0 
         
         motorControl.align(error)
 

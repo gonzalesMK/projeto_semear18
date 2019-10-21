@@ -59,10 +59,10 @@ void loop()
     sensorValues[0] = analogRead(A0);
     sensorValues[1] = analogRead(A1);
     sensorValues[1] = analogRead(A1);
-    sensorValues[2] = analogRead(A2);
-    sensorValues[2] = analogRead(A2);
     sensorValues[3] = analogRead(A3);
     sensorValues[3] = analogRead(A3);
+    sensorValues[2] = analogRead(A2);
+    sensorValues[2] = analogRead(A2);
     sensorValues[4] = analogRead(A4);
     sensorValues[4] = analogRead(A4);
     sensorValues[5] = analogRead(A5);
@@ -73,24 +73,28 @@ void loop()
     sensorValues[7] = analogRead(A7);
 
     byte sensorsValuesByte = 0;
-
+/**/
     Serial.print("FL:");
     Serial.print(sensorValues[ordering[0]]);
     Serial.print(" FR:");
     Serial.print(sensorValues[ordering[1]]);
+/**
     Serial.print(" BL:");
     Serial.print(sensorValues[ordering[2]]);
     Serial.print(" BR:");
+  
     Serial.print(sensorValues[ordering[3]]);
+/**
     Serial.print(" LF:");
     Serial.print(sensorValues[ordering[4]]);
     Serial.print(" LB:");
     Serial.print(sensorValues[ordering[5]]);
+/**
     Serial.print(" RF:");
     Serial.print(sensorValues[ordering[6]]);
     Serial.print(" RB:");
     Serial.print(sensorValues[ordering[7]]);
-    
+/**
     Serial.print("    ");    
     
     for (uint8_t i = 0; i < SensorCount; i++)
@@ -98,9 +102,11 @@ void loop()
         sensorsValuesByte |= ((sensorValues[ordering[i]] > IS_BLACK) << i);
         Serial.print( (int) (  sensorValues[ordering[i]] > IS_BLACK)  );
     }
+    
     Serial.print( " Char value: ");
     Serial.print(sensorsValuesByte);
+   
+/**/
     Serial.println();
-
-    delay(20);
+    delay(5);
 }

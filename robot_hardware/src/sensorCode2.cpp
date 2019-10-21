@@ -18,7 +18,6 @@
 
 // #include <termio.h>
 
-
 /* Esse código é responsável pelos seguintes sensores/atuadores:
  *
  * A) Motor DC da garra: 
@@ -60,13 +59,17 @@
  * O feedback dos motores são 2 Serial.write. Primeiro, envia-se um LONG INT com os ticks do motor e, posteriormente, um BOOL para avisar se algum fim de curso foi ativado.
  *
  * O feedback dos sensores são os 6 sensores da pololu seguido pelos 2 sensores digitais
+ * 
+ * Contagens por revolução: 8245.92 counts per revolution quando se usa os 2 canais subida e descida. No nosso caso, temos 4122.96 voltas. O diâmetro primitivo é 18mm
+ * 
+ * Fim de cursos: b[2] & 1 -> botão de baixo e  b[2] & 4 -> botão de cima
  */
 
 const uint8_t ELETROIMA_ON_CODE = 64;
 const uint8_t ELETROIMA_OFF_CODE = 65;
 const uint8_t SERVO_ON_CODE = 66;
-const uint8_t CLAW_ON_CODE = 67;
-const uint8_t CLAW_OFF_CODE = 68;
+const uint8_t CLAW_ON_CODE = 68;
+const uint8_t CLAW_OFF_CODE = 67;
 const uint8_t LINESENSOR_ON_CODE = 69;
 const uint8_t LINESENSOR_OFF_CODE = 70;
 const uint8_t CONTAINERSENSOR_ON_CODE = 71;
@@ -89,106 +92,54 @@ void setElectromagnet_cb(const std_msgs::BoolConstPtr &msg)
     if (setElectromagnet)
     {
         write(fd, &ELETROIMA_ON_CODE, 1);
-        ROS_INFO_STREAM("Turning On electromagnet: " << (int) ELETROIMA_ON_CODE);
+        ROS_INFO_STREAM("Turning On electromagnet: " << (int)ELETROIMA_ON_CODE);
     }
     else
     {
         write(fd, &ELETROIMA_OFF_CODE, 1);
-        ROS_INFO_STREAM("Turning Off electromagnet: " << (int) ELETROIMA_OFF_CODE);
+        ROS_INFO_STREAM("Turning Off electromagnet: " << (int)ELETROIMA_OFF_CODE);
     }
 }
 
-// Send position command to the claw's DC motor  
+void enable_cb(const std_msgs::BoolConstPtr &msg)
+{
+    write(fd, &CLAW_OFF_CODE, 1);
+    ROS_INFO_STREAM("Turning Off Servo: " << (int)CLAW_OFF_CODE);
+}
+
+// Send position command to the claw's DC motor
 void clawPWM_cb(const std_msgs::Float64ConstPtr &msg)
 {
-    if (turnOnClaw)
+    if (abs(msg->data) < 255)
     {
-
-        if (abs(msg->data) < 255)
-        {
-	    clawPWM = (int8_t)msg->data/4;            
-            write(fd, &clawPWM, 1);
-            ROS_INFO_STREAM("Moving Gear and Pinion: " << (int) clawPWM);
-        }
-        else
-        {
-            ROS_ERROR_STREAM("Not Sending ILEGAL claw PWM. should be between [-255,255], but is: " << msg->data);
-        }
+        clawPWM = (int8_t)(msg->data / 4);
+        write(fd, &clawPWM, 1);
+        ROS_INFO_STREAM("Moving Gear and Pinion: " << (int)clawPWM);
     }
     else
     {
-        ROS_INFO_STREAM("Not moving Gear and Pinion: " << (int) clawPWM);
+        ROS_ERROR_STREAM("Not Sending ILEGAL claw PWM. should be between [-255,255], but is: " << msg->data);
     }
 }
 
-// Turn On/Off the claw's DC motor interface
-void turnOnClaw_cb(const std_msgs::BoolConstPtr &msg)
-{
-    turnOnClaw = msg->data;
-    if (turnOnClaw)
-    {
-        write(fd, &CLAW_ON_CODE, 1);
-        ROS_INFO_STREAM("Turning On Gear and Pinion: " << (int) CLAW_ON_CODE);
-    }
-    else
-    {
-        write(fd, &CLAW_OFF_CODE, 1);
-        ROS_INFO_STREAM("Turning Off Gear and Pinion: " << (int) CLAW_OFF_CODE);
-    }
-}
-
-// Turn on/Off the infrared sensors in the base
-void setLineFollower_cb(const std_msgs::BoolConstPtr &msg)
-{
-    setLineFollower = msg->data;
-
-    if (setLineFollower)
-    {
-        write(fd, &LINESENSOR_ON_CODE, 1);
-        ROS_INFO_STREAM("Turning On setLineFollower: " << (int) LINESENSOR_ON_CODE);
-    }
-    else
-    {
-        write(fd, &LINESENSOR_OFF_CODE, 1);
-        ROS_INFO_STREAM("Turning Off setLineFollower: " << (int) LINESENSOR_OFF_CODE);
-    }
-}
-
-// Turn on/Off the infrared sensors in the container
-void setContainer_cb(const std_msgs::BoolConstPtr &msg)
-{
-    setContainer = msg->data;
-
-    if (setContainer)
-    {
-        write(fd, &CONTAINERSENSOR_ON_CODE, 1);
-        ROS_INFO_STREAM("Turning On setContainer: " << (int) CONTAINERSENSOR_ON_CODE);
-    }
-    else
-    {
-        write(fd, &CONTAINERSENSOR_OFF_CODE, 1);
-        ROS_INFO_STREAM("Turning Off setContainer: " << (int) CONTAINERSENSOR_OFF_CODE);
-    }
-}
-
-// Send position command to the Servo motor  
+// Send position command to the Servo motor
 void servoPose_cb(const std_msgs::UInt8ConstPtr &msg)
 {
-    servoPose = (uint8_t) msg->data;
+    servoPose = (uint8_t)msg->data;
 
-    if( servoPose > 180 or servoPose < 0){
+    if (servoPose > 180 or servoPose < 0)
+    {
 
-	ROS_ERROR_STREAM("O valor de servoPose deve estar em [0, 180], mas é : " << servoPose);
+        ROS_ERROR_STREAM("O valor de servoPose deve estar em [0, 180], mas é : " << servoPose);
     }
     write(fd, &SERVO_ON_CODE, 1);
-    ROS_INFO_STREAM("Turning On Servo: " << SERVO_ON_CODE);
+    ROS_INFO_STREAM("Turning On Servo: " << (int)SERVO_ON_CODE);
 
     ros::Duration(0.005).sleep();
 
     write(fd, &servoPose, 1);
-    ROS_INFO_STREAM("Servo Pose: " << servoPose);
+    ROS_INFO_STREAM("Servo Pose: " << (int)servoPose);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -202,69 +153,126 @@ int main(int argc, char *argv[])
 
     ros::Subscriber subSetElectro = node.subscribe<std_msgs::Bool>("/claw/enableElectromagnet", 1, setElectromagnet_cb);
     ros::Subscriber subClaw = node.subscribe<std_msgs::Float64>("/claw/pwm", 1, clawPWM_cb);
-    ros::Subscriber subTurnOnClaw = node.subscribe<std_msgs::Bool>("/claw/enableFB", 1, turnOnClaw_cb);
     ros::Subscriber subServo = node.subscribe<std_msgs::UInt8>("/claw/servoPose", 1, servoPose_cb);
-    
+    ros::Subscriber subEnableServo = node.subscribe<std_msgs::Bool>("/claw/enableServo", 1, enable_cb);
+    ros::Publisher pubLimitSwitchs = node.advertise<std_msgs::UInt8>("/claw/limitSwitchs", 1);
     ros::Publisher pubEncoder = node.advertise<std_msgs::Int64>("/claw/height", 1);
-    
-    ros::Subscriber subLine = node.subscribe<std_msgs::Bool>("/turnOnPololuSensors", 1, setLineFollower_cb);
-    ros::Subscriber subContainer = node.subscribe<std_msgs::Bool>("/turnOnContainerSensors", 1, setContainer_cb);
 
-    ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
     ros::Publisher pubContainers = node.advertise<std_msgs::UInt8>("/containerSensor", 1);
 
-    struct pollfd arduino_fds[1];
-    arduino_fds[0].fd = fd;
-    arduino_fds[0].events = POLLIN;
+    ros::Publisher pubLineSensors = node.advertise<std_msgs::UInt8>("/pololuSensor", 1);
+    ros::Publisher pubLineSensors1 = node.advertise<std_msgs::UInt8>("/pololuSensorFL", 1);
+    ros::Publisher pubLineSensors2 = node.advertise<std_msgs::UInt8>("/pololuSensorFR", 1);
+    ros::Publisher pubLineSensors3 = node.advertise<std_msgs::UInt8>("/pololuSensorBL", 1);
+    ros::Publisher pubLineSensors4 = node.advertise<std_msgs::UInt8>("/pololuSensorBR", 1);
+    ros::Publisher pubLineSensors5 = node.advertise<std_msgs::UInt8>("/pololuSensor5", 1);
+    ros::Publisher pubLineSensors6 = node.advertise<std_msgs::UInt8>("/pololuSensor6", 1);
+    ros::Publisher pubLineSensors7 = node.advertise<std_msgs::UInt8>("/pololuSensorRF", 1);
+    ros::Publisher pubLineSensors8 = node.advertise<std_msgs::UInt8>("/pololuSensorRB", 1);
 
-    int timeout = 0; // ms
     int nread = 0;
-    char b[50];
+    uint8_t b[50];
 
     std_msgs::UInt8 msg;
     std_msgs::Int64 msg64;
+    std_msgs::Bool msg_bool;
+    ros::Rate r(1000);
+
+    int media_movel0[5] = {0, 0, 0, 0, 0};
+    int media_movel1[5] = {0, 0, 0, 0, 0};
+    int media_movel2[5] = {0, 0, 0, 0, 0};
+    int media_movel3[5] = {0, 0, 0, 0, 0};
+    int media_movel4[5] = {0, 0, 0, 0, 0};
+    int media_movel5[5] = {0, 0, 0, 0, 0};
+    int media_movel6[5] = {0, 0, 0, 0, 0};
+    int media_movel7[5] = {0, 0, 0, 0, 0};
+
     while (ros::ok())
     {
 
-        int tmp = poll(arduino_fds, 1, timeout);
-
-        if (tmp > 0)
+        nread = read(fd, b, 14);
+        if (nread > 0)
         {
-            if (arduino_fds[0].revents & POLLIN)
+            media_movel0[4] = media_movel0[3];
+            media_movel0[3] = media_movel0[2];
+            media_movel0[2] = media_movel0[1];
+            media_movel0[1] = media_movel0[0];
+            media_movel0[0] = b[0];
+            media_movel1[4] = media_movel1[3];
+            media_movel1[3] = media_movel1[2];
+            media_movel1[2] = media_movel1[1];
+            media_movel1[1] = media_movel1[0];
+            media_movel1[0] = b[1];
+            media_movel2[4] = media_movel2[3];
+            media_movel2[3] = media_movel2[2];
+            media_movel2[2] = media_movel2[1];
+            media_movel2[1] = media_movel2[0];
+            media_movel2[0] = b[2];
+            media_movel3[4] = media_movel3[3];
+            media_movel3[3] = media_movel3[2];
+            media_movel3[2] = media_movel3[1];
+            media_movel3[1] = media_movel3[0];
+            media_movel3[0] = b[3];
+            media_movel4[4] = media_movel4[3];
+            media_movel4[3] = media_movel4[2];
+            media_movel4[2] = media_movel4[1];
+            media_movel4[1] = media_movel4[0];
+            media_movel4[0] = b[4];
+            media_movel5[4] = media_movel5[3];
+            media_movel5[3] = media_movel5[2];
+            media_movel5[2] = media_movel5[1];
+            media_movel5[1] = media_movel5[0];
+            media_movel5[0] = b[5];
+            media_movel6[4] = media_movel6[3];
+            media_movel6[3] = media_movel6[2];
+            media_movel6[2] = media_movel6[1];
+            media_movel6[1] = media_movel6[0];
+            media_movel6[0] = b[6];
+            media_movel7[4] = media_movel7[3];
+            media_movel7[3] = media_movel7[2];
+            media_movel7[2] = media_movel7[1];
+            media_movel7[1] = media_movel7[0];
+            media_movel7[0] = b[7];
+            // Line Follower
+            msg.data = (media_movel0[0] + media_movel0[1] + media_movel0[2] + media_movel0[3] + media_movel0[4]) / 5;
+            pubLineSensors1.publish(msg);
+            msg.data = (media_movel1[0] + media_movel1[1] + media_movel1[2] + media_movel1[3] + media_movel1[4]) / 5;
+            pubLineSensors2.publish(msg);
+            msg.data = (media_movel2[0] + media_movel2[1] + media_movel2[2] + media_movel2[3] + media_movel2[4]) / 5;
+            pubLineSensors3.publish(msg);
+            msg.data = (media_movel3[0] + media_movel3[1] + media_movel3[2] + media_movel3[3] + media_movel3[4]) / 5;
+            pubLineSensors4.publish(msg);
+            msg.data = (media_movel4[0] + media_movel4[1] + media_movel4[2] + media_movel4[3] + media_movel4[4]) / 5;
+            pubLineSensors5.publish(msg);
+            msg.data = (media_movel5[0] + media_movel5[1] + media_movel5[2] + media_movel5[3] + media_movel5[4]) / 5;
+            pubLineSensors6.publish(msg);
+            msg.data = (media_movel6[0] + media_movel6[1] + media_movel6[2] + media_movel6[3] + media_movel6[4]) / 5;
+            pubLineSensors7.publish(msg);
+            msg.data = (media_movel7[0] + media_movel7[1] + media_movel7[2] + media_movel7[3] + media_movel7[4]) / 5;
+            pubLineSensors8.publish(msg);
+
+            msg.data = 0;
+            for (int i = 0; i <= 7; i++)
             {
-                nread = read(arduino_fds[0].fd, b, 32);
-
-                if (nread > 0)
-                {
-                    int i = 0;
-
-                   // ROS_INFO_STREAM("Buffer " << nread << ": " << (int)b[0] << ":" << (int)b[1] << ":" << (int)b[2] << ":" << (int)b[3] << ":" << (int)b[4] << ":" << (int)b[5] << ":" << (int)b[6] << ":");
-                    if (setLineFollower)
-                    {
-                        msg.data = b[i++];
-                        pubLineSensors.publish(msg);
-                    }
-
-                    if (setContainer)
-                    {
-                        msg.data = b[i++];
-                        pubContainers.publish(msg);
-                    }
-
-                    if (turnOnClaw)
-                    {
-                        msg.data = b[i++];
-
-                        std::string s(&b[i], nread - i);
-                        //ROS_INFO_STREAM("DEBUG STRING " << s);
-                        msg64.data = std::stoi(s) ;
-                        pubEncoder.publish(msg64);
-                    }
-                }
+                msg.data |= ((b[i] > 25) << i);
             }
+            pubLineSensors.publish(msg);
+
+            // Container
+            msg.data = b[8];
+            pubContainers.publish(msg);
+
+            // Limit Switchs
+            msg.data = b[9];
+            pubLimitSwitchs.publish(msg);
+
+            // Encoder reading
+            msg64.data = -((int64_t)b[10] + (int64_t)b[11] * 256 + (int64_t)b[12] * 65536 + (int64_t)b[13] * 16777216 - (int64_t)2147483648);
+            pubEncoder.publish(msg64);
         }
 
         ros::spinOnce();
+        r.sleep();
     }
 
     ROS_INFO("Closing communication");

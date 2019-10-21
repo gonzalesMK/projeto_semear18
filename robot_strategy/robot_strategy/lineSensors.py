@@ -87,7 +87,7 @@ class LineSensor(object):
         """
         # Check if at least one sensor is over the line 
         sensorValueA = np.array( [ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
-        sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
+        sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4    ) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
         onLine =  sensorValueA + sensorValueB
         
         for i in range(4):

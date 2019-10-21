@@ -26,16 +26,19 @@ class Wheels(IntEnum):
 
 class MotorControl(object):
     MEDIUM_VEL = 1
-    def __init__(self, Kp=20.0, Kd=0.0, freq=100.0, momentum=0.1):
+    def __init__(self, Kp=0.0, Kd=0.0, Ki = 0, windUp = 0, deadSpace = 15, freq=100.0, momentum=0):
         """
             momentum é a porcentagem do derivativo que deve ser mantida depois de 1 segundo 
 
         """
-        self.Kp = Kp
-        self.Kd = Kd
+        self.Kp = float(Kp)
+        self.Kd = float(Kd)
         self.pid_on = False
-        self.freq = freq
-        self.momentum =  momentum
+        self.freq = float(freq)
+        self.momentum =  float(momentum)
+        self.Ki = float(Ki)
+        self.windUp = float(windUp)
+        self.deadSpace = float(deadSpace)
 
         # This PID is to control velocity
         self.pub_motorFL = rospy.Publisher('/motorFL/desired_vel', Float64, queue_size=10)    
@@ -111,6 +114,7 @@ class MotorControl(object):
         if not self.pid_on:
             self.pid_on = True
             self.deltaError = np.array([0, 0, 0, 0])
+            self.integrative = np.array([0., 0., 0., 0.])
             self.pastError = copy.deepcopy(error_array)
             return
 
@@ -124,14 +128,27 @@ class MotorControl(object):
        
         self.deltaError = (error_array - self.pastError)  + self.momentum * self.deltaError
         
+        self.integrative += error_array / self.freq
 
-        actuation = error_array * self.Kp + self.deltaError * self.Kd
-        #rospy.loginfo("DeltaError: {} \nError Array: {} \nPast Error: {} ".format(self.deltaError, error_array, self.pastError ) )
+        for n in range(4):
+            
+            if np.abs(self.integrative[n]) * np.abs(self.Ki) > self.windUp :
+
+                self.integrative[n] = self.windUp/np.abs(self.Ki) * np.sign(self.integrative[n])
+
+        actuation = error_array * self.Kp + self.deltaError * self.Kd + self.Ki * self.integrative
+        # rospy.loginfo("\nError Array: {} \nPast Error: {}\nDeltaError: {} \nActuation: {} ".format(error_array, self.pastError, self.deltaError, actuation ) + 
+        # "\nP:{}\nD: {}\nI: {}".format(self.Kp*error_array, self.deltaError * self.Kd, self.Ki*self.integrative)
+        # )
+        
         #rospy.loginfo("Actuation {}".format(actuation))
         
         if max(abs(actuation)) > 120:
             actuation = actuation / ( max(abs(actuation)) / 120. )
             
+        if  sum(error_array == 0) != 4 and  np.abs(max(actuation)) < self.deadSpace and np.abs(max(actuation)) > 0.1:
+            actuation = self.deadSpace * ( np.abs(actuation) > 0.1 ) * np.sign(actuation)
+
         self.pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
         self.pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
         self.pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])
@@ -142,20 +159,28 @@ class MotorControl(object):
     def clear(self):
         self.pid_on = False
 
-    def setParams(self, Kp=None, Kd=None, freq=None, momentum=None):
+    def setParams(self, Kp=None, Kd=None, freq=None, momentum=None, Ki=None, windUp=None, deadSpace=None):
         
         if not (Kp is None) :
-            self.Kp = Kp
+            self.Kp = float(Kp)
 
         if not (Kd is None) :
-            self.Kd = Kd
+            self.Kd = float(Kd)
 
         if not (freq is None) :
-            self.freq = freq    
+            self.freq = float(freq)
 
         if not (momentum is None) :
-            self.momentum = momentum
+            self.momentum = float(momentum)
 
+        if not (Ki is None):
+            self.Ki = float(Ki)
+        
+        if not (windUp is None):
+            self.windUp = float(windUp)
+
+        if not (deadSpace is None):
+            self.deadSpace = deadSpace
 
     def setPIDVelocity(self, vel_array, base_vel, side= Sides.FRONT):
         if not self._velocity_mode:

@@ -1,4 +1,4 @@
-/* Esse código é responsável pelos seguintes sensores/atuadores:
+ /* Esse código é responsável pelos seguintes sensores/atuadores:
  *
  * A) Motor DC da garra: 
  *    1 Encoder com canais A e B
@@ -63,7 +63,7 @@
 
 // SENSORES Analógicos POLOLU de A0 até A7
 #define CONTROL_PIN 5
-#define IS_BLACK 100
+#define IS_BLACK 90 
 #define FL 0
 #define FR 1
 #define BL 3
@@ -132,8 +132,8 @@ void setup()
   qtr.setDimmingLevel(0);
   qtr.emittersOn();
 
-  pinMode(DIGI1, INPUT);
-  pinMode(DIGI2, INPUT);
+  pinMode(DIGI1, INPUT_PULLUP);
+  pinMode(DIGI2, INPUT_PULLUP);
 
   pinMode(FIMCURSO1, INPUT);
   pinMode(FIMCURSO2, INPUT);
@@ -154,7 +154,7 @@ void setup()
 
   // SERVO
   servo.attach(SERVO_PIN);
-
+  servo.write(65);
   // ELETROIMA
   pinMode(ELETROIMA_PIN, OUTPUT);
 }

@@ -241,6 +241,8 @@ class Claw(object):
         r = rospy.Rate(30)
         direction = np.sign(end - initial)
 
+        self.pubServoPose.publish( end )
+        return
         while not rospy.is_shutdown():
             initial += direction
             self.pubServoPose.publish( initial )
