@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 
 #include <iostream>
@@ -36,42 +37,60 @@ int main(int argc, char *argv[])
     if (gpioInitialise() < 0)
         return 1;
 
-    re_decoder dec1(37,33); // GPIO 26 | GPIO 13
-    re_decoder dec2(31, 29); // GPIO 6 | GPIO 5
-    re_decoder dec3(32, 36); // GPIO 12 | GPIO 16 
-    re_decoder dec4(16, 18); // GPIO 23| GPIO 24    
+    // ROXO e CINZA | FR
+    re_decoder dec1(20, 21); // GPIO 26 | GPIO 13
+    // VERDE e AZUL |  BR 
+    re_decoder dec2(16, 5); // GPIO 6 | GPIO 5
+    // AMARELO e LARANJA | FL
+    re_decoder dec3(5, 6); // GPIO 12 | GPIO 16
+    // MARROM e VERMELHO | BL
+    re_decoder dec4(19, 26); // GPIO 23| GPIO 24
 
     //    sleep(1000);
 
     ros::Publisher pub1 = node.advertise<std_msgs::Int32>("/motorFR/encoderVelocity", 1);
-    ros::Publisher pub2 = node.advertise<std_msgs::Int32>("/motorFL/encoderVelocity", 1);
-    ros::Publisher pub3 = node.advertise<std_msgs::Int32>("/motorBR/encoderVelocity", 1);
+    ros::Publisher pub2 = node.advertise<std_msgs::Int32>("/motorBR/encoderVelocity", 1);
+    ros::Publisher pub3 = node.advertise<std_msgs::Int32>("/motorFL/encoderVelocity", 1);
     ros::Publisher pub4 = node.advertise<std_msgs::Int32>("/motorBL/encoderVelocity", 1);
 
-    ros::Subscriber pid_sub = node.subscribe<std_msgs::Bool>("/encoder_enable", 1, pid_cb);
+    std_msgs::Float64 msg1;
+    std_msgs::Float64 msg2;
+    std_msgs::Float64 msg3;
+    std_msgs::Float64 msg4;
 
-    std_msgs::Int32 msg1;
-    std_msgs::Int32 msg2;
-    std_msgs::Int32 msg3;
-    std_msgs::Int32 msg4;
+    ros::Rate rate(100);
+    double current_time = ros::Time::now().toSec();
+    double old_time = ros::Time::now().toSec();
+    double dt = 0;
 
-    ros::Rate rate(800);
+    int32_t old_position1 = 0;
+    int32_t old_position2 = 0;
+    int32_t old_position3 = 0;
+    int32_t old_position4 = 0;
+
     while (ros::ok())
     {
-        if (enable)
-        {
-            msg1.data = dec1.position;
-            msg2.data = dec2.position;
-            msg3.data = dec3.position;
-            msg4.data = dec4.position;
+        current_time = ros::Time::now().toSec();
+        dt = current_time - old_time;
 
-            pub1.publish(msg1);
-            pub2.publish(msg2);
-            pub3.publish(msg3);
-            pub4.publish(msg4);
-        }
+        msg1.data = (dec1.position - old_position1) / dt;
+        msg2.data = (dec2.position - old_position2) / dt;
+        msg3.data = (dec3.position - old_position3) / dt;
+        msg4.data = (dec4.position - old_position4) / dt;
+
+        pub1.publish(msg1);
+        pub2.publish(msg2);
+        pub3.publish(msg3);
+        pub4.publish(msg4);
+
+        old_position1 = dec1.position;
+        old_position2 = dec2.position;
+        old_position3 = dec3.position;
+        old_position4 = dec4.position;
+
+        old_time = current_time;
+
         ros::spinOnce();
-
         rate.sleep();
     }
 

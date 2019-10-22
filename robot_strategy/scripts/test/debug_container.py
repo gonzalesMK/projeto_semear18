@@ -69,7 +69,7 @@ if __name__ == '__main__':
     rospy.init_node('testeMotorLib')
     
     motorControl = MotorControl(Kp=0.0, Kd= 0.0, momentum= 0.)
-    
+
     signal.signal(signal.SIGINT, partial(signal_handler, motorControl), )
     containerSensors = ContainerSensors()
     rospy.Subscriber( "/cmd_vel", Twist, cmdvel_cb)
