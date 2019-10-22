@@ -677,15 +677,15 @@ def dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONST
   
         # 2) 
         rospy.loginfo("goFromDockToIntersection: 2) Go straight Up Until LEFT/RIGHT sensors find blackline")        
-
+        motorControl.setParams(Kp=10, Kd=0, freq=100, momentum=0.6, deadSpace=20)
         linesensors.reset(False)
         motorControl.clear()
         is_stable = 0
         while(not rospy.is_shutdown()):
             sensors = linesensors.readLines()
             
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+            angular = (sensors[int(Sides.LEFT)] - 1 ) - ( sensors[int(Sides.RIGHT)] - 1 )  
+            diretional = ((sensors[int(Sides.LEFT)] - 1) + (sensors[int(Sides.RIGHT)]-1) ) / 2
 
             error[int(Wheels.FL)] = - diretional  + angular 
             error[int(Wheels.FR)] = + diretional  - angular 
@@ -694,7 +694,7 @@ def dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONST
             
             motorControl.align(error)        
         
-            if( sensors[ int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)] == 0 ):
+            if( sensors[ int(Sides.LEFT)] in [0, -1] and sensors[int(Sides.RIGHT)] in [0,-1] ):
                 is_stable += 1
                 if( is_stable >= STABLE_CONSTANT):
                     break
@@ -713,17 +713,17 @@ def dock_to_intersection(linesensors, motorControl, containerColor, STABLE_CONST
         while(not rospy.is_shutdown()): 
             sensors = linesensors.readLines()   
 
-            angular = sensors[int(Sides.LEFT)] - sensors[int(Sides.RIGHT)]   
-            diretional = (sensors[int(Sides.LEFT)] + sensors[int(Sides.RIGHT)] ) / 2
+            angular = (sensors[int(Sides.LEFT)]-1) - (sensors[int(Sides.RIGHT)] - 1)  
+            diretional = ((sensors[int(Sides.LEFT)]-1) + (sensors[int(Sides.RIGHT)]-1) ) / 2
 
             error[int(Wheels.FL)] = (- diretional  + angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
             error[int(Wheels.FR)] = (+ diretional  - angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
             error[int(Wheels.BL)] = (+ diretional  + angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
             error[int(Wheels.BR)] = (- diretional  - angular) + 0.5  - sensors[int(Sides.FRONT)] * 1
 
-            if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] == 0 and sensors[int(Sides.RIGHT)]==0 ):
+            if( sensors[int(Sides.FRONT)] == 0 and sensors[int(Sides.LEFT)] in[0,-1] and sensors[int(Sides.RIGHT)] in [0,-1] ):
                 is_stable = is_stable + 1
-                motorControl.setParams(Kp=10., Kd=25., windUp=20., Ki=10., freq=100, momentum=0.6)
+                motorControl.setParams(Kp=10., Kd=0., windUp=0., Ki=0., freq=100, momentum=0.6)
                 if is_stable >= STABLE_CONSTANT:
                     break
 
@@ -770,7 +770,7 @@ def to_container(linesensors, motorControl, containerSensors):
 
     # 2) Keep going until find container
     rospy.loginfo("goToContainer: 2) Keep going until find container ( or 3 sec)")
-    motorControl.setParams(Kp=20, Kd=50, freq=100, momentum=0.6, deadSpace=20)
+    motorControl.setParams(Kp=20, Kd=20, freq=100, momentum=0.9, deadSpace=30)
     motorControl.clear()
 
     is_stable = 0
@@ -780,13 +780,13 @@ def to_container(linesensors, motorControl, containerSensors):
         angular = sensors[int(Sides.FRONT)] - sensors[int(Sides.BACK)]   
         diretional = (sensors[int(Sides.FRONT)] + sensors[int(Sides.BACK)] ) / 2
 
-        angularC = 0 #int(containerSensors.sensor[1]) - int(containerSensors.sensor[0])
+        # angularC = 0 #int(containerSensors.sensor[1]) - int(containerSensors.sensor[0])
         #diretionalC = 2 - (int(containerSensors.sensor[0]) + int(containerSensors.sensor[1]))
         diretionalC = 1 - int(containerSensors.sensor[0])
-        error[int(Wheels.FL)] =  + (- diretional  + angular ) * 0.5 - diretionalC # +angularC)
-        error[int(Wheels.FR)] =  + (- diretional  - angular ) * 0.5 + diretionalC # -angularC)
-        error[int(Wheels.BL)] =  + (- diretional  + angular ) * 0.5 + diretionalC # +angularC)
-        error[int(Wheels.BR)] =  + (- diretional  - angular ) * 0.5 - diretionalC # -angularC)
+        error[int(Wheels.FL)] =  + (- diretional  + angular ) * 0.5  - diretionalC # +angularC)
+        error[int(Wheels.FR)] =  + (- diretional  - angular ) * 0.5  + diretionalC # -angularC)
+        error[int(Wheels.BL)] =  + (- diretional  + angular ) * 0.5  + diretionalC # +angularC)
+        error[int(Wheels.BR)] =  + (- diretional  - angular ) * 0.5  - diretionalC # -angularC)
         
         #rospy.loginfo(error)
         if( containerSensors.sensor[(0)] ):
