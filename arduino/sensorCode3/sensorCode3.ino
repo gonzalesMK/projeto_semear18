@@ -1,5 +1,5 @@
  /* Esse código é responsável pelos seguintes sensores/atuadores:
- *
+ * Usar esse
  * A) Motor DC da garra: 
  *    1 Encoder com canais A e B
  *    2 Inputs da Ponte H para controlar o sentido
@@ -68,8 +68,8 @@
 #define FR 1
 #define BL 3
 #define BR 2
-#define LF 5
-#define LB 4
+#define LF 4
+#define LB 5
 #define RF 6
 #define RB 7
 
@@ -199,10 +199,13 @@ void loop()
 
   sensorValues[1] = analogRead(A1);
   sensorValues[1] = analogRead(A1);
-  
+
+  sensorValues[0] = analogRead(A0);
+  sensorValues[0] = analogRead(A0);
+
+  /*
   lowpassFilter0.input(analogRead(A0));
   sensorValues[0] = lowpassFilter0.output();
-  /*
   lowpassFilter1.input(analogRead(A1));
   sensorValues[1] = lowpassFilter1.output();
   lowpassFilter2.input(analogRead(A2));
@@ -255,7 +258,7 @@ void loop()
   Serial.write(((encoder_tick >> 24) & 0xFF));
   
 
-  while (millis() - time < 5)
+  while (millis() - time < 2)
   {
   }
 }

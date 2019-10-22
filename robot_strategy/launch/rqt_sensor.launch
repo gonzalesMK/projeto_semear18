@@ -1,0 +1,6 @@
+<launch>
+    <node name="rqt_plot" pkg="rqt_plot" type="rqt_plot"
+    args="/readingsFL/data /readingsFR/data /readingsBL/data /readingsBR/data /readingsLF/data /readingsLB/data /readingsRF/data /readingsRB/data    "/>
+
+    <!-- /pololuSensorLF/data /pololuSensorLB/data /pololuSensorBL/data /pololuSensorBR/data /pololuSensorFL/data /pololuSensorFR/data /pololuSensorRB/data /pololuSensorRF/data -->
+</launch>   

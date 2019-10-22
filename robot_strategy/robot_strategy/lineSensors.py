@@ -3,6 +3,8 @@ import rospy
 from std_msgs.msg import UInt8, Bool
 import numpy as np
 from enum import Enum
+from enum import IntEnum
+from functools import partial
 
 """
 Original: 
@@ -22,6 +24,17 @@ class Sides(Enum):
 
     def __int__(self):
         return self.value
+
+class sensorSides(IntEnum):
+    FL = 0
+    FR = 1
+    BL = 2
+    BR = 3
+    LF = 4
+    LB = 5
+    RF = 6
+    RB = 7
+
 
 class LineSensor(object):
     """
@@ -43,9 +56,21 @@ class LineSensor(object):
     """
     def __init__(self):
 
-        self._error = np.ones(4) * - 2
+        self._error = np.ones(4, dtype=float) * - 2
+        self._readings = np.ones(8, dtype=float) * 20
+        self._max_readings = np.ones(8, dtype=float) * 100
+        self._min_readings = np.ones(8, dtype=float) * 20
 
         rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
+        rospy.Subscriber( "/pololuSensorFL", UInt8, partial( self.__callback_sensor, sensorSides.FL))
+        rospy.Subscriber( "/pololuSensorFR", UInt8, partial( self.__callback_sensor, sensorSides.FR))
+        rospy.Subscriber( "/pololuSensorBL", UInt8, partial( self.__callback_sensor, sensorSides.BL))
+        rospy.Subscriber( "/pololuSensorBR", UInt8, partial( self.__callback_sensor, sensorSides.BR))
+        rospy.Subscriber( "/pololuSensorLF", UInt8, partial( self.__callback_sensor, sensorSides.LF))
+        rospy.Subscriber( "/pololuSensorLB", UInt8, partial( self.__callback_sensor, sensorSides.LB))
+        rospy.Subscriber( "/pololuSensorRF", UInt8, partial( self.__callback_sensor, sensorSides.RF))
+        rospy.Subscriber( "/pololuSensorRB", UInt8, partial( self.__callback_sensor, sensorSides.RB))
+        
         rospy.Subscriber( "/turnOnPololuSensors", Bool, self.__enableCb)
         self._is_on = False
         self.pub_enable = rospy.Publisher('/turnOnPololuSensors', Bool, queue_size=10)  
@@ -59,7 +84,17 @@ class LineSensor(object):
             rospy.Rate(20).sleep()
 
         
+    def __callback_sensor(self, sensorNumber, msg):
+        
+        
+        if self._max_readings[sensorNumber] < msg.data:
+            self._max_readings[sensorNumber] = msg.data
 
+        if self._min_readings[sensorNumber] > msg.data  :
+            self._min_readings[sensorNumber] = msg.data
+
+        self._readings[sensorNumber] =  (msg.data - self._min_readings[sensorNumber] ) / ( self._max_readings[sensorNumber] - self._min_readings[sensorNumber] )  * 100
+        
     def __enableCb(self,msg):
         """
         Callback to the ROS subscriber. This one is to be sure that the enable was published
@@ -86,15 +121,23 @@ class LineSensor(object):
         
         """
         # Check if at least one sensor is over the line 
-        sensorValueA = np.array( [ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
-        sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4    ) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
+        #sensorValueA = np.array( [ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
+        #sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4    ) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
+        sensorValueA = self._readings[::2]   >  20
+        sensorValueB = self._readings[1::2]  >  20
+
+        #self._readings = (self._readings < 5) * self._readings
+
+       
+        readings =  2 * (self._readings[1::2]) / (self._readings[::2] + self._readings[1::2]) - 1
+
         onLine =  sensorValueA + sensorValueB
-        
+
         for i in range(4):
             if (onLine[i]):
-                self._error[i] = 1*sensorValueA[i]-sensorValueB[i]
+                self._error[i] = readings[i]
             else:
-                self._error[i] = 2 if self._error[i] > 0 else - 2
+                self._error[i] = 1 if self._error[i] > 0 else -1
 
     def reset(self, resetToMinimun=True):
         """

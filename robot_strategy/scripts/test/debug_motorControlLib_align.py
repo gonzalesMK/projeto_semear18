@@ -8,7 +8,7 @@ from robot_strategy.containerSensorsLib import ContainerSensors
 from geometry_msgs.msg import Twist
 
 from robot_strategy.lineSensors import Sides, LineSensor
-from robot_strategy.statesLib import goToFirstPose, changeIntersection, goToDock, goFromDockToIntersection, goToContainer, goFromContainerToIntersection
+from robot_strategy.statesLib import goToFirstPose, changeIntersection, goToDock, goFromDockToIntersection, goToContainer, goFromContainerToIntersection, firstPose, to_dock
 from robot_strategy.utils import Colors, Positions
 
 from robot_strategy.clawLib import Claw, ServoPose
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     sensors = linesensors.readLines()
 
     userdata = UserData()
-
+    robotPose = Positions.GreenIntersection
     while not rospy.is_shutdown() :
         #"""
             cm = input("Would you like to:\n"+
@@ -303,8 +303,8 @@ if __name__ == '__main__':
 
             elif (cm == 6):
 
-                goToFirstPose().execute(userdata)
-                userdata.robotPose = Positions.GreenIntersection
+                firstPose(linesensors, motorControl)
+                robotPose = Positions.GreenIntersection
     
             elif (cm == 7):
                 userdata.robotPose = Positions.GreenIntersection
@@ -315,8 +315,8 @@ if __name__ == '__main__':
                 changeIntersection().execute(userdata)
 
             elif (cm == 9):
-                userdata.containerColor = Colors.Green if userdata.robotPose == Positions.GreenIntersection else Colors.Blue
-                goToDock().execute(userdata)
+                containerColor = Colors.Green if robotPose == Positions.GreenIntersection else Colors.Blue
+                to_dock(linesensors, motorControl, containerColor, STABLE_CONSTANT=0)
 
             elif( cm == 10):
                 goFromDockToIntersection().execute(userdata)
