@@ -2,6 +2,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include "robot_strategy/motorControlLib.h"
+#include <math.h>
 enum Wheels
 {
     FL = 0,
@@ -10,91 +11,70 @@ enum Wheels
     BR = 3
 };
 
-MotorControl::MotorControl(ros::NodeHandle &node, double Kp = 0.0, double Kd = 0.0, double Ki = 0, double windUp = 0, double deadSpace = 15, double freq = 100.0, double momentum = 0)
+MotorControl::MotorControl(ros::NodeHandle &node, double Kp = 0.0, double Kd = 0.0, double Ki = 0, double windUp = 0, double freq = 100.0, double momentum = 0)
 {
     this->Kp = Kp;
     this->Kd = Kd;
-    this->pid_on = False;
+    this->pid_on = false;
     this->freq = freq;
     this->momentum = momentum;
     this->Ki = Ki;
     this->windUp = windUp;
     this->deadSpace = deadSpace;
 
-    this->pub_motorFL = node.advertise<std_msgs::Float64>('/motorFL/desired_vel', 10);
-    this->pub_motorFR = node.advertise<std_msgs::Float64>('/motorFR/desired_vel', 10);
-    this->pub_motorBL = node.advertise<std_msgs::Float64>('/motorBL/desired_vel', 10);
-    this->pub_motorBR = node.advertise<std_msgs::Float64>('/motorBR/desired_vel', 10);
-    this->pub_encoderEnable = node.advertise<std_msgs::Bool>('/encoder_enable', 10);
-    this->pub_motorLineFL = node.advertise<std_msgs::Float64>('/motorSensorFL/error', 10);
-    this->pub_motorLineFR = node.advertise<std_msgs::Float64>('/motorSensorFR/error', 10);
-    this->pub_motorLineBL = node.advertise<std_msgs::Float64>('/motorSensorBL/error', 10);
-    this->pub_motorLineBR = node.advertise<std_msgs::Float64>('/motorSensorBR/error', 10);
-    this->pub_motorPWM_FL = node.advertise<std_msgs::Float64>('/motorFL/pwm', 10);
-    this->pub_motorPWM_FR = node.advertise<std_msgs::Float64>('/motorFR/pwm', 10);
-    this->pub_motorPWM_BL = node.advertise<std_msgs::Float64>('/motorBL/pwm', 10);
-    this->pub_motorPWM_BR = node.advertise<std_msgs::Float64>('/motorBR/pwm', 10);
-
-    this->sub_lineEnable = node.subscribe<std_msgs::Float64>('/pid_enable', Bool, this->__pid_enable_cb);
-    this->pub_lineTarget = node.advertise < ('/desired_pose', Float64, 10);
-
-    ros::Duration(2).sleep();
-
-    this->_velocity_mode = false;
-    this->_align_mode = false;
+    // Settup arduino
+    char str[] = "/dev/ttyUSB1";
+    Arduino arduino(str);
+    this->arduino = *arduino;
 }
 
-MotorControl::align(double* error_array):
+void MotorControl::align(double *error_array)
+{
+    double actuation[4];
+    
+    // Start PID
+    if (!this->pid_on)
+    {
+        this->pid_on = true;
+        this->deltaError = {0, 0, 0, 0};
+        this->integrative = {0., 0., 0., 0.};
+        this->pastError = copy.deepcopy(error_array);
+        return;
+    };
 
-        if( !this->pid_on{
-            this->pid_on = true;
-            this->deltaError = [0, 0, 0, 0]
-            this->integrative = np.array([0., 0., 0., 0.])
-            this->pastError = copy.deepcopy(error_array)
-            return
+    // Integrative and Derivative Error
+    for(int i = 0; i < 4; i++){
+        this->deltaError[i] = (error_array[i] - this->pastError[i]) + this->momentum * this->deltaError;
+        this->integrative[i] += error_array[i] / this->freq;
+
+        // Windup
+        if (abs( this->integrative[i] ) * abs(this->Ki) > this->windUp){
+            this->integrative[i] = this->windUp/ this->Ki * this->integrative / abs(this->integrative);
         }
-        if not this->_align_mode:
-            this->setAlignControlMode(target)
 
-#this->pub_motorLineFL.publish(error_array[int(Wheels.FL)])
-#this->pub_motorLineFR.publish(error_array[int(Wheels.FR)])
-#this->pub_motorLineBL.publish(error_array[int(Wheels.BL)])
-#this->pub_motorLineBR.publish(error_array[int(Wheels.BR)])
-       
-        this->deltaError = (error_array - this->pastError)  + this->momentum * this->deltaError
-        
-        this->integrative += error_array / this->freq
+        // Calculate PID
+        actuation[i] = error_array[i] * this->Kp + this->deltaError[i] * this->Kd + this->Ki * this->integrative[i];
 
-        for n in range(4):
-            
-            if np.abs(this->integrative[n]) * np.abs(this->Ki) > this->windUp :
+        // Clip limits
+        if (actuation[i] >  120) actuation[i] =  120;
+        if (actuation[i] < -120) actuation[i] = -120;
 
-                this->integrative[n] = this->windUp/np.abs(this->Ki) * np.sign(this->integrative[n])
+        // Save actual error 
+        this->pastError[i] = error_array[i];   
+    }
 
-        actuation = error_array * this->Kp + this->deltaError * this->Kd + this->Ki * this->integrative
-#rospy.loginfo("\nError Array: {} \nPast Error: {}\nDeltaError: {} \nActuation: {} ".format(error_array, this->pastError, this->deltaError, actuation) +
-#"\nP:{}\nD: {}\nI: {}".format(this->Kp * error_array, this->deltaError * this->Kd, this->Ki * this->integrative)
-#)
+    // Send Velocity
+    write(this->arduino->fd, actuation, 4);
 
-#rospy.loginfo("Actuation {}".format(actuation))
-        
-        if max(abs(actuation)) > 120:
-            actuation = actuation / ( max(abs(actuation)) / 120. )
-            
-        if  sum(error_array == 0) != 4 and  np.abs(max(actuation)) < this->deadSpace and np.abs(max(actuation)) > 0.1:
-            actuation = this->deadSpace * ( np.abs(actuation) > 0.1 ) * np.sign(actuation)
+}
+         
+void MotorControl::align(){
+    this->pid_on = false;
+}    
 
-        this->pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
-        this->pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
-        this->pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])
-        this->pub_motorPWM_BR.publish( actuation[int(Wheels.BR)])
 
-        this->pastError = copy.deepcopy(error_array)
-
-    def clear(self):
-        this->pid_on = False
-
-    def setParams(self, Kp=None, Kd=None, freq=None, momentum=None, Ki=None, windUp=None, deadSpace=None):
+void MotorControl:setParams( double Kp=0, Kd=None, freq=None, momentum=None, Ki=None, windUp=None, deadSpace=None) :
+    def setParams(self, 
         
         if not (Kp is None) :
             this->Kp = float(Kp)
@@ -146,3 +126,4 @@ MotorControl::stop(self):
         
         this->_velocity_mode = False
         this->_align_mode = False
+*/
