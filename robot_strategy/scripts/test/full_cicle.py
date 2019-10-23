@@ -84,7 +84,7 @@ if __name__ == '__main__':
     firstPose(linesensors, motorControl)
     robotPose = Positions.GreenIntersection
    
-    cm_cicle = [11, 12, 9, 10]
+    cm_cicle = [11, 12, 9, 10, 8]
     cicle = -1
     while not rospy.is_shutdown() :
         

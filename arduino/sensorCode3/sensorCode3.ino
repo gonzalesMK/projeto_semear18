@@ -66,8 +66,8 @@
 #define IS_BLACK 90 
 #define FL 0
 #define FR 1
-#define BL 3
-#define BR 2
+#define BL 2
+#define BR 3
 #define LF 4
 #define LB 5
 #define RF 6

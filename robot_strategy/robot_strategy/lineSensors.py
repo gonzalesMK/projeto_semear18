@@ -6,6 +6,9 @@ from enum import Enum
 from enum import IntEnum
 from functools import partial
 
+import serial
+import struct
+
 """
 Original: 
 FRONT = 0
@@ -61,15 +64,18 @@ class LineSensor(object):
         self._max_readings = np.ones(8, dtype=float) * 100
         self._min_readings = np.ones(8, dtype=float) * 20
 
-        rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
-        rospy.Subscriber( "/pololuSensorFL", UInt8, partial( self.__callback_sensor, sensorSides.FL))
-        rospy.Subscriber( "/pololuSensorFR", UInt8, partial( self.__callback_sensor, sensorSides.FR))
-        rospy.Subscriber( "/pololuSensorBL", UInt8, partial( self.__callback_sensor, sensorSides.BL))
-        rospy.Subscriber( "/pololuSensorBR", UInt8, partial( self.__callback_sensor, sensorSides.BR))
-        rospy.Subscriber( "/pololuSensorLF", UInt8, partial( self.__callback_sensor, sensorSides.LF))
-        rospy.Subscriber( "/pololuSensorLB", UInt8, partial( self.__callback_sensor, sensorSides.LB))
-        rospy.Subscriber( "/pololuSensorRF", UInt8, partial( self.__callback_sensor, sensorSides.RF))
-        rospy.Subscriber( "/pololuSensorRB", UInt8, partial( self.__callback_sensor, sensorSides.RB))
+
+        self.arduino = serial.Serial('/dev/ttyUSB0', 115200, timeout=.01)
+        
+        # rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
+        # rospy.Subscriber( "/pololuSensorFL", UInt8, partial( self.__callback_sensor, sensorSides.FL))
+        # rospy.Subscriber( "/pololuSensorFR", UInt8, partial( self.__callback_sensor, sensorSides.FR))
+        # rospy.Subscriber( "/pololuSensorBL", UInt8, partial( self.__callback_sensor, sensorSides.BL))
+        # rospy.Subscriber( "/pololuSensorBR", UInt8, partial( self.__callback_sensor, sensorSides.BR))
+        # rospy.Subscriber( "/pololuSensorLF", UInt8, partial( self.__callback_sensor, sensorSides.LF))
+        # rospy.Subscriber( "/pololuSensorLB", UInt8, partial( self.__callback_sensor, sensorSides.LB))
+        # rospy.Subscriber( "/pololuSensorRF", UInt8, partial( self.__callback_sensor, sensorSides.RF))
+        # rospy.Subscriber( "/pololuSensorRB", UInt8, partial( self.__callback_sensor, sensorSides.RB))
         
         rospy.Subscriber( "/turnOnPololuSensors", Bool, self.__enableCb)
         self._is_on = False
@@ -151,9 +157,9 @@ class LineSensor(object):
 
         for i in range(len(self._error)):
             if resetToMinimun:
-                self._error = np.ones(4)*-2
+                self._error = np.ones(4)*-1
             else:
-                self._error = np.ones(4)*2
+                self._error = np.ones(4)*1
 
     def readLines(self):
       
