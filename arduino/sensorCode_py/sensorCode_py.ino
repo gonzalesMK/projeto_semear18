@@ -244,20 +244,25 @@ void loop()
     analogWrite(ENABLE, 255);
   }
   
-  byte sensorsValuesByte = 0;
-  for (uint8_t i = 0; i < SensorCount; i++)
-  {
-    Serial.write( (unsigned char) floor( (float) sensorValues[ordering[i]]/4 ));
-  }
-
-  Serial.write(alissonSensors);
-  Serial.write( PINB & FIMCURSOBITS );
-  Serial.write( encoder_tick & 0xFF);
-  Serial.write(((encoder_tick >> 8) & 0xFF));
-  Serial.write(((encoder_tick >> 16) & 0xFF));
-  Serial.write(((encoder_tick >> 24) & 0xFF));
+  if( send_){
+      byte sensorsValuesByte = 0;
+    for (uint8_t i = 0; i < SensorCount; i++)
+    {
+      Serial.write( (unsigned char) floor( (float) sensorValues[ordering[i]]/4 ));
+    }
   
-  send_ = false;
+    
+    Serial.write(alissonSensors);
+    Serial.write( PINB & FIMCURSOBITS );
+    Serial.write( encoder_tick & 0xFF);
+    Serial.write(((encoder_tick >> 8) & 0xFF));
+    Serial.write(((encoder_tick >> 16) & 0xFF));
+    Serial.write(((encoder_tick >> 24) & 0xFF));
+    
+    send_ = false;
+    Serial.flush();
+  }
+  
   while (millis() - time < 2)
   {
   }
@@ -306,5 +311,6 @@ void serialEvent()
     break;
   case 68:
     send_ = true;
+    break;
   }
 }

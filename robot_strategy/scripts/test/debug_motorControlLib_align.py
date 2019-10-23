@@ -87,9 +87,9 @@ if __name__ == '__main__':
     rospy.loginfo("Sensor")
     linesensors = LineSensor()
     rospy.loginfo("Claw")
-    clawControl = Claw()
-    clawControl.resetGearAndPinionPose()
-    clawControl.setServoPose(initial=0, end=90)
+    # clawControl = Claw()
+    # clawControl.resetGearAndPinionPose()
+    # clawControl.setServoPose(initial=0, end=90)
     error = np.array([0, 0, 0, 0])
     sensors = linesensors.readLines()
 
@@ -358,15 +358,15 @@ if __name__ == '__main__':
 
         elif (cm == 13):
 
-            clawControl.setServoPose(initial=90, end=0)
-            clawControl.pickContainer()
-            clawControl.resetGearAndPinionPose()
-            clawControl.setServoPose(initial=0, end=90)
-
+            # clawControl.setServoPose(initial=90, end=0)
+            # clawControl.pickContainer()
+            # clawControl.resetGearAndPinionPose()
+            # clawControl.setServoPose(initial=0, end=90)
+            pass
         elif (cm == 14):
             cm = input("Input height:")
-            clawControl.dropContainer(int(cm))
-            clawControl.resetGearAndPinionPose()
+            #clawControl.dropContainer(int(cm))
+            #clawControl.resetGearAndPinionPose()
 
         elif(cm == 0):
             motorControl.stop()

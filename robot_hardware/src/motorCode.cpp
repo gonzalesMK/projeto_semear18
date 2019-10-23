@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
 
     // Open arduino
     char str[] = "/dev/ttyUSB1";
-
     Arduino arduino(str);
 
     ros::Rate rate(50);

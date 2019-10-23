@@ -61,8 +61,13 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+add_library(motorControlLib src/motorControlLib.cpp)
+add_library(arduinoLibrary src/arduinoInterfaceLib.cpp)
 
 # Link Library with respective dependencies
+target_link_libraries(motorControlLib ${catkin_LIBRARIES})
+target_link_libraries(arduinoLibrary ${catkin_LIBRARIES})
+
 
 catkin_install_python(PROGRAMS scripts/main.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

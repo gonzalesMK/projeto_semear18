@@ -11,7 +11,7 @@ if __name__ == '__main__':
     linesensors = LineSensor()
     containersensors = ContainerSensors()
     linesensors.reset()
-    r = rospy.Rate(100)
+    r = rospy.Rate(300)
     pubClawPWM = rospy.Publisher("/front", Int64, queue_size=1)
 
     pFL = rospy.Publisher('/readingsFL', Int64, queue_size=10)  

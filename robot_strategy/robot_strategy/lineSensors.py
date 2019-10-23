@@ -64,79 +64,52 @@ class LineSensor(object):
         self._max_readings = np.ones(8, dtype=float) * 100
         self._min_readings = np.ones(8, dtype=float) * 20
 
+        while( not rospy.is_shutdown() ):
+            try:
+                self.arduino = serial.Serial('/dev/ttyUSB0', 115200, timeout=.01)
+                break
+            except:
+                rospy.loginfo("Trying again ttyUSB0")
+                rospy.Rate(1).sleep()
 
-        self.arduino = serial.Serial('/dev/ttyUSB0', 115200, timeout=.01)
-        
-        # rospy.Subscriber( "/pololuSensor", UInt8, self.__callback)
-        # rospy.Subscriber( "/pololuSensorFL", UInt8, partial( self.__callback_sensor, sensorSides.FL))
-        # rospy.Subscriber( "/pololuSensorFR", UInt8, partial( self.__callback_sensor, sensorSides.FR))
-        # rospy.Subscriber( "/pololuSensorBL", UInt8, partial( self.__callback_sensor, sensorSides.BL))
-        # rospy.Subscriber( "/pololuSensorBR", UInt8, partial( self.__callback_sensor, sensorSides.BR))
-        # rospy.Subscriber( "/pololuSensorLF", UInt8, partial( self.__callback_sensor, sensorSides.LF))
-        # rospy.Subscriber( "/pololuSensorLB", UInt8, partial( self.__callback_sensor, sensorSides.LB))
-        # rospy.Subscriber( "/pololuSensorRF", UInt8, partial( self.__callback_sensor, sensorSides.RF))
-        # rospy.Subscriber( "/pololuSensorRB", UInt8, partial( self.__callback_sensor, sensorSides.RB))
-        
-        rospy.Subscriber( "/turnOnPololuSensors", Bool, self.__enableCb)
+        while( not rospy.is_shutdown()):
+            a = struct.pack('!B', 68)
+            self.arduino.write(a)
+            a = str(self.arduino.read(14))
+
+            b = np.zeros(14)            
+            if len(a) == 14:
+                break
+        self.arduino.reset_input_buffer()
+        self.arduino.reset_output_buffer()
         self._is_on = False
-        self.pub_enable = rospy.Publisher('/turnOnPololuSensors', Bool, queue_size=10)  
-       
         print("Turning on sensors")
-        self.pub_enable.publish(True)  
-        
-        while( not self._is_on and not rospy.is_shutdown() ):
-            print("Trying again")
-            self.pub_enable.publish(True)  
-            rospy.Rate(20).sleep()
 
         
-    def __callback_sensor(self, sensorNumber, msg):
-        
-        
-        if self._max_readings[sensorNumber] < msg.data:
-            self._max_readings[sensorNumber] = msg.data
+    def _read(self):
+        a = struct.pack('!B', 68)
+        self.arduino.write(a)
+        a = str(self.arduino.read(14))
 
-        if self._min_readings[sensorNumber] > msg.data  :
-            self._min_readings[sensorNumber] = msg.data
+        b = np.zeros(14)            
+        if len(a) == 14:
+            j = 0
+            for i in a:
+                b[j] = ord( i)
+                j = j + 1
+            
+        readings = b[0:8]
+        # rospy.loginfo("readings: {}".format(readings))
+        self._max_readings = np.maximum(self._max_readings, readings)
+        self._min_readings = np.minimum(self._min_readings, readings)
+        self._readings =  (readings - self._min_readings)/(self._max_readings - self._min_readings) * 100
+        self.container = b[8]
+        self.limit_switchs = b[9]
+        self.encoder =  -( b[10] + b[11] * 256 + b[12] * 65536 + b[13] * 16777216 - 2147483648) 
 
-        self._readings[sensorNumber] =  (msg.data - self._min_readings[sensorNumber] ) / ( self._max_readings[sensorNumber] - self._min_readings[sensorNumber] )  * 100
-        
-    def __enableCb(self,msg):
-        """
-        Callback to the ROS subscriber. This one is to be sure that the enable was published
-
-        Parameters
-        ----------
-        msg : std_msgs/UInt8
-            The readings of the sensor
-        
-        """
-
-        self._is_on = msg.data
-
-    def __callback(self, msg):
-        """
-        Callback to the ROS subscriber. 
-
-        Decodes the arduino msg
-
-        Parameters
-        ----------
-        msg : std_msgs/UInt8
-            The readings of the sensor
-        
-        """
-        # Check if at least one sensor is over the line 
-        #sensorValueA = np.array( [ (msg.data & 2) != 0, (msg.data & 8) != 0, (msg.data & 16) != 0, (msg.data & 64) != 0])
-        #sensorValueB = np.array([ (msg.data & 1) != 0, (msg.data & 4    ) != 0, (msg.data & 32) != 0, (msg.data & 128) != 0])
         sensorValueA = self._readings[::2]   >  20
         sensorValueB = self._readings[1::2]  >  20
-
-        #self._readings = (self._readings < 5) * self._readings
-
-       
         readings =  2 * (self._readings[1::2]) / (self._readings[::2] + self._readings[1::2]) - 1
-
         onLine =  sensorValueA + sensorValueB
 
         for i in range(4):
@@ -162,9 +135,9 @@ class LineSensor(object):
                 self._error = np.ones(4)*1
 
     def readLines(self):
-      
+        self._read()
         return self._error
     
     def __del__(self):
 
-        self.pub_enable.publish(False)  
+        self.arduino.close()

@@ -31,8 +31,8 @@ class Wheels(IntEnum):
     def __int__(self):
         return self.value
 */
-char PWM[4];
-
+int PWM[4];
+unsigned char PWM_[4];
 void setup()
 {
     pinMode(IN1A, OUTPUT);
@@ -87,7 +87,18 @@ void serialEvent()
         return;
     }
 
-    Serial.readBytes(PWM, 4);
+    Serial.readBytes(PWM_, 4);
+
+    PWM[0] = ((int)PWM_[0]) ;
+    PWM[1] = ((int)PWM_[1]) ;
+    PWM[2] = ((int)PWM_[2]) ;
+    PWM[3] = ((int)PWM_[3]) ;
+    
+    PWM[0] = PWM[0] - 120;
+    PWM[1] = PWM[1] - 120;
+    PWM[2] = PWM[2] - 120;
+    PWM[3] = PWM[3] - 120;
+    
     // FL
     if ( PWM[0] != 0 ){
     digitalWrite(IN2A, PWM[0] > 0);

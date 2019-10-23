@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import rospy
+import serial
+import struct
 from std_msgs.msg import Float64, Bool
 import numpy as np
 from enum import Enum
@@ -40,74 +42,11 @@ class MotorControl(object):
         self.windUp = float(windUp)
         self.deadSpace = float(deadSpace)
 
-        # This PID is to control velocity
-        self.pub_motorFL = rospy.Publisher('/motorFL/desired_vel', Float64, queue_size=10)    
-        self.pub_motorFR = rospy.Publisher('/motorFR/desired_vel', Float64, queue_size=10)    
-        self.pub_motorBL = rospy.Publisher('/motorBL/desired_vel', Float64, queue_size=10)    
-        self.pub_motorBR = rospy.Publisher('/motorBR/desired_vel', Float64, queue_size=10)
-
-        self.pub_encoderEnable = rospy.Publisher('/encoder_enable', Bool, queue_size=10)  
-
-        # This PID is to align with a line 
-        self.pub_motorLineFL = rospy.Publisher('/motorSensorFL/error', Float64, queue_size=10)    
-        self.pub_motorLineFR = rospy.Publisher('/motorSensorFR/error', Float64, queue_size=10)    
-        self.pub_motorLineBL = rospy.Publisher('/motorSensorBL/error', Float64, queue_size=10)    
-        self.pub_motorLineBR = rospy.Publisher('/motorSensorBR/error', Float64, queue_size=10)
-
-        self.pub_motorPWM_FL = rospy.Publisher('/motorFL/pwm', Float64, queue_size=10)    
-        self.pub_motorPWM_FR = rospy.Publisher('/motorFR/pwm', Float64, queue_size=10)    
-        self.pub_motorPWM_BL = rospy.Publisher('/motorBL/pwm', Float64, queue_size=10)    
-        self.pub_motorPWM_BR = rospy.Publisher('/motorBR/pwm', Float64, queue_size=10)
-        
-        self.pub_lineEnable = rospy.Publisher( '/pid_enable', Bool, queue_size=10)
-        self.sub_lineEnable = rospy.Subscriber('/pid_enable', Bool, self.__pid_enable_cb)    
-        self.pub_lineTarget = rospy.Publisher('/desired_pose', Float64, queue_size=10)   
-
-        rospy.Rate(2).sleep()  
-
-        self._velocity_mode = False
-        self._align_mode = False
-
-    def __pid_enable_cb(self, msg):
-        """ We had a problem while publishing the pid_enable topic. Sometimes it would just not arrive... 
-       
-        So, now, we're going to publish the enable topic until we got a response
-        """
-        self._velocity_mode = True
+        self.arduino = serial.Serial('/dev/ttyUSB1', 115200, timeout=.01)
 
 
-    def setVelocityControlMode(self):
-        
-        self._velocity_mode = False
-        
-        while (not rospy.is_shutdown()) and (not self._velocity_mode): 
-            self.pub_encoderEnable.publish(True)
-            self.pub_lineEnable.publish(False)
-            rospy.Rate(0.5).sleep()  
-
-        #self._velocity_mode = True
-        self._align_mode = False
-
-    def setAlignControlMode(self, target=0, side=Sides.LEFT):
-        
-        self.pub_encoderEnable.publish(False)
-        self.pub_lineEnable.publish(True)
-
-        self._velocity_mode = False
-        self._align_mode = True
-
-        self.pub_lineTarget.publish(target)
-
-    
-    def setVelocity(self, vel):
-        
-        if not self._velocity_mode:
-            self.setVelocityControlMode()
-        
-        self.pub_motorFL.publish(vel[int(Wheels.FL)])
-        self.pub_motorFR.publish(vel[int(Wheels.FR)])
-        self.pub_motorBL.publish(vel[int(Wheels.BL)])
-        self.pub_motorBR.publish(vel[int(Wheels.BR)])
+    def setVelocity(self, actuation):
+        self.arduino.write( struct.pack(">4B", actuation[Wheels.FL], actuation[Wheels.FR],actuation[Wheels.BL],actuation[Wheels.BR] ))
 
     def align(self, error_array, target=0 ):
 
@@ -118,9 +57,6 @@ class MotorControl(object):
             self.pastError = copy.deepcopy(error_array)
             return
 
-        if not self._align_mode:
-            self.setAlignControlMode(target)
-        
         #self.pub_motorLineFL.publish( error_array[int(Wheels.FL)])
         #self.pub_motorLineFR.publish( error_array[int(Wheels.FR)])
         #self.pub_motorLineBL.publish( error_array[int(Wheels.BL)])
@@ -149,11 +85,18 @@ class MotorControl(object):
         if  sum(error_array == 0) != 4 and  np.abs(max(actuation)) < self.deadSpace and np.abs(max(actuation)) > 0.1:
             actuation = self.deadSpace * ( np.abs(actuation) > 0.1 ) * np.sign(actuation)
 
-        self.pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
-        self.pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
-        self.pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])
-        self.pub_motorPWM_BR.publish( actuation[int(Wheels.BR)])
+        # self.pub_motorPWM_FL.publish( actuation[int(Wheels.FL)])
+        # self.pub_motorPWM_FR.publish( actuation[int(Wheels.FR)])
+        # self.pub_motorPWM_BL.publish( actuation[int(Wheels.BL)])
+        # self.pub_motorPWM_BR.publish( actuation[int(Wheels.BR)])
 
+        actuation = actuation + 120
+        #rospy.loginfo("{}".format(actuation))
+        self.arduino.write( struct.pack(">4B", actuation[Wheels.FL],actuation[Wheels.FR], actuation[Wheels.BL], actuation[Wheels.BR]))
+        #b = 0
+        #b = self.arduino.read(1)
+        #if len(b):
+        #    rospy.loginfo(ord(b))
         self.pastError = copy.deepcopy(error_array)
 
     def clear(self):
@@ -182,62 +125,14 @@ class MotorControl(object):
         if not (deadSpace is None):
             self.deadSpace = deadSpace
 
-    def setPIDVelocity(self, vel_array, base_vel, side= Sides.FRONT):
-        if not self._velocity_mode:
-            self.setVelocityControlMode()
-
-        if( Sides.FRONT == side):
-            vel_array[int(Wheels.FR)] += base_vel
-            vel_array[int(Wheels.BR)] += base_vel
-            vel_array[int(Wheels.FL)] += base_vel
-            vel_array[int(Wheels.BL)] += base_vel
-        elif( Sides.BACK == side):
-            vel_array[int(Wheels.FR)] -= base_vel
-            vel_array[int(Wheels.BR)] -= base_vel
-            vel_array[int(Wheels.FL)] -= base_vel
-            vel_array[int(Wheels.BL)] -= base_vel                        
-        elif( Sides.LEFT == side):
-            vel_array[int(Wheels.FR)] += base_vel
-            vel_array[int(Wheels.BR)] -= base_vel
-            vel_array[int(Wheels.FL)] -= base_vel
-            vel_array[int(Wheels.BL)] += base_vel
-        elif( Sides.LEFT == side):
-            vel_array[int(Wheels.FR)] -= base_vel
-            vel_array[int(Wheels.BR)] += base_vel
-            vel_array[int(Wheels.FL)] += base_vel
-            vel_array[int(Wheels.BL)] -= base_vel
-
-        self.pub_motorFL.publish(vel_array[int(Wheels.FL)])
-        self.pub_motorFR.publish(vel_array[int(Wheels.FR)])
-        self.pub_motorBL.publish(vel_array[int(Wheels.BL)])
-        self.pub_motorBR.publish(vel_array[int(Wheels.BR)])
-
     def stop(self):
-        self.pub_motorPWM_FL.publish(0)
-        self.pub_motorPWM_FR.publish(0)
-        self.pub_motorPWM_BL.publish(0)
-        self.pub_motorPWM_BR.publish(0)
-        
-        self.pub_encoderEnable.publish(False)
-        self.pub_lineEnable.publish(False)
 
-        self.pub_motorFL.publish(0)
-        self.pub_motorFR.publish(0)
-        self.pub_motorBL.publish(0)
-        self.pub_motorBR.publish(0)
-
-        self.pub_motorLineFL.publish(0)
-        self.pub_motorLineFR.publish(0)
-        self.pub_motorLineBL.publish(0)
-        self.pub_motorLineBR.publish(0)
+        self.arduino.write(struct.pack(">4B", 120, 120, 120, 120))
 
         rospy.Rate(10).sleep()  
 
-        # Publish 0 To the PWM topics in order to stop the robot definitively
-        self.pub_motorPWM_FL.publish(0)
-        self.pub_motorPWM_FR.publish(0)
-        self.pub_motorPWM_BL.publish(0)
-        self.pub_motorPWM_BR.publish(0)
+    def __del__(self):
+        self.stop()
         
-        self._velocity_mode = False
-        self._align_mode = False    
+
+   

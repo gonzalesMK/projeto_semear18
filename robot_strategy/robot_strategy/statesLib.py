@@ -965,12 +965,12 @@ def firstPose(linesensors,motorControl):
     motorControl.setParams(Kp = 40)
     error = np.array([-3,+3,+3,-3])
 
-    r = rospy.Rate(100)
+    r = rospy.Rate(300)
     while(not rospy.is_shutdown()):
 
         sensors = linesensors.readLines()
-        motorControl.align(error)            
-
+        # motorControl.align(error)            
+        rospy.loginfo("L: {} R: {}".format(sensors[Sides.LEFT], sensors[Sides.RIGHT])   )
         if( sensors[ int( Sides.LEFT) ] == - 1 and sensors[ int(Sides.RIGHT) ] == - 1 ):
             break
                     
