@@ -260,7 +260,6 @@ void loop()
     Serial.write(((encoder_tick >> 24) & 0xFF));
     
     send_ = false;
-    Serial.flush();
   }
   
   while (millis() - time < 2)

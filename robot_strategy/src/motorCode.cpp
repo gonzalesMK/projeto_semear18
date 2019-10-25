@@ -2,7 +2,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 
-#include "robot_hardware/arduinoInterfaceLib.h"
+#include "robot_strategy/motorControlLib.h"
 
 #include <boost/bind.hpp>
 
@@ -28,9 +28,9 @@ class Wheels(IntEnum):
         return self.value
 */
 #define FL 3
-#define FR 0 
-#define BL 1 
-#define BR 2  
+#define FR 0
+#define BL 1
+#define BR 2
 
 char vel[4];
 char stop[4] = {0, 0, 0, 0};
@@ -40,13 +40,18 @@ bool turnOnBaseMotor = false;
 void motor_cb(const std_msgs::Float64ConstPtr &msg, char &var)
 {
 
-    double temp = abs( msg->data ) > 120 ? 120 * ( msg->data / fabs( msg->data ) ) : msg->data ;  
+    double temp = abs(msg->data) > 120 ? 120 * (msg->data / fabs(msg->data)) : msg->data;
 
-    var = (int8_t) ( (int16_t) temp);
-   // ROS_INFO_STREAM("Received: " << msg->data << " " << ( msg->data / fabs( msg->data )) << " Now: " << (int) var);
-    
+    var = (int8_t)((int16_t)temp);
+    // ROS_INFO_STREAM("Received: " << msg->data << " " << ( msg->data / fabs( msg->data )) << " Now: " << (int) var);
 }
 
+Arduino *tmp()
+{
+    char str[] = "/dev/ttyUSB0";
+    Arduino* a = new Arduino(str);
+    return a;
+}
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "MotorArduinoInterface");
@@ -59,9 +64,7 @@ int main(int argc, char *argv[])
     ros::Subscriber motor_sub4 = node.subscribe<std_msgs::Float64>("/motorBL/pwm", 1, boost::bind(motor_cb, _1, boost::ref(vel[BL])));
 
     // Open arduino
-    char str[] = "/dev/ttyUSB0";
-    Arduino arduino(str);
-
+    Arduino *arduino = tmp();
     ros::Rate rate(50);
 
     while (ros::ok())
@@ -69,12 +72,12 @@ int main(int argc, char *argv[])
 
         ros::spinOnce();
 
-        ROS_INFO_STREAM("FL: " << (int) vel[0] << "FR: " << (int) vel[1] << " " << (int) vel[2] << " " << (int) vel[3] << " ");
-        write(arduino.fd, vel, 4);
+        ROS_INFO_STREAM("FL: " << (int)vel[0] << "FR: " << (int)vel[1] << " " << (int)vel[2] << " " << (int)vel[3] << " ");
+        write(arduino->fd, vel, 4);
 
         rate.sleep();
     }
 
     ROS_INFO("Closing communication - Arduino Motor");
-    close(arduino.fd);
+    close(arduino->fd);
 }

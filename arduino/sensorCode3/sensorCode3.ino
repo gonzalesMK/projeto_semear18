@@ -120,15 +120,7 @@ uint16_t is_black[] = {FL_BLACK, FR_BLACK, BL_BLACK, BR_BLACK, LF_BLACK, LR_BLAC
 Servo servo;
 
 float filterFrequency = 5.0;
-FilterOnePole lowpassFilter0( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter1( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter2( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter3( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter4( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter5( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter6( LOWPASS, filterFrequency );
-FilterOnePole lowpassFilter7( LOWPASS, filterFrequency );
-
+bool enable_ = false;
 void setup()
 {
   Serial.begin(115200);
@@ -244,22 +236,21 @@ void loop()
     analogWrite(ENABLE, 255);
   }
   
+  if (enable_){
   byte sensorsValuesByte = 0;
   for (uint8_t i = 0; i < SensorCount; i++)
   {
     Serial.write( (unsigned char) floor( (float) sensorValues[ordering[i]]/4 ));
   }
-
+  
+  
   Serial.write(alissonSensors);
   Serial.write( PINB & FIMCURSOBITS );
   Serial.write( encoder_tick & 0xFF);
   Serial.write(((encoder_tick >> 8) & 0xFF));
   Serial.write(((encoder_tick >> 16) & 0xFF));
   Serial.write(((encoder_tick >> 24) & 0xFF));
-  
-
-  while (millis() - time < 2)
-  {
+  enable_ = false;
   }
 }
 
@@ -304,5 +295,7 @@ void serialEvent()
     servo_pose = servo.read();
     servo.write(servo_pose);
     break;
+  case 68:
+    enable_ = true;
   }
 }

@@ -93,10 +93,31 @@ OBSERVAÇÕES:
 	para rodar o PIGPIO na rasp é necessario entrar no modo sudo: "sudo su" -> "source devel/setup.bash"
 
 	para resolver o problema de arquivos no futuro: "find /your/dir -type f -exec touch {} +":
-		find ~/catkin_ws -type f -exec touch {} +
+		find /home/ubuntu//catkin_ws -type f -exec touch {} +
 		sudo find /opt/ros/ -type f -exec touch {} +
 		sudo find /usr/lib -type f -exec touch {} +
 		sudo find /usr/lib -type l -exec touch {} +
 		sudo find /usr/local/lib/libpigpio.so -type l -exec touch {} +
 
 	para ler temperatura /opt/vc/bin/vcgencmd measure_temp
+
+ WIFI
+Para setar o wifi da RASP, incluir a linha:
+	wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+
+no arquivo : /etc/network/interfaces
+
+E também incluir o wifi em:  wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf da seguinte forma: 
+
+network={
+    ssid="KZANova5.8"
+    psk="KZANova123"
+}
+
+You can also use pifi.
+
+
+STARTUP
+	https://forum.ubiquityrobotics.com/t/changing-start-up-nodes-in-pi-image/55
+
+REINICIAR 

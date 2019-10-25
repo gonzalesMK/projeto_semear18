@@ -6,6 +6,8 @@
 #include <termios.h> // POSIX terminal control definitions
 
 
+#ifndef ARDUINO_LIB
+#define ARDUINO_LIB
 
 class Arduino{
 
@@ -15,6 +17,8 @@ class Arduino{
     int fd; // File descriptor for the arduino ;
 
     Arduino(char* filename);
-
+    Arduino(int portNumber);
 };
 
+
+#endif

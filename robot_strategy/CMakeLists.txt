@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 find_package(OpenCV REQUIRED)
-# find_library(PIGPIO_LIBRARY pygpio /path)
+find_library(PIGPIO_LIBRARY pigpio ~/Documents/pigpio-master)
 
 catkin_python_setup()
 
@@ -61,13 +61,61 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+
 add_library(motorControlLib src/motorControlLib.cpp)
+add_library(lineSensorLib src/lineSensorLib.cpp)
 add_library(arduinoLibrary src/arduinoInterfaceLib.cpp)
+add_library(stateLib src/stateLib.cpp)
+
 
 # Link Library with respective dependencies
-target_link_libraries(motorControlLib ${catkin_LIBRARIES})
 target_link_libraries(arduinoLibrary ${catkin_LIBRARIES})
-
+target_link_libraries(motorControlLib ${catkin_LIBRARIES} arduinoLibrary)
+target_link_libraries(lineSensorLib ${catkin_LIBRARIES} arduinoLibrary)
+target_link_libraries(stateLib ${catkin_LIBRARIES} arduinoLibrary lineSensorLib motorControlLib)
 
 catkin_install_python(PROGRAMS scripts/main.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+
+add_executable(testarMovimentoBase src/testar_movimento_base.cpp)
+target_link_libraries(testarMovimentoBase
+ ${catkin_LIBRARIES}
+  motorControlLib
+ )
+
+add_executable(motor_code src/motorCode.cpp)
+target_link_libraries(motor_code
+ ${catkin_LIBRARIES}
+  motorControlLib
+ )
+
+
+add_executable(testar_lineSensor src/testar_lineSensor.cpp)
+target_link_libraries(testar_lineSensor
+ ${catkin_LIBRARIES}
+  lineSensorLib
+)
+
+add_executable(testar_gpio src/testar_gpio.cpp)
+target_link_libraries(testar_gpio
+ ${catkin_LIBRARIES}
+ ${PIGPIO_LIBRARY}
+)
+
+add_executable(main src/main.cpp)
+target_link_libraries(main
+ ${catkin_LIBRARIES}
+ ${PIGPIO_LIBRARY}
+ ${OpenCV_LIBRARIES}
+ lineSensorLib
+ motorControlLib
+ stateLib
+)
+
+
+add_executable(testar_states src/testar_states.cpp)
+target_link_libraries(testar_states ${catkin_LIBRARIES} arduinoLibrary lineSensorLib motorControlLib stateLib)
+
+add_executable(testar_claw src/testar_claw.cpp)
+target_link_libraries(testar_claw ${catkin_LIBRARIES} arduinoLibrary lineSensorLib )

@@ -34,7 +34,7 @@ Arduino::Arduino(char* filename){
         return ;
     }
 
-    speed_t brate = B115200;
+    speed_t brate = B230400;
     cfsetispeed(&toptions, brate);
     cfsetospeed(&toptions, brate);
 

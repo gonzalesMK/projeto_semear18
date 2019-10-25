@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "SensorArduinoInterface");
     ros::NodeHandle node;
 
-    char str[] = "/dev/ttyUSB0";
+    char str[] = "/dev/ttyUSB1";
     Arduino arduino(str);
     fd = arduino.fd;
 
@@ -191,47 +191,6 @@ int main(int argc, char *argv[])
         nread = read(fd, b, 14);
         if (nread > 0)
         {
-            // media_movel0[4] = media_movel0[3];
-            // media_movel0[3] = media_movel0[2];
-            // media_movel0[2] = media_movel0[1];
-            // media_movel0[1] = media_movel0[0];
-            // media_movel0[0] = b[0];
-            // media_movel1[4] = media_movel1[3];
-            // media_movel1[3] = media_movel1[2];
-            // media_movel1[2] = media_movel1[1];
-            // media_movel1[1] = media_movel1[0];
-            // media_movel1[0] = b[1];
-            // media_movel2[4] = media_movel2[3];
-            // media_movel2[3] = media_movel2[2];
-            // media_movel2[2] = media_movel2[1];
-            // media_movel2[1] = media_movel2[0];
-            // media_movel2[0] = b[2];
-            // media_movel3[4] = media_movel3[3];
-            // media_movel3[3] = media_movel3[2];
-            // media_movel3[2] = media_movel3[1];
-            // media_movel3[1] = media_movel3[0];
-            // media_movel3[0] = b[3];
-            // media_movel4[4] = media_movel4[3];
-            // media_movel4[3] = media_movel4[2];
-            // media_movel4[2] = media_movel4[1];
-            // media_movel4[1] = media_movel4[0];
-            // media_movel4[0] = b[4];
-            // media_movel5[4] = media_movel5[3];
-            // media_movel5[3] = media_movel5[2];
-            // media_movel5[2] = media_movel5[1];
-            // media_movel5[1] = media_movel5[0];
-            // media_movel5[0] = b[5];
-            // media_movel6[4] = media_movel6[3];
-            // media_movel6[3] = media_movel6[2];
-            // media_movel6[2] = media_movel6[1];
-            // media_movel6[1] = media_movel6[0];
-            // media_movel6[0] = b[6];
-            // media_movel7[4] = media_movel7[3];
-            // media_movel7[3] = media_movel7[2];
-            // media_movel7[2] = media_movel7[1];
-            // media_movel7[1] = media_movel7[0];
-            // media_movel7[0] = b[7];
-            
             // Line Follower
             msg.data = b[0]; ////(media_movel0[0] + media_movel0[1] + media_movel0[2] + media_movel0[3] + media_movel0[4]) / 5;
             pubLineSensors1.publish(msg);

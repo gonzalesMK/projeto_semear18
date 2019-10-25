@@ -21,15 +21,32 @@ public:
     uint8_t raw_readings[8];
     double calibrated_readings[8];
     double servo_pose=90;
+    
     // Cremalheira
     int __fastVel = 255;
     int __slowVel = 100;
     bool __claw_is_referenced=false;
-    double gearAndPinionHeight=0;
+    uint64_t startPose=0;
     double __claw_precision=0.1;
+
+ 
+    double container1 = 18;
+    double container2 = 14;
+    double container3 = 10; 
+    double container4 = 6;
+    double container5 = 2;
+    double container6 = 0;
+
+    // Servo
+    int __servo_pose = 0;
+    
     Arduino *arduino;
 
     LineSensor();
+
+    // General Purpose
+    void talkToArduino();
+
     // Controle Sensores de Linha
     std::vector<double>* readLines();
     void reset(bool resetToMinimun = false);
@@ -38,14 +55,13 @@ public:
     void pickContainer();
     void dropContainer(double height);
     void writeClawPWM(int pwm);
-    
+    void resetGearAndPinionPose();
     // Controle do Servo
-    void setServoPose(double pose);
-
+    void setServoPose(uint8_t pose);
+    void writeToServo(uint8_t servoPose);
+    
     // Controle do Eletroima
     void setElectromagnet(bool turnOn=true);
-    
-    
 };
 
 enum Sides

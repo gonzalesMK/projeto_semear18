@@ -1,0 +1,17 @@
+<launch>
+    <!-- <node name="testar_states" pkg="robot_strategy" type="testar_states" respawn="true" output='screen' >
+        <param name="Kp1"       value="30" />
+        <param name="Kd1"       value="100" />
+        <param name="momentum1" value="0.1" />
+        
+    </node> -->
+
+    <node name="testar_states" pkg="robot_hardware" type="motorCode" respawn="true" output='screen' >
+        <param name="Kp1"       value="30" />
+        <param name="Kd1"       value="100" />
+        <param name="momentum1" value="0.1" />
+        
+    </node>
+
+
+</launch>   
